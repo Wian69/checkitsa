@@ -24,8 +24,12 @@
   <pre id="output">Results will appear here</pre>
 
   <script>
-    // Worker URL (replace with your actual deployed Worker)
-    const WORKER_URL = "https://checkitsa-backend.<subdomain>.workers.dev";
+    // Your Worker URL
+    const WORKER_URL = "https://checkitsa-backend.<subdomain>.workers.dev"; // replace with your deployed worker URL
+
+    // Supabase credentials
+    const SUPABASE_URL = "https://jndoazginxmpodmsmvvs.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_iPpE08OHfbLNJdv9cQOUVg_TBLYiIJD";
 
     // Track number of free checks
     const MAX_FREE_CHECKS = 5;
@@ -35,7 +39,6 @@
     const btn = document.getElementById('checkBtn');
     const output = document.getElementById('output');
 
-    // Disable button if free checks exceeded
     function updateButton() {
       if (usedChecks >= MAX_FREE_CHECKS) {
         btn.textContent = "Upgrade to continue";
@@ -53,16 +56,17 @@
       }
 
       const content = input.value.trim();
-      if (!content) return alert("Please enter content to check");
+      if (!content) return alert("Please enter content");
 
       output.textContent = "Checking...";
 
       try {
+        // Call Worker first
         const response = await fetch(WORKER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            type: "url", // could auto-detect later for image/video
+            type: "url",
             content: content,
             reporter: "anonymous"
           })
@@ -75,7 +79,26 @@
           result = { success: false, error: "Worker returned invalid JSON or empty response" };
         }
 
+        // Display results
         output.textContent = JSON.stringify(result, null, 2);
+
+        // Log to Supabase directly
+        await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify({
+            type: "url",
+            content: content,
+            reporter: "anonymous",
+            result: result,
+            created_at: new Date().toISOString()
+          })
+        });
 
         // Increase free checks
         usedChecks++;
@@ -83,7 +106,7 @@
         updateButton();
 
       } catch (err) {
-        output.textContent = "Error connecting to Worker: " + err.message;
+        output.textContent = "Error: " + err.message;
       }
     }
 
