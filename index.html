@@ -1,10 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>CheckItSA</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CheckItSA - Scam & AI Checker</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f2f2f2; }
+    h1 { color: #0077cc; }
+    input, button { padding: 10px; margin: 5px 0; width: 100%; max-width: 500px; }
+    button { background-color: #0077cc; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #005fa3; }
+    pre { background: #fff; padding: 15px; border: 1px solid #ccc; overflow-x: auto; max-width: 500px; }
+    .disabled { opacity: 0.5; pointer-events: none; }
+  </style>
 </head>
 <body>
-  <h1>CheckItSA is Live 🇿🇦</h1>
-  <p>This site will check scams, AI content, and legitimacy.</p>
+  <h1>CheckItSA - Scam & AI Checker</h1>
+
+  <p>Enter URL, image URL, or base64 of video/image to check:</p>
+  <input id="inputContent" type="text" placeholder="Enter URL or base64 content">
+
+  <button id="checkBtn">Check Content</button>
+
+  <pre id="output">Results will appear here</pre>
+
+  <script>
+    // Track number of free checks (localStorage)
+    const MAX_FREE_CHECKS = 5;
+    let usedChecks = parseInt(localStorage.getItem('usedChecks') || '0');
+
+    const input = document.getElementById('inputContent');
+    const btn = document.getElementById('checkBtn');
+    const output = document.getElementById('output');
+
+    function updateButton() {
+      if (usedChecks >= MAX_FREE_CHECKS) {
+        btn.textContent = "Upgrade to continue";
+        btn.classList.add('disabled');
+      }
+    }
+
+    async function checkContent() {
+      if (usedChecks >= MAX_FREE_CHECKS) {
+        alert("You reached 5 free checks. Upgrade to continue.");
+        return;
+      }
+
+      const content = input.value.trim();
+      if (!content) return alert("Please enter content to check");
+
+      output.textContent = "Checking...";
+
+      try {
+        const response = await fetch("checkitsa-backend.wiandurandt69.workers.dev", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "url", // could add logic to auto-detect image/video later
+            content: content,
+            reporter: "anonymous" // replace with user info if logged in
+          })
+        });
+
+        const result = await response.json();
+        output.textContent = JSON.stringify(result, null, 2);
+
+        usedChecks++;
+        localStorage.setItem('usedChecks', usedChecks);
+        updateButton();
+      } catch (err) {
+        output.textContent = "Error: " + err.message;
+      }
+    }
+
+    btn.addEventListener('click', checkContent);
+    updateButton();
+  </script>
 </body>
 </html>
+
