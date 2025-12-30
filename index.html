@@ -17,21 +17,19 @@
 <body>
   <h1>CheckItSA - Scam & AI Checker</h1>
 
-  <p>Enter URL, image URL, or base64 of video/image to check:</p>
+  <p>Enter URL, image URL, or base64 content to check:</p>
   <input id="inputContent" type="text" placeholder="Enter URL or base64 content">
   <button id="checkBtn">Check Content</button>
 
   <pre id="output">Results will appear here</pre>
 
   <script>
-    // Your Worker URL
-    const WORKER_URL = "checkitsa-backend.wiandurandt69.workers.dev"; // replace with your deployed worker URL
+    const WORKER_URL = "https://checkitsa-backend.wiandurandt69.workers.dev";
 
     // Supabase credentials
     const SUPABASE_URL = "https://jndoazginxmpodmsmvvs.supabase.co";
     const SUPABASE_KEY = "sb_publishable_iPpE08OHfbLNJdv9cQOUVg_TBLYiIJD";
 
-    // Track number of free checks
     const MAX_FREE_CHECKS = 5;
     let usedChecks = parseInt(localStorage.getItem('usedChecks') || '0');
 
@@ -61,15 +59,11 @@
       output.textContent = "Checking...";
 
       try {
-        // Call Worker first
+        // Call Worker
         const response = await fetch(WORKER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            type: "url",
-            content: content,
-            reporter: "anonymous"
-          })
+          body: JSON.stringify({ type: "url", content, reporter: "anonymous" })
         });
 
         let result;
@@ -79,10 +73,9 @@
           result = { success: false, error: "Worker returned invalid JSON or empty response" };
         }
 
-        // Display results
         output.textContent = JSON.stringify(result, null, 2);
 
-        // Log to Supabase directly
+        // Log to Supabase
         await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
           method: 'POST',
           headers: {
@@ -100,7 +93,7 @@
           })
         });
 
-        // Increase free checks
+        // Update free checks
         usedChecks++;
         localStorage.setItem('usedChecks', usedChecks);
         updateButton();
