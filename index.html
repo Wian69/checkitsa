@@ -10,8 +10,8 @@
     input, button { padding: 10px; margin: 5px 0; width: 100%; max-width: 500px; }
     button { background-color: #0077cc; color: white; border: none; cursor: pointer; }
     button:hover { background-color: #005fa3; }
+    button.disabled { opacity: 0.5; pointer-events: none; }
     pre { background: #fff; padding: 15px; border: 1px solid #ccc; overflow-x: auto; max-width: 500px; }
-    .disabled { opacity: 0.5; pointer-events: none; }
   </style>
 </head>
 <body>
@@ -19,13 +19,15 @@
 
   <p>Enter URL, image URL, or base64 of video/image to check:</p>
   <input id="inputContent" type="text" placeholder="Enter URL or base64 content">
-
   <button id="checkBtn">Check Content</button>
 
   <pre id="output">Results will appear here</pre>
 
   <script>
-    // Track number of free checks (localStorage)
+    // Worker URL (replace with your actual deployed Worker)
+    const WORKER_URL = "https://checkitsa-backend.<subdomain>.workers.dev";
+
+    // Track number of free checks
     const MAX_FREE_CHECKS = 5;
     let usedChecks = parseInt(localStorage.getItem('usedChecks') || '0');
 
@@ -33,10 +35,14 @@
     const btn = document.getElementById('checkBtn');
     const output = document.getElementById('output');
 
+    // Disable button if free checks exceeded
     function updateButton() {
       if (usedChecks >= MAX_FREE_CHECKS) {
         btn.textContent = "Upgrade to continue";
         btn.classList.add('disabled');
+      } else {
+        btn.textContent = `Check Content (${MAX_FREE_CHECKS - usedChecks} free left)`;
+        btn.classList.remove('disabled');
       }
     }
 
@@ -52,24 +58,32 @@
       output.textContent = "Checking...";
 
       try {
-        const response = await fetch("checkitsa-backend.wiandurandt69.workers.dev", {
+        const response = await fetch(WORKER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            type: "url", // could add logic to auto-detect image/video later
+            type: "url", // could auto-detect later for image/video
             content: content,
-            reporter: "anonymous" // replace with user info if logged in
+            reporter: "anonymous"
           })
         });
 
-        const result = await response.json();
+        let result;
+        try {
+          result = await response.json();
+        } catch (e) {
+          result = { success: false, error: "Worker returned invalid JSON or empty response" };
+        }
+
         output.textContent = JSON.stringify(result, null, 2);
 
+        // Increase free checks
         usedChecks++;
         localStorage.setItem('usedChecks', usedChecks);
         updateButton();
+
       } catch (err) {
-        output.textContent = "Error: " + err.message;
+        output.textContent = "Error connecting to Worker: " + err.message;
       }
     }
 
@@ -78,4 +92,3 @@
   </script>
 </body>
 </html>
-
