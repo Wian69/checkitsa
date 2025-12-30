@@ -10,7 +10,6 @@
     input, button { padding: 10px; margin: 5px 0; width: 100%; max-width: 500px; }
     button { background-color: #0077cc; color: white; border: none; cursor: pointer; }
     button:hover { background-color: #005fa3; }
-    button.disabled { opacity: 0.5; pointer-events: none; }
     #output { background: #fff; padding: 15px; border: 1px solid #ccc; max-width: 500px; }
     table { width: 100%; max-width: 600px; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
@@ -50,26 +49,13 @@
     const SUPABASE_URL = "https://jndoazginxmpodmsmvvs.supabase.co";
     const SUPABASE_KEY = "sb_publishable_iPpE08OHfbLNJdv9cQOUVg_TBLYiIJD";
 
-    const MAX_FREE_CHECKS = 5;
-    let usedChecks = parseInt(localStorage.getItem('usedChecks') || '0');
-
     const input = document.getElementById('inputContent');
     const fileInput = document.getElementById('fileUpload');
     const btn = document.getElementById('checkBtn');
     const output = document.getElementById('output');
     const recentReportsTable = document.querySelector('#recentReports tbody');
 
-    function updateButton() {
-      if (usedChecks >= MAX_FREE_CHECKS) {
-        btn.textContent = "Upgrade to continue";
-        btn.classList.add('disabled');
-      } else {
-        btn.textContent = `Check Content (${MAX_FREE_CHECKS - usedChecks} free left)`;
-        btn.classList.remove('disabled');
-      }
-    }
-
-    function displayResult(result) {
+    async function displayResult(result) {
       let html = '';
       html += `<p>AI Check: ${result.is_ai ? '<span class="warning">AI-generated ⚠️</span>' : '<span class="safe">Safe ✅</span>'}</p>`;
       html += `<p>Scam Check: ${result.is_scam ? '<span class="danger">Possible Scam ⚠️</span>' : '<span class="safe">Safe ✅</span>'}</p>`;
@@ -119,11 +105,6 @@
     }
 
     async function checkContent() {
-      if (usedChecks >= MAX_FREE_CHECKS) {
-        alert("You reached 5 free checks. Upgrade to continue.");
-        return;
-      }
-
       let content = input.value.trim();
 
       // If a file is uploaded, convert to Base64
@@ -170,9 +151,6 @@
             })
           });
 
-          usedChecks++;
-          localStorage.setItem('usedChecks', usedChecks);
-          updateButton();
           fetchRecentReports();
         } else {
           output.innerHTML = `<span class="danger">Error: ${resultJSON.error}</span>`;
@@ -184,7 +162,6 @@
     }
 
     btn.addEventListener('click', checkContent);
-    updateButton();
     fetchRecentReports();
   </script>
 </body>
