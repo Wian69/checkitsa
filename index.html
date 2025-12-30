@@ -11,7 +11,14 @@
     button { background-color: #0077cc; color: white; border: none; cursor: pointer; }
     button:hover { background-color: #005fa3; }
     button.disabled { opacity: 0.5; pointer-events: none; }
-    pre { background: #fff; padding: 15px; border: 1px solid #ccc; overflow-x: auto; max-width: 500px; }
+    #output { background: #fff; padding: 15px; border: 1px solid #ccc; max-width: 500px; }
+    table { width: 100%; max-width: 600px; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #0077cc; color: white; }
+    tr:nth-child(even) { background: #f9f9f9; }
+    .safe { color: green; font-weight: bold; }
+    .warning { color: orange; font-weight: bold; }
+    .danger { color: red; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -21,12 +28,24 @@
   <input id="inputContent" type="text" placeholder="Enter URL or base64 content">
   <button id="checkBtn">Check Content</button>
 
-  <pre id="output">Results will appear here</pre>
+  <div id="output">Results will appear here</div>
+
+  <h2>Recent Reports</h2>
+  <table id="recentReports">
+    <thead>
+      <tr>
+        <th>Content</th>
+        <th>AI</th>
+        <th>Scam</th>
+        <th>Verified</th>
+        <th>Report Again</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script>
     const WORKER_URL = "https://checkitsa-backend.wiandurandt69.workers.dev";
-
-    // Supabase credentials
     const SUPABASE_URL = "https://jndoazginxmpodmsmvvs.supabase.co";
     const SUPABASE_KEY = "sb_publishable_iPpE08OHfbLNJdv9cQOUVg_TBLYiIJD";
 
@@ -36,6 +55,7 @@
     const input = document.getElementById('inputContent');
     const btn = document.getElementById('checkBtn');
     const output = document.getElementById('output');
+    const recentReportsTable = document.querySelector('#recentReports tbody');
 
     function updateButton() {
       if (usedChecks >= MAX_FREE_CHECKS) {
@@ -44,6 +64,55 @@
       } else {
         btn.textContent = `Check Content (${MAX_FREE_CHECKS - usedChecks} free left)`;
         btn.classList.remove('disabled');
+      }
+    }
+
+    function displayResult(result) {
+      let html = '';
+      html += `<p>AI Check: ${result.is_ai ? '<span class="warning">AI-generated ⚠️</span>' : '<span class="safe">Safe ✅</span>'}</p>`;
+      html += `<p>Scam Check: ${result.is_scam ? '<span class="danger">Possible Scam ⚠️</span>' : '<span class="safe">Safe ✅</span>'}</p>`;
+      html += `<p>Verified: ${result.verified ? '<span class="safe">Verified ✅</span>' : '<span class="warning">Not Verified ⚠️</span>'}</p>`;
+      html += `<p>Reason: ${result.reason}</p>`;
+      output.innerHTML = html;
+    }
+
+    async function fetchRecentReports() {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/reports?select=*&order=created_at.desc&limit=5`, {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          }
+        });
+        const reports = await res.json();
+        recentReportsTable.innerHTML = '';
+        reports.forEach(r => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${r.content}</td>
+            <td>${r.result.is_ai ? '⚠️ AI' : '✅ Safe'}</td>
+            <td>${r.result.is_scam ? '⚠️ Scam' : '✅ Safe'}</td>
+            <td>${r.result.verified ? '✅ Verified' : '⚠️ Not Verified'}</td>
+            <td><button onclick="reportAgain('${r.content}')">Report Again</button></td>
+          `;
+          recentReportsTable.appendChild(row);
+        });
+      } catch (e) {
+        console.error("Failed to fetch recent reports", e);
+      }
+    }
+
+    async function reportAgain(content) {
+      try {
+        await fetch(`${WORKER_URL}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "url", content, reporter: "anonymous" })
+        });
+        alert("Reported again successfully!");
+        fetchRecentReports();
+      } catch (err) {
+        alert("Failed to report again: " + err.message);
       }
     }
 
@@ -56,55 +125,53 @@
       const content = input.value.trim();
       if (!content) return alert("Please enter content");
 
-      output.textContent = "Checking...";
+      output.innerHTML = "Checking...";
 
       try {
-        // Call Worker
         const response = await fetch(WORKER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ type: "url", content, reporter: "anonymous" })
         });
 
-        let result;
-        try {
-          result = await response.json();
-        } catch (e) {
-          result = { success: false, error: "Worker returned invalid JSON or empty response" };
+        const resultJSON = await response.json();
+        if (resultJSON.success) {
+          displayResult(resultJSON.data);
+
+          // Log to Supabase
+          await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=representation'
+            },
+            body: JSON.stringify({
+              type: "url",
+              content: content,
+              reporter: "anonymous",
+              result: resultJSON.data,
+              created_at: new Date().toISOString()
+            })
+          });
+
+          usedChecks++;
+          localStorage.setItem('usedChecks', usedChecks);
+          updateButton();
+          fetchRecentReports();
+        } else {
+          output.innerHTML = `<span class="danger">Error: ${resultJSON.error}</span>`;
         }
 
-        output.textContent = JSON.stringify(result, null, 2);
-
-        // Log to Supabase
-        await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
-          method: 'POST',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation'
-          },
-          body: JSON.stringify({
-            type: "url",
-            content: content,
-            reporter: "anonymous",
-            result: result,
-            created_at: new Date().toISOString()
-          })
-        });
-
-        // Update free checks
-        usedChecks++;
-        localStorage.setItem('usedChecks', usedChecks);
-        updateButton();
-
       } catch (err) {
-        output.textContent = "Error: " + err.message;
+        output.innerHTML = `<span class="danger">Error: ${err.message}</span>`;
       }
     }
 
     btn.addEventListener('click', checkContent);
     updateButton();
+    fetchRecentReports();
   </script>
 </body>
 </html>
