@@ -1,168 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CheckItSA - Scam & AI Checker</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f2f2f2; }
-    h1 { color: #0077cc; }
-    input, button { padding: 10px; margin: 5px 0; width: 100%; max-width: 500px; }
-    button { background-color: #0077cc; color: white; border: none; cursor: pointer; }
-    button:hover { background-color: #005fa3; }
-    #output { background: #fff; padding: 15px; border: 1px solid #ccc; max-width: 500px; }
-    table { width: 100%; max-width: 600px; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #0077cc; color: white; }
-    tr:nth-child(even) { background: #f9f9f9; }
-    .safe { color: green; font-weight: bold; }
-    .warning { color: orange; font-weight: bold; }
-    .danger { color: red; font-weight: bold; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CheckItSA - Verify Photos, Videos, Links & Fines</title>
+<style>
+  body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; }
+  header { background-color: #0073e6; color: #fff; padding: 20px; text-align: center; font-size: 1.8em; font-weight: bold; }
+  .tabs { display: flex; justify-content: center; background-color: #e0e0e0; margin-top: 0; }
+  .tab { padding: 15px 25px; cursor: pointer; font-weight: bold; }
+  .tab.active { background-color: #0073e6; color: #fff; border-radius: 5px 5px 0 0; }
+  .tab-content { display: none; padding: 20px; max-width: 700px; margin: 0 auto; background-color: #fff; border-radius: 0 0 5px 5px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+  .tab-content.active { display: block; }
+  .input-group { margin-bottom: 15px; }
+  input[type="file"], input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; }
+  button { padding: 10px 20px; background-color: #0073e6; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+  button:hover { background-color: #005bb5; }
+  .result { margin-top: 15px; padding: 15px; border-radius: 5px; font-weight: bold; }
+  .safe { background-color: #d4edda; color: #155724; }
+  .alert { background-color: #f8d7da; color: #721c24; }
+</style>
 </head>
 <body>
-  <h1>CheckItSA - Scam & AI Checker</h1>
 
-  <p>Enter URL, text, or upload a file to check:</p>
-  <input id="inputContent" type="text" placeholder="Enter URL or text content">
-  <input id="fileUpload" type="file">
-  <button id="checkBtn">Check Content</button>
+<header>CheckItSA - Verify Content</header>
 
-  <div id="output">Results will appear here</div>
+<div class="tabs">
+  <div class="tab active" data-tab="photo">Check Photos</div>
+  <div class="tab" data-tab="video">Check Videos</div>
+  <div class="tab" data-tab="link">Check Link Scam</div>
+  <div class="tab" data-tab="fine">Check Fine Scam</div>
+</div>
 
-  <h2>Recent Reports</h2>
-  <table id="recentReports">
-    <thead>
-      <tr>
-        <th>Content</th>
-        <th>AI</th>
-        <th>Scam</th>
-        <th>Verified</th>
-        <th>Report Again</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<!-- Tab Contents -->
+<div id="photo" class="tab-content active">
+  <h2>Upload a Photo to Check</h2>
+  <div class="input-group">
+    <input type="file" id="photoFile" accept="image/*">
+  </div>
+  <button onclick="checkPhoto()">Check Photo</button>
+  <div id="photoResult" class="result"></div>
+</div>
 
-  <script>
-    const WORKER_URL = "https://checkitsa-backend.wiandurandt69.workers.dev";
-    const SUPABASE_URL = "https://jndoazginxmpodmsmvvs.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_iPpE08OHfbLNJdv9cQOUVg_TBLYiIJD";
+<div id="video" class="tab-content">
+  <h2>Upload a Video to Check</h2>
+  <div class="input-group">
+    <input type="file" id="videoFile" accept="video/*">
+  </div>
+  <button onclick="checkVideo()">Check Video</button>
+  <div id="videoResult" class="result"></div>
+</div>
 
-    const input = document.getElementById('inputContent');
-    const fileInput = document.getElementById('fileUpload');
-    const btn = document.getElementById('checkBtn');
-    const output = document.getElementById('output');
-    const recentReportsTable = document.querySelector('#recentReports tbody');
+<div id="link" class="tab-content">
+  <h2>Enter a Link to Check</h2>
+  <div class="input-group">
+    <input type="text" id="linkInput" placeholder="Enter URL here">
+  </div>
+  <button onclick="checkLink()">Check Link</button>
+  <div id="linkResult" class="result"></div>
+</div>
 
-    async function displayResult(result) {
-      let html = '';
-      html += `<p>AI Check: ${result.is_ai ? '<span class="warning">AI-generated ⚠️</span>' : '<span class="safe">Safe ✅</span>'}</p>`;
-      html += `<p>Scam Check: ${result.is_scam ? '<span class="danger">Possible Scam ⚠️</span>' : '<span class="safe">Safe ✅</span>'}</p>`;
-      html += `<p>Verified: ${result.verified ? '<span class="safe">Verified ✅</span>' : '<span class="warning">Not Verified ⚠️</span>'}</p>`;
-      html += `<p>Reason: ${result.reason}</p>`;
-      output.innerHTML = html;
-    }
+<div id="fine" class="tab-content">
+  <h2>Enter Traffic Fine Details</h2>
+  <div class="input-group">
+    <input type="text" id="fineInput" placeholder="Enter fine reference or URL">
+  </div>
+  <button onclick="checkFine()">Check Fine</button>
+  <div id="fineResult" class="result"></div>
+</div>
 
-    async function fetchRecentReports() {
-      try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/reports?select=*&order=created_at.desc&limit=5`, {
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`
-          }
-        });
-        const reports = await res.json();
-        recentReportsTable.innerHTML = '';
-        reports.forEach(r => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${r.content}</td>
-            <td>${r.result.is_ai ? '⚠️ AI' : '✅ Safe'}</td>
-            <td>${r.result.is_scam ? '⚠️ Scam' : '✅ Safe'}</td>
-            <td>${r.result.verified ? '✅ Verified' : '⚠️ Not Verified'}</td>
-            <td><button onclick="reportAgain('${r.content}')">Report Again</button></td>
-          `;
-          recentReportsTable.appendChild(row);
-        });
-      } catch (e) {
-        console.error("Failed to fetch recent reports", e);
-      }
-    }
+<script>
+// Tab switching
+const tabs = document.querySelectorAll(".tab");
+const tabContents = document.querySelectorAll(".tab-content");
 
-    async function reportAgain(content) {
-      try {
-        await fetch(`${WORKER_URL}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "url", content, reporter: "anonymous" })
-        });
-        alert("Reported again successfully!");
-        fetchRecentReports();
-      } catch (err) {
-        alert("Failed to report again: " + err.message);
-      }
-    }
+tabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    tabs.forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    const target = tab.dataset.tab;
+    tabContents.forEach(tc => tc.classList.remove("active"));
+    document.getElementById(target).classList.add("active");
+  });
+});
 
-    async function checkContent() {
-      let content = input.value.trim();
+// Utility function to convert file to Base64
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]); // remove data:*/*;base64,
+    reader.onerror = error => reject(error);
+    reader.readAsDataURL(file);
+  });
+}
 
-      // If a file is uploaded, convert to Base64
-      if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        content = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = error => reject(error);
-          reader.readAsDataURL(file);
-        });
-      }
+// Worker URL
+const WORKER_URL = "https://checkitsa-backend.wiandurandt69.workers.dev";
 
-      if (!content) return alert("Please enter a URL/text or upload a file");
+// Check Photo
+async function checkPhoto() {
+  const file = document.getElementById("photoFile").files[0];
+  const resultDiv = document.getElementById("photoResult");
+  resultDiv.innerHTML = "Checking...";
+  if (!file) return resultDiv.innerHTML = "Please select a photo.";
 
-      output.innerHTML = "Checking...";
+  const base64 = await fileToBase64(file);
 
-      try {
-        const response = await fetch(WORKER_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "file", content, reporter: "anonymous" })
-        });
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "file", fileType: "image", content: base64 })
+    });
+    const data = await res.json();
+    displayResult(resultDiv, data.data);
+  } catch (err) {
+    resultDiv.innerHTML = "Error checking photo.";
+  }
+}
 
-        const resultJSON = await response.json();
-        if (resultJSON.success) {
-          displayResult(resultJSON.data);
+// Check Video
+async function checkVideo() {
+  const file = document.getElementById("videoFile").files[0];
+  const resultDiv = document.getElementById("videoResult");
+  resultDiv.innerHTML = "Checking...";
+  if (!file) return resultDiv.innerHTML = "Please select a video.";
 
-          // Log to Supabase
-          await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
-            method: 'POST',
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`,
-              'Content-Type': 'application/json',
-              'Prefer': 'return=representation'
-            },
-            body: JSON.stringify({
-              type: "file",
-              content: content,
-              reporter: "anonymous",
-              result: resultJSON.data,
-              created_at: new Date().toISOString()
-            })
-          });
+  const base64 = await fileToBase64(file);
 
-          fetchRecentReports();
-        } else {
-          output.innerHTML = `<span class="danger">Error: ${resultJSON.error}</span>`;
-        }
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "file", fileType: "video", content: base64 })
+    });
+    const data = await res.json();
+    displayResult(resultDiv, data.data);
+  } catch (err) {
+    resultDiv.innerHTML = "Error checking video.";
+  }
+}
 
-      } catch (err) {
-        output.innerHTML = `<span class="danger">Error: ${err.message}</span>`;
-      }
-    }
+// Check Link
+async function checkLink() {
+  const link = document.getElementById("linkInput").value.trim();
+  const resultDiv = document.getElementById("linkResult");
+  resultDiv.innerHTML = "Checking...";
+  if (!link) return resultDiv.innerHTML = "Please enter a link.";
 
-    btn.addEventListener('click', checkContent);
-    fetchRecentReports();
-  </script>
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "url", content: link })
+    });
+    const data = await res.json();
+    displayResult(resultDiv, data.data);
+  } catch (err) {
+    resultDiv.innerHTML = "Error checking link.";
+  }
+}
+
+// Check Fine
+async function checkFine() {
+  const fine = document.getElementById("fineInput").value.trim();
+  const resultDiv = document.getElementById("fineResult");
+  resultDiv.innerHTML = "Checking...";
+  if (!fine) return resultDiv.innerHTML = "Please enter fine details.";
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "url", content: fine })
+    });
+    const data = await res.json();
+    displayResult(resultDiv, data.data);
+  } catch (err) {
+    resultDiv.innerHTML = "Error checking fine.";
+  }
+}
+
+// Display friendly result
+function displayResult(div, data) {
+  let html = "";
+  html += `<div class="${data.is_ai ? "alert" : "safe"}">AI Check: ${data.is_ai ? "AI Detected ❌" : "Safe ✅"}</div>`;
+  html += `<div class="${data.is_scam ? "alert" : "safe"}">Scam Check: ${data.is_scam ? "Scam Detected ❌" : "Safe ✅"}</div>`;
+  html += `<div class="safe">Verified: ${data.verified ? "Verified ✅" : "Not Verified ❌"}</div>`;
+  html += `<div class="safe">Reason: ${data.reason}</div>`;
+  div.innerHTML = html;
+}
+</script>
 </body>
 </html>
