@@ -1,6 +1,0 @@
-name = "checkitsa-backend"
-main = "index.js"
-account_id = "wiandurandt69@gmail.com"
-compatibility_date = "2025-12-30"
-workers_dev = true
-
