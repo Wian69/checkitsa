@@ -24,8 +24,9 @@
 <body>
   <h1>CheckItSA - Scam & AI Checker</h1>
 
-  <p>Enter URL, image URL, or base64 content to check:</p>
-  <input id="inputContent" type="text" placeholder="Enter URL or base64 content">
+  <p>Enter URL, text, or upload a file to check:</p>
+  <input id="inputContent" type="text" placeholder="Enter URL or text content">
+  <input id="fileUpload" type="file">
   <button id="checkBtn">Check Content</button>
 
   <div id="output">Results will appear here</div>
@@ -53,6 +54,7 @@
     let usedChecks = parseInt(localStorage.getItem('usedChecks') || '0');
 
     const input = document.getElementById('inputContent');
+    const fileInput = document.getElementById('fileUpload');
     const btn = document.getElementById('checkBtn');
     const output = document.getElementById('output');
     const recentReportsTable = document.querySelector('#recentReports tbody');
@@ -122,8 +124,20 @@
         return;
       }
 
-      const content = input.value.trim();
-      if (!content) return alert("Please enter content");
+      let content = input.value.trim();
+
+      // If a file is uploaded, convert to Base64
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        content = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = error => reject(error);
+          reader.readAsDataURL(file);
+        });
+      }
+
+      if (!content) return alert("Please enter a URL/text or upload a file");
 
       output.innerHTML = "Checking...";
 
@@ -131,7 +145,7 @@
         const response = await fetch(WORKER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "url", content, reporter: "anonymous" })
+          body: JSON.stringify({ type: "file", content, reporter: "anonymous" })
         });
 
         const resultJSON = await response.json();
@@ -148,7 +162,7 @@
               'Prefer': 'return=representation'
             },
             body: JSON.stringify({
-              type: "url",
+              type: "file",
               content: content,
               reporter: "anonymous",
               result: resultJSON.data,
