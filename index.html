@@ -1,195 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Check It SA - Verify Photos, Videos, Links & Fines</title>
-<style>
-  body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; }
-  header { background-color: #0073e6; color: #fff; padding: 20px; text-align: center; font-size: 1.8em; font-weight: bold; }
-  .tabs { display: flex; justify-content: center; background-color: #e0e0e0; margin-top: 0; }
-  .tab { padding: 15px 25px; cursor: pointer; font-weight: bold; }
-  .tab.active { background-color: #0073e6; color: #fff; border-radius: 5px 5px 0 0; }
-  .tab-content { display: none; padding: 20px; max-width: 700px; margin: 0 auto; background-color: #fff; border-radius: 0 0 5px 5px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-  .tab-content.active { display: block; }
-  .input-group { margin-bottom: 15px; }
-  input[type="file"], input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; }
-  button { padding: 10px 20px; background-color: #0073e6; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-  button:hover { background-color: #005bb5; }
-  .result { margin-top: 15px; padding: 15px; border-radius: 5px; font-weight: bold; }
-  .safe { background-color: #d4edda; color: #155724; }
-  .alert { background-color: #f8d7da; color: #721c24; }
-</style>
+  <meta charset="UTF-8" />
+  <title>CheckItSA – Scam & Link Verification</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    header {
+      background: #0b3c5d;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    main {
+      max-width: 700px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1, h2 {
+      margin-top: 0;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 14px;
+      width: 100%;
+      font-size: 16px;
+      background: #0b3c5d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #092f49;
+    }
+
+    #result {
+      margin-top: 25px;
+      padding: 20px;
+      border-radius: 6px;
+      background: #f9fafb;
+      border-left: 5px solid #ccc;
+    }
+
+    .safe {
+      border-left-color: green;
+    }
+
+    .danger {
+      border-left-color: red;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+      padding: 20px;
+    }
+  </style>
 </head>
+
 <body>
 
-<header>Check It SA - Verify Content</header>
+<header>
+  <h1>CheckItSA</h1>
+  <p>South Africa’s Scam & Link Verification Tool</p>
+</header>
 
-<div class="tabs">
-  <div class="tab active" data-tab="photo">Check Photos</div>
-  <div class="tab" data-tab="video">Check Videos</div>
-  <div class="tab" data-tab="link">Check Link Scam</div>
-  <div class="tab" data-tab="fine">Check Fine Scam</div>
-</div>
+<main>
+  <h2>🔍 Check a Link</h2>
+  <p>Paste a website, WhatsApp, Facebook, SMS or email link below to see if it’s safe.</p>
 
-<!-- Tab Contents -->
-<div id="photo" class="tab-content active">
-  <h2>Upload a Photo to Check</h2>
-  <div class="input-group">
-    <input type="file" id="photoFile" accept="image/*">
-  </div>
-  <button onclick="checkPhoto()">Check Photo</button>
-  <div id="photoResult" class="result"></div>
-</div>
+  <input
+    type="text"
+    id="urlInput"
+    placeholder="https://example.com or copied message link"
+  />
 
-<div id="video" class="tab-content">
-  <h2>Upload a Video to Check</h2>
-  <div class="input-group">
-    <input type="file" id="videoFile" accept="video/*">
-  </div>
-  <button onclick="checkVideo()">Check Video</button>
-  <div id="videoResult" class="result"></div>
-</div>
-
-<div id="link" class="tab-content">
-  <h2>Enter a Link to Check</h2>
-  <div class="input-group">
-    <input type="text" id="linkInput" placeholder="Enter URL here">
-  </div>
   <button onclick="checkLink()">Check Link</button>
-  <div id="linkResult" class="result"></div>
-</div>
 
-<div id="fine" class="tab-content">
-  <h2>Enter Traffic Fine Details</h2>
-  <div class="input-group">
-    <input type="text" id="fineInput" placeholder="Enter fine reference or URL">
-  </div>
-  <button onclick="checkFine()">Check Fine</button>
-  <div id="fineResult" class="result"></div>
-</div>
+  <div id="result"></div>
+</main>
+
+<footer>
+  <p>Powered by automated threat intelligence • South Africa focused</p>
+</footer>
 
 <script>
-// Tab switching
-const tabs = document.querySelectorAll(".tab");
-const tabContents = document.querySelectorAll(".tab-content");
-
-tabs.forEach(tab => {
-  tab.addEventListener("click", () => {
-    tabs.forEach(t => t.classList.remove("active"));
-    tab.classList.add("active");
-    const target = tab.dataset.tab;
-    tabContents.forEach(tc => tc.classList.remove("active"));
-    document.getElementById(target).classList.add("active");
-  });
-});
-
-// Utility function to convert file to Base64
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(',')[1]); // remove data:*/*;base64,
-    reader.onerror = error => reject(error);
-    reader.readAsDataURL(file);
-  });
-}
-
-// Worker URL
-const WORKER_URL = "https://checkitsa-backend.wiandurandt69.workers.dev";
-
-// Check Photo
-async function checkPhoto() {
-  const file = document.getElementById("photoFile").files[0];
-  const resultDiv = document.getElementById("photoResult");
-  resultDiv.innerHTML = "Checking...";
-  if (!file) return resultDiv.innerHTML = "Please select a photo.";
-
-  const base64 = await fileToBase64(file);
-
-  try {
-    const res = await fetch(WORKER_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "file", fileType: "image", content: base64 })
-    });
-    const data = await res.json();
-    displayResult(resultDiv, data.data);
-  } catch (err) {
-    resultDiv.innerHTML = "Error checking photo.";
-  }
-}
-
-// Check Video
-async function checkVideo() {
-  const file = document.getElementById("videoFile").files[0];
-  const resultDiv = document.getElementById("videoResult");
-  resultDiv.innerHTML = "Checking...";
-  if (!file) return resultDiv.innerHTML = "Please select a video.";
-
-  const base64 = await fileToBase64(file);
-
-  try {
-    const res = await fetch(WORKER_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "file", fileType: "video", content: base64 })
-    });
-    const data = await res.json();
-    displayResult(resultDiv, data.data);
-  } catch (err) {
-    resultDiv.innerHTML = "Error checking video.";
-  }
-}
-
-// Check Link
 async function checkLink() {
-  const link = document.getElementById("linkInput").value.trim();
-  const resultDiv = document.getElementById("linkResult");
-  resultDiv.innerHTML = "Checking...";
-  if (!link) return resultDiv.innerHTML = "Please enter a link.";
+  const url = document.getElementById("urlInput").value.trim();
+  const resultDiv = document.getElementById("result");
+
+  if (!url) {
+    resultDiv.innerHTML = "❌ Please enter a link to check.";
+    resultDiv.className = "danger";
+    return;
+  }
+
+  resultDiv.innerHTML = "⏳ Checking link, please wait...";
+  resultDiv.className = "";
 
   try {
-    const res = await fetch(WORKER_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "url", content: link })
-    });
-    const data = await res.json();
-    displayResult(resultDiv, data.data);
-  } catch (err) {
-    resultDiv.innerHTML = "Error checking link.";
+    const response = await fetch(
+      "https://checkitsa-backend.wiandurandt69.workers.dev",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+      resultDiv.innerHTML = "❌ Unable to verify this link right now.";
+      resultDiv.className = "danger";
+      return;
+    }
+
+    const isSafe = data.scamStatus.includes("Safe");
+
+    resultDiv.className = isSafe ? "safe" : "danger";
+
+    resultDiv.innerHTML = `
+      <h3>Verification Result</h3>
+      <p><strong>Status:</strong> ${data.scamStatus}</p>
+      <p><strong>Risk Level:</strong> ${data.riskLevel}</p>
+      <p><strong>Verification:</strong> ${data.verified}</p>
+      <p><strong>Explanation:</strong> ${data.reason}</p>
+    `;
+
+  } catch (error) {
+    resultDiv.innerHTML = "❌ Could not connect to the verification service.";
+    resultDiv.className = "danger";
   }
-}
-
-// Check Fine
-async function checkFine() {
-  const fine = document.getElementById("fineInput").value.trim();
-  const resultDiv = document.getElementById("fineResult");
-  resultDiv.innerHTML = "Checking...";
-  if (!fine) return resultDiv.innerHTML = "Please enter fine details.";
-
-  try {
-    const res = await fetch(WORKER_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "url", content: fine })
-    });
-    const data = await res.json();
-    displayResult(resultDiv, data.data);
-  } catch (err) {
-    resultDiv.innerHTML = "Error checking fine.";
-  }
-}
-
-// Display friendly result
-function displayResult(div, data) {
-  let html = "";
-  html += `<div class="${data.is_ai ? "alert" : "safe"}">AI Check: ${data.is_ai ? "AI Detected ❌" : "Safe ✅"}</div>`;
-  html += `<div class="${data.is_scam ? "alert" : "safe"}">Scam Check: ${data.is_scam ? "Scam Detected ❌" : "Safe ✅"}</div>`;
-  html += `<div class="safe">Verified: ${data.verified ? "Verified ✅" : "Not Verified ❌"}</div>`;
-  html += `<div class="safe">Reason: ${data.reason}</div>`;
-  div.innerHTML = html;
 }
 </script>
+
 </body>
 </html>
