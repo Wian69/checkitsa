@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+export const runtime = 'edge'
 import dns from 'dns'
 import util from 'util'
 import whois from 'whois-json'

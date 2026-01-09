@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+export const runtime = 'edge'
 import { supabase } from '@/utils/supabase'
 
 export async function POST(req) {

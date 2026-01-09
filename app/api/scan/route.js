@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+export const runtime = 'edge'
 import whois from 'whois-json'
 
 const timeout = (ms) => new Promise(res => setTimeout(res, ms))
