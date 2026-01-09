@@ -1,8 +1,8 @@
 "use client"
 import Navbar from '@/components/Navbar'
-import ReportButton from '../../../components/ReportButton'
+import ReportButton from '@/components/ReportButton'
 import { useState } from 'react'
-import { trackSearch } from '../../../utils/searchLimit'
+import { trackSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
 
 export default function EmailVerify() {
