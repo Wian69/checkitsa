@@ -76,9 +76,14 @@ export default function Navbar() {
                                 </button>
                             </div>
                         ) : (
-                            <Link href="/login" className="btn btn-primary" style={{ padding: '0.625rem 1.25rem', fontSize: '0.875rem', borderRadius: '0.5rem' }}>
-                                Sign In
-                            </Link>
+                            <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                <Link href="/signup" className="btn btn-outline" style={{ padding: '0.625rem 1.25rem', fontSize: '0.875rem', borderRadius: '0.5rem' }}>
+                                    Sign Up
+                                </Link>
+                                <Link href="/login" className="btn btn-primary" style={{ padding: '0.625rem 1.25rem', fontSize: '0.875rem', borderRadius: '0.5rem' }}>
+                                    Sign In
+                                </Link>
+                            </div>
                         )}
                     </div>
                 </div>

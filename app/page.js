@@ -114,8 +114,8 @@ export default async function Home() {
             </p>
 
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-              <a href="#tools" className="btn btn-primary" style={{ padding: '1rem 2.5rem' }}>Secure My Space</a>
-              <Link href="/about" className="btn btn-outline" style={{ padding: '1rem 2.5rem' }}>How it works</Link>
+              <Link href="/signup" className="btn btn-primary" style={{ padding: '1rem 2.5rem' }}>Get Started Free</Link>
+              <a href="#tools" className="btn btn-outline" style={{ padding: '1rem 2.5rem' }}>Explore Tools</a>
             </div>
           </div>
         </div>
