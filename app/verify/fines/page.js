@@ -1,6 +1,6 @@
 "use client"
-import Navbar from '../../../components/Navbar'
-import ReportButton from '../../../components/ReportButton'
+import Navbar from '@/components/Navbar'
+import ReportButton from '@/components/ReportButton'
 import { useState } from 'react'
 
 export default function FinesCheck() {
