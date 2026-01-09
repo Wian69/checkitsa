@@ -21,8 +21,18 @@ export default function Login() {
                 method: 'POST',
                 body: JSON.stringify(formData)
             })
-            const data = await res.json()
-            if (!res.ok) throw new Error(data.message)
+
+            let data
+            const contentType = res.headers.get('content-type')
+            if (contentType && contentType.includes('application/json')) {
+                data = await res.json()
+            } else {
+                const text = await res.text()
+                console.error('Non-JSON response:', text)
+                throw new Error(`Server Error (${res.status}): ${text.substring(0, 100)}...`) // Show start of HTML
+            }
+
+            if (!res.ok) throw new Error(data.message || 'Login failed')
 
             localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
             localStorage.setItem('checkitsa_tier', data.user.tier || 'free')
