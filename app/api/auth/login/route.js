@@ -1,19 +1,19 @@
 import { NextResponse } from 'next/server'
+import { getRequestContext } from '@cloudflare/next-on-pages'
+
 export const runtime = 'edge'
-import { supabase } from '@/utils/supabase'
 
 export async function POST(req) {
     try {
         const { email, password } = await req.json()
+        const db = getRequestContext().env.DB
 
-        const { data: user, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('email', email)
-            .eq('password', password)
-            .single()
+        // D1 Query
+        const user = await db.prepare('SELECT * FROM users WHERE email = ? AND password = ?')
+            .bind(email, password)
+            .first()
 
-        if (error || !user) {
+        if (!user) {
             return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 })
         }
 
@@ -28,6 +28,6 @@ export async function POST(req) {
         })
     } catch (error) {
         console.error('Login error:', error)
-        return NextResponse.json({ message: 'Server error' }, { status: 500 })
+        return NextResponse.json({ message: 'Server error: ' + error.message }, { status: 500 })
     }
 }

@@ -1,41 +1,34 @@
 import { NextResponse } from 'next/server'
+import { getRequestContext } from '@cloudflare/next-on-pages'
+
 export const runtime = 'edge'
-import { supabase } from '@/utils/supabase'
 
 export async function POST(req) {
     try {
         const { url, reason, type } = await req.json()
+        const db = getRequestContext().env.DB
 
-        const { data, error } = await supabase
-            .from('reports')
-            .insert([
-                {
-                    url: url || 'N/A',
-                    reason: reason || 'N/A',
-                    type: type || 'MANUAL'
-                }
-            ])
+        const { success, error } = await db.prepare(
+            'INSERT INTO reports (url, reason, type, created_at) VALUES (?, ?, ?, ?)'
+        )
+            .bind(url || 'N/A', reason || 'N/A', type || 'MANUAL', new Date().toISOString())
+            .run()
 
-        if (error) throw error
+        if (!success) throw new Error('D1 Insert Failed')
 
         return NextResponse.json({ message: 'Report submitted successfully' })
     } catch (error) {
         console.error('Report submission error:', error)
-        return NextResponse.json({ message: 'Error submitting report' }, { status: 500 })
+        return NextResponse.json({ message: 'Error submitting report: ' + error.message }, { status: 500 })
     }
 }
 
 export async function GET() {
     try {
-        const { data: reports, error } = await supabase
-            .from('reports')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(20)
+        const db = getRequestContext().env.DB
+        const { results } = await db.prepare('SELECT * FROM reports ORDER BY created_at DESC LIMIT 20').all()
 
-        if (error) throw error
-
-        return NextResponse.json({ reports: reports || [] })
+        return NextResponse.json({ reports: results || [] })
     } catch (error) {
         console.error('Fetch reports error:', error)
         return NextResponse.json({ reports: [] })
