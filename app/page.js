@@ -1,5 +1,5 @@
 import Link from 'next/link'
-export const runtime = 'edge'
+// export const runtime = 'edge'
 import Navbar from '@/components/Navbar'
 // Helper to get RSS
 async function getRSSFeed() {
@@ -77,7 +77,7 @@ export default async function Home() {
         overflow: 'hidden'
       }}>
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <div className="animate-fade-in">
+          <div>
             <div style={{
               display: 'inline-block',
               padding: '0.5rem 1rem',
