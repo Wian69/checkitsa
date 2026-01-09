@@ -5,7 +5,7 @@ export const runtime = 'edge'
 
 export async function POST(req) {
     try {
-        const { email, password } = await req.json()
+        const { email, password } = await req.json().catch(() => ({}))
         const db = getRequestContext().env.DB
 
         // D1 Query
