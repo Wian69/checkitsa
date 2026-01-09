@@ -1,4 +1,5 @@
 import Link from 'next/link'
+export const runtime = 'edge'
 import Navbar from '@/components/Navbar'
 import Parser from 'rss-parser'
 

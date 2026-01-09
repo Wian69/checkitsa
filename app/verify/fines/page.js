@@ -1,5 +1,6 @@
 "use client"
 import Navbar from '@/components/Navbar'
+export const runtime = 'edge'
 import ReportButton from '@/components/ReportButton'
 import { useState } from 'react'
 
