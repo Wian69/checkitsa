@@ -1,15 +1,31 @@
 import Link from 'next/link'
 export const runtime = 'edge'
 import Navbar from '@/components/Navbar'
-import Parser from 'rss-parser'
-
 // Helper to get RSS
 async function getRSSFeed() {
   try {
-    const parser = new Parser()
-    const feed = await parser.parseURL('https://feeds.feedburner.com/TheHackersNews')
-    return feed.items.slice(0, 4)
+    const res = await fetch('https://feeds.feedburner.com/TheHackersNews', { next: { revalidate: 3600 } })
+    const text = await res.text()
+
+    const items = []
+    const itemRegex = /<item>([\s\S]*?)<\/item>/g
+    let match
+
+    while ((match = itemRegex.exec(text)) !== null && items.length < 4) {
+      const itemContent = match[1]
+      const titleMatch = /<title>([\s\S]*?)<\/title>/.exec(itemContent)
+      const linkMatch = /<link>([\s\S]*?)<\/link>/.exec(itemContent)
+
+      if (titleMatch && linkMatch) {
+        // Basic cleanup for CDATA if present
+        const title = titleMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').trim()
+        const link = linkMatch[1].trim()
+        items.push({ title, link })
+      }
+    }
+    return items
   } catch (e) {
+    console.error('RSS Error:', e)
     return []
   }
 }
