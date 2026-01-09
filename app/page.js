@@ -3,19 +3,25 @@ export const runtime = 'edge'
 import Navbar from '@/components/Navbar'
 // Helper to get RSS
 async function getRSSFeed() {
+  // DEBUG: Mocking RSS to isolate render issues
+  return [
+    { title: 'Debug: RSS Feed Loaded', link: '#' },
+    { title: 'System All Green', link: '#' }
+  ]
+  /*
   try {
     const res = await fetch('https://feeds.feedburner.com/TheHackersNews', { next: { revalidate: 3600 } })
     const text = await res.text()
-
+    
     const items = []
     const itemRegex = /<item>([\s\S]*?)<\/item>/g
     let match
-
+    
     while ((match = itemRegex.exec(text)) !== null && items.length < 4) {
       const itemContent = match[1]
       const titleMatch = /<title>([\s\S]*?)<\/title>/.exec(itemContent)
       const linkMatch = /<link>([\s\S]*?)<\/link>/.exec(itemContent)
-
+      
       if (titleMatch && linkMatch) {
         // Basic cleanup for CDATA if present
         const title = titleMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').trim()
@@ -28,10 +34,14 @@ async function getRSSFeed() {
     console.error('RSS Error:', e)
     return []
   }
+  */
 }
 
 // Helper to get Community Reports
 async function getCommunityReports() {
+  // DEBUG: Mocking Reports to isolate render issues
+  return []
+  /*
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
     const res = await fetch(`${baseUrl}/api/report`, { next: { revalidate: 10 } })
@@ -40,11 +50,19 @@ async function getCommunityReports() {
   } catch (e) {
     return []
   }
+  */
 }
 
 export default async function Home() {
-  const rssItems = await getRSSFeed()
-  const reportedSites = await getCommunityReports()
+  // const rssItems = await getRSSFeed()
+  // const reportedSites = await getCommunityReports()
+
+  // Use mock data directly to be absolutely safe
+  const rssItems = [
+    { title: 'Security Alert: Verify Now', link: '#' },
+    { title: 'Global Cyber Watch', link: '#' }
+  ]
+  const reportedSites = []
 
   return (
     <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
