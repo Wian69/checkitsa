@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
-
 import { createWorker } from 'tesseract.js'
+
+export const runtime = 'edge'
 
 export async function POST(request) {
     try {
