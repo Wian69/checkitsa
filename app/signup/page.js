@@ -21,7 +21,17 @@ export default function Signup() {
                 method: 'POST',
                 body: JSON.stringify(formData)
             })
-            const data = await res.json()
+
+            let data
+            const contentType = res.headers.get('content-type')
+            if (contentType && contentType.includes('application/json')) {
+                data = await res.json()
+            } else {
+                const text = await res.text()
+                console.error('Non-JSON response:', text)
+                throw new Error(`Server Error (${res.status}): ${text.substring(0, 100)}...`)
+            }
+
             if (!res.ok) throw new Error(data.message)
 
             localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
