@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 export const runtime = 'edge'
-import whois from 'whois-json'
 
 const timeout = (ms) => new Promise(res => setTimeout(res, ms))
 
@@ -120,39 +119,24 @@ export async function POST(request) {
         if (combinedSnippets.includes('terms')) policies.terms = true
     }
 
-    // 3. Domain Age & Registrar (WHOIS with Fallback)
+    // 3. Domain Age & Registrar (creation.date fallback)
     let domainAge = 'Unknown'
     let registrar = 'Unknown'
     let createdDate = null
 
+    // Fallback: Use creation.date API
     try {
-        const whoisData = await whois(rootDomain, { timeout: 5000 })
-        const cDate = whoisData.creationDate || whoisData.created || whoisData['Creation Date'] || whoisData['creation-date']
-        const regName = whoisData.registrar || whoisData.registrarName || whoisData['Registrar'] || whoisData['registrar']
-
-        if (cDate) {
-            createdDate = new Date(cDate)
-        }
-        if (regName) registrar = regName
-    } catch (e) {
-        console.log('WHOIS failed, trying fallback:', e)
-    }
-
-    // Fallback: Use creation.date API if WHOIS failed
-    if (!createdDate) {
-        try {
-            const creationRes = await fetch(`https://creation.date/api/${rootDomain}`, {
-                signal: AbortSignal.timeout(3000)
-            })
-            if (creationRes.ok) {
-                const creationData = await creationRes.json()
-                if (creationData.created) {
-                    createdDate = new Date(creationData.created)
-                }
+        const creationRes = await fetch(`https://creation.date/api/${rootDomain}`, {
+            signal: AbortSignal.timeout(3000)
+        })
+        if (creationRes.ok) {
+            const creationData = await creationRes.json()
+            if (creationData.created) {
+                createdDate = new Date(creationData.created)
             }
-        } catch (e) {
-            console.log('Fallback domain age failed:', e)
         }
+    } catch (e) {
+        console.log('Fallback domain age failed:', e)
     }
 
     if (createdDate) {

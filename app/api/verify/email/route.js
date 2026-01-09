@@ -1,11 +1,28 @@
 import { NextResponse } from 'next/server'
 export const runtime = 'edge'
-import dns from 'dns'
-import util from 'util'
-import whois from 'whois-json'
 
-const resolveMx = util.promisify(dns.resolveMx)
-const resolveTxt = util.promisify(dns.resolveTxt)
+async function resolveMx(domain) {
+    try {
+        const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=MX`, {
+            headers: { 'accept': 'application/dns-json' }
+        })
+        const data = await res.json()
+        return data.Answer || []
+    } catch (e) {
+        return []
+    }
+}
+
+async function getDomainAge(domain) {
+    try {
+        const res = await fetch(`https://creation.date/api/${encodeURIComponent(domain)}`)
+        if (res.ok) {
+            const data = await res.json()
+            if (data.created) return new Date(data.created)
+        }
+    } catch (e) { }
+    return null
+}
 
 export async function POST(request) {
     const body = await request.json()
@@ -17,27 +34,24 @@ export async function POST(request) {
     // 1. Parse Sender
     let cleanSender = sender
     if (sender.includes('<')) {
-        cleanSender = sender.match(/<([^>]+)>/)[1]
+        const match = sender.match(/<([^>]+)>/)
+        if (match) cleanSender = match[1]
     }
     const senderDomain = cleanSender.split('@')[1] || ''
 
-    // 2. Domain Age (Whois)
+    // 2. Domain Age
     let domainAge = 'Unknown'
-    try {
-        const w = await whois(senderDomain)
-        const cDate = w.creationDate || w.created || w['Creation Date']
-        if (cDate) {
-            const created = new Date(cDate)
-            const now = new Date()
-            const days = Math.ceil(Math.abs(now - created) / (1000 * 60 * 60 * 24))
-            domainAge = days > 365 ? `${(days / 365).toFixed(1)} years` : `${days} days`
+    const createdDate = await getDomainAge(senderDomain)
+    if (createdDate) {
+        const now = new Date()
+        const days = Math.ceil(Math.abs(now - createdDate) / (1000 * 60 * 60 * 24))
+        domainAge = days > 365 ? `${(days / 365).toFixed(1)} years` : `${days} days`
 
-            if (days < 30) {
-                riskScore += 30
-                details.push(`Domain is extremely new (${days} days old). High scam risk.`)
-            }
+        if (days < 30) {
+            riskScore += 30
+            details.push(`Domain is extremely new (${days} days old). High scam risk.`)
         }
-    } catch (e) { }
+    }
 
     // 3. DNS Checks (MX/TXT)
     let dnsStatus = 'Unknown'
