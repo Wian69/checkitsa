@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1767962088138,
+    "url": "https://bitly.cx/4sBuc",
+    "reason": "Scam/Phishing/ SMS Scam",
+    "type": "Website",
+    "date": "2026-01-09T12:34:48.138Z",
+    "status": "Pending Review"
+  },
+  {
+    "id": 1767961838747,
+    "url": "Bevexo.cc",
+    "reason": "Scam/Phishing",
+    "type": "Website",
+    "date": "2026-01-09T12:30:38.747Z",
+    "status": "Pending Review"
+  },
+  {
+    "id": 1767953048091,
+    "url": "illegal-casino.com",
+    "reason": "Test Report",
+    "type": "General",
+    "date": "2026-01-09T10:04:08.091Z",
+    "status": "Pending Review"
+  }
+]

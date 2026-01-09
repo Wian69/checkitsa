@@ -1,0 +1,8 @@
+name = "checkitsa"
+compatibility_date = "2024-04-03"
+pages_build_output_dir = ".vercel/output"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "checkitsa_db"
+database_id = "c9b411f8-213f-4fc1-8d6b-72cd82835281"

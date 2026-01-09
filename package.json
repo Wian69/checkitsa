@@ -9,11 +9,18 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@supabase/supabase-js": "^2.90.1",
+    "cheerio": "^1.1.2",
     "next": "16.1.1",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "rss-parser": "^3.13.0",
+    "tesseract.js": "^7.0.0",
+    "whois-json": "^2.0.4"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.16",
     "eslint": "^9",
     "eslint-config-next": "16.1.1"
   }
