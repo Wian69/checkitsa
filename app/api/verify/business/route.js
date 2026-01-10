@@ -12,7 +12,7 @@ const getGenModel = (apiKey) => {
 
 export async function POST(request) {
     const { input } = await request.json()
-    const apiKey = process.env.GEMINI_API_KEY
+    const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyBjjUVH1c6w-qDyKQgvprxGnJsxKnQk-0Y'
 
     // Fallback if no key configuration
     if (!apiKey) {
