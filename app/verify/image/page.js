@@ -27,17 +27,48 @@ export default function ImageScanner() {
         if (!file) return
 
         setLoading(true)
-        const formData = new FormData()
-        formData.append('image', file)
+        setResult(null)
 
         try {
+            // 1. Client-Side OCR
+            // Dynamic import to avoid SSR issues
+            const { createWorker } = await import('tesseract.js')
+            const worker = await createWorker('eng')
+
+            // Update loading state for better UX
+            // (Optional: could add progress callback here)
+
+            const ret = await worker.recognize(file)
+            const extractedText = ret.data.text
+            await worker.terminate()
+
+            if (!extractedText || extractedText.trim().length === 0) {
+                setResult({
+                    risk_score: 0,
+                    message: 'No text detected in image.',
+                    flags: [],
+                    text_extracted: 'No text found.'
+                })
+                return
+            }
+
+            // 2. Send TEXT to backend for analysis (Mocking the formData structure but as JSON)
             const res = await fetch('/api/verify/image', {
                 method: 'POST',
-                body: formData
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: extractedText })
             })
             const data = await res.json()
             setResult(data)
-        } catch (e) { console.error(e) }
+        } catch (e) {
+            console.error(e)
+            setResult({
+                risk_score: 0,
+                message: 'Error processing image: ' + e.message,
+                flags: ['Client-side OCR failed'],
+                text_extracted: ''
+            })
+        }
         finally { setLoading(false) }
     }
 
