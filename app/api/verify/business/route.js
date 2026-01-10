@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-export const runtime = 'edge'
+// export const runtime = 'edge'
 
 // Initialize Gemini
 // We init this lazily inside the handler to ensure env var is picked up if hot-reloaded
