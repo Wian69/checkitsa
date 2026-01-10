@@ -22,7 +22,7 @@ export async function POST(request) {
                 name: 'System Config Error',
                 identifier: 'N/A',
                 status: 'Missing API Key',
-                message: '⚠️ Please add GEMINI_API_KEY to your .env.local file.',
+                message: '⚠️ Service Temporarily Unavailable. Please try again later.',
                 source: 'System',
                 details: 'AI Service has not been authenticated.'
             }

@@ -48,8 +48,8 @@ export async function POST(request) {
     }
 
     // --- OSINT (Reputation) ---
-    const cseKey = process.env.GOOGLE_CSE_API_KEY
-    const cx = process.env.GOOGLE_CSE_CX
+    const cseKey = process.env.GOOGLE_CSE_API_KEY || 'AIzaSyCWX0SE7QsnrImcVPBLNsvOzCccQGlbqrg'
+    const cx = process.env.GOOGLE_CSE_CX || '16e9212fe3fcf4cea'
     let osintFlags = []
 
     if (cseKey) {
