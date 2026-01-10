@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+// import { GoogleGenerativeAI } from '@google/generative-ai'
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 // Initialize Gemini
 // We init this lazily inside the handler to ensure env var is picked up if hot-reloaded
-const getGenModel = (apiKey) => {
-    const genAI = new GoogleGenerativeAI(apiKey)
-    return genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
-}
+// const getGenModel = (apiKey) => {
+//     const genAI = new GoogleGenerativeAI(apiKey)
+//     return genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+// }
 
 export async function POST(request) {
     const { input } = await request.json()
@@ -31,7 +31,10 @@ export async function POST(request) {
 
     try {
         console.log(`[Verify] Querying Gemini for: ${input}`)
-        const model = getGenModel(apiKey)
+        // Dynamic import to prevent Edge startup crash
+        const { GoogleGenerativeAI } = await import('@google/generative-ai')
+        const genAI = new GoogleGenerativeAI(apiKey)
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
         // Construct a strict prompt for consistent JSON output
         const prompt = `

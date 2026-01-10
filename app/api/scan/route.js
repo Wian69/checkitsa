@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 
 const timeout = (ms) => new Promise(res => setTimeout(res, ms))
@@ -114,9 +114,24 @@ export async function POST(request) {
                 if (text.includes('privacy policy') || text.includes('privacy-policy')) policies.privacy = true
                 if (text.includes('terms') || text.includes('terms of service')) policies.terms = true
 
-                // Refine summary if metadata found
+                // Dynamic Import Cheerio and parse
+                try {
+                    const cheerio = await import('cheerio')
+                    const $ = cheerio.load(text)
+                    const title = $('title').text()
+                    const metaDesc = $('meta[name="description"]').attr('content')
+                    if (title) siteSummary = title
+                    if (metaDesc) siteSummary = metaDesc
+
+                    // Check for login forms / password fields
+                    if ($('input[type="password"]').length > 0) {
+                        score += 5 // Slight risk bump
+                    }
+                } catch (parseEvt) { }
+
+                // Refine summary if metadata found (fallback regex)
                 const metaDesc = text.match(/<meta\s+name="description"\s+content="([^"]+)"/i)
-                if (metaDesc) siteSummary = metaDesc[1]
+                if (metaDesc && siteSummary === 'Summary unavailable.') siteSummary = metaDesc[1]
             }
         } catch (e) {
             // Fetch failed (Blocked). Fallback to searching Google Results for policy presence
