@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createWorker } from 'tesseract.js'
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 export async function POST(request) {
     try {
@@ -16,10 +16,21 @@ export async function POST(request) {
         const arrayBuffer = await file.arrayBuffer()
         const buffer = Buffer.from(arrayBuffer)
 
-        // Perform OCR
-        const worker = await createWorker('eng')
-        const { data: { text } } = await worker.recognize(buffer)
-        await worker.terminate()
+        // Perform OCR (Wrapped to prevent crashing if incompatible with Edge)
+        let text = ''
+        try {
+            const worker = await createWorker('eng')
+            const ret = await worker.recognize(buffer)
+            text = ret.data.text
+            await worker.terminate()
+        } catch (ocrError) {
+            console.error('OCR Error:', ocrError)
+            return NextResponse.json({
+                error: 'OCR Service Unavailable in this region',
+                message: 'Image analysis is currently limited. Please try text search.',
+                debug_error: ocrError.message
+            }, { status: 200 }) // Return 200 with error message to UI handles it gracefully
+        }
 
         // --- ANALYZE TEXT ---
         const lowerText = text.toLowerCase()
@@ -68,6 +79,6 @@ export async function POST(request) {
 
     } catch (error) {
         console.error(error)
-        return NextResponse.json({ error: 'OCR Failed' }, { status: 500 })
+        return NextResponse.json({ error: 'System Error', message: error.message }, { status: 500 })
     }
 }
