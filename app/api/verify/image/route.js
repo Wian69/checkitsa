@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createWorker } from 'tesseract.js'
+// import { createWorker } from 'tesseract.js'
 
 export const runtime = 'edge'
 
@@ -19,6 +19,8 @@ export async function POST(request) {
         // Perform OCR (Wrapped to prevent crashing if incompatible with Edge)
         let text = ''
         try {
+            // Dynamic import to prevent global Edge Runtime crash on startup
+            const { createWorker } = await import('tesseract.js')
             const worker = await createWorker('eng')
             const ret = await worker.recognize(buffer)
             text = ret.data.text
