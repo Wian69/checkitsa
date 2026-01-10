@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 
 const timeout = (ms) => new Promise(res => setTimeout(res, ms))
