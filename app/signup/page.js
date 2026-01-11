@@ -58,6 +58,17 @@ export default function Signup() {
 
             if (!res.ok) throw new Error(data.message)
 
+            // CRITICAL: Wipe any stale local data for this email (in case DB was reset)
+            try {
+                const emailKey = `_${formData.email}`
+                localStorage.removeItem(`checkitsa_usage${emailKey}`)
+                localStorage.removeItem(`checkitsa_history${emailKey}`)
+                localStorage.removeItem(`checkitsa_my_reports${emailKey}`)
+                localStorage.removeItem(`checkitsa_last_reset${emailKey}`)
+                // Also clear global/generic if they accidentally matched
+                if (localStorage.getItem('checkitsa_usage')) localStorage.removeItem('checkitsa_usage')
+            } catch (e) { }
+
             localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
             localStorage.setItem('checkitsa_tier', 'free')
             router.push('/')
