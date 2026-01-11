@@ -30,11 +30,8 @@ export async function POST(request) {
         const { GoogleGenerativeAI } = await import('@google/generative-ai')
         const genAI = new GoogleGenerativeAI(apiKey)
 
-        // Use gemini-1.5-flash with explicit v1 version to avoid v1beta 404s
-        const model = genAI.getGenerativeModel(
-            { model: "gemini-1.5-flash" },
-            { apiVersion: "v1" }
-        )
+        // Use gemini-1.5-flash-latest for best compatibility
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" })
 
         // Construct a strict prompt for consistent JSON output
         const prompt = `
