@@ -4,7 +4,7 @@ import { useState } from 'react'
 export default function ScamReportForm() {
     const [type, setType] = useState('WhatsApp')
     const [loading, setLoading] = useState(false)
-    const [status, setStatus] = useState(null) // success, error
+    const [status, setStatus] = useState(null)
     const [formData, setFormData] = useState({
         name: '', email: '', phone: '',
         scammer_details: '', description: ''
@@ -36,23 +36,54 @@ export default function ScamReportForm() {
 
     const types = ['WhatsApp', 'Social Media', 'SMS']
 
+    const inputStyle = {
+        width: '100%',
+        padding: '0.8rem',
+        borderRadius: '0.5rem',
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid var(--color-border)',
+        color: 'white',
+        fontSize: '1rem',
+        outline: 'none',
+        transition: 'border-color 0.2s'
+    }
+
     return (
-        <div className="glass-panel p-6 md:p-8 max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold mb-2">Report a Scam Incident</h2>
-                <p className="text-gray-400">Help the community by reporting recent scam attempts.</p>
+        <div className="glass-panel" style={{ padding: '3rem', maxWidth: '1000px', margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                <h2 style={{
+                    fontSize: '2.5rem',
+                    marginBottom: '1rem',
+                    background: 'linear-gradient(to right, #60a5fa, #a78bfa)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent'
+                }}>
+                    Report a Scam Incident
+                </h2>
+                <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>
+                    Help the community by reporting recent scam attempts. Your report could save someone else.
+                </p>
             </div>
 
             {/* Type Selector */}
-            <div className="flex justify-center gap-4 mb-8 flex-wrap">
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
                 {types.map(t => (
                     <button
                         key={t}
                         onClick={() => setType(t)}
-                        className={`px-6 py-3 rounded-full font-medium transition-all ${type === t
-                                ? 'bg-blue-600 text-white shadow-lg scale-105'
-                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                            }`}
+                        style={{
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '2rem',
+                            fontWeight: 600,
+                            letterSpacing: '0.025em',
+                            border: type === t ? 'none' : '1px solid var(--color-border)',
+                            background: type === t ? 'var(--color-primary)' : 'transparent',
+                            color: type === t ? 'white' : 'var(--color-text-muted)',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            transform: type === t ? 'scale(1.05)' : 'scale(1)',
+                            boxShadow: type === t ? '0 4px 14px rgba(99, 102, 241, 0.4)' : 'none'
+                        }}
                     >
                         {t === 'WhatsApp' && '💬 '}
                         {t === 'Social Media' && '🌐 '}
@@ -63,87 +94,117 @@ export default function ScamReportForm() {
             </div>
 
             {status === 'success' ? (
-                <div className="text-center py-12 animate-in fade-in zoom-in">
-                    <div className="text-6xl mb-4">✅</div>
-                    <h3 className="text-2xl font-bold text-green-400 mb-2">Report Submitted!</h3>
-                    <p className="text-gray-400">Thank you for helping keep South Africa safe.</p>
-                    <button onClick={() => setStatus(null)} className="mt-6 text-blue-400 hover:underline">Report another</button>
+                <div style={{ textAlign: 'center', padding: '4rem 0', animation: 'fadeIn 0.5s ease' }}>
+                    <div style={{ fontSize: '4rem', marginBottom: '1.5rem' }}>✅</div>
+                    <h3 style={{ fontSize: '2rem', color: 'var(--color-success)', marginBottom: '1rem' }}>Report Submitted!</h3>
+                    <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>Thank you for helping keep South Africa safe.</p>
+                    <button onClick={() => setStatus(null)} className="btn btn-outline">Report another incident</button>
                 </div>
             ) : (
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '3rem' }}>
                     {/* User Details */}
-                    <div className="space-y-4">
-                        <h3 className="text-xl font-semibold text-blue-300 border-b border-gray-700 pb-2">Your Details (Private)</h3>
-                        <div>
-                            <label className="block text-sm text-gray-400 mb-1">Your Name</label>
-                            <input
-                                required
-                                type="text"
-                                className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none"
-                                value={formData.name}
-                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm text-gray-400 mb-1">Your Email</label>
-                            <input
-                                required
-                                type="email"
-                                className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none"
-                                value={formData.email}
-                                onChange={e => setFormData({ ...formData, email: e.target.value })}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm text-gray-400 mb-1">Phone Number</label>
-                            <input
-                                required
-                                type="tel"
-                                className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none"
-                                value={formData.phone}
-                                onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                            />
+                    <div>
+                        <h3 style={{
+                            fontSize: '1.25rem',
+                            color: 'var(--color-primary-light)',
+                            borderBottom: '1px solid var(--color-border)',
+                            paddingBottom: '0.75rem',
+                            marginBottom: '1.5rem'
+                        }}>
+                            1. Your Details (Kept Private)
+                        </h3>
+                        <div style={{ display: 'grid', gap: '1.25rem' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>Name</label>
+                                <input
+                                    required
+                                    type="text"
+                                    style={inputStyle}
+                                    value={formData.name}
+                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>Email</label>
+                                <input
+                                    required
+                                    type="email"
+                                    style={inputStyle}
+                                    value={formData.email}
+                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>Phone Number</label>
+                                <input
+                                    required
+                                    type="tel"
+                                    style={inputStyle}
+                                    value={formData.phone}
+                                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                />
+                            </div>
                         </div>
                     </div>
 
                     {/* Incident Details */}
-                    <div className="space-y-4">
-                        <h3 className="text-xl font-semibold text-red-300 border-b border-gray-700 pb-2">Incident Details</h3>
-                        <div>
-                            <label className="block text-sm text-gray-400 mb-1">
-                                {type === 'Social Media' ? 'Profile Link / Name' : 'Scammer Number / Sender ID'}
-                            </label>
-                            <input
-                                required
-                                type="text"
-                                placeholder={type === 'Social Media' ? 'e.g. facebook.com/profile123' : 'e.g. +27 12 345 6789'}
-                                className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-red-500 outline-none"
-                                value={formData.scammer_details}
-                                onChange={e => setFormData({ ...formData, scammer_details: e.target.value })}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm text-gray-400 mb-1">Description of Incident</label>
-                            <textarea
-                                required
-                                rows={4}
-                                placeholder="What happened? What did they ask for?"
-                                className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-red-500 outline-none"
-                                value={formData.description}
-                                onChange={e => setFormData({ ...formData, description: e.target.value })}
-                            />
+                    <div>
+                        <h3 style={{
+                            fontSize: '1.25rem',
+                            color: '#f87171',
+                            borderBottom: '1px solid var(--color-border)',
+                            paddingBottom: '0.75rem',
+                            marginBottom: '1.5rem'
+                        }}>
+                            2. Incident Details
+                        </h3>
+                        <div style={{ display: 'grid', gap: '1.25rem' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+                                    {type === 'Social Media' ? 'Scammer Profile Link / Name' : 'Scammer Number / Sender ID'}
+                                </label>
+                                <input
+                                    required
+                                    type="text"
+                                    placeholder={type === 'Social Media' ? 'e.g. facebook.com/scammer123' : 'e.g. +27 12 345 6789'}
+                                    style={inputStyle}
+                                    value={formData.scammer_details}
+                                    onChange={e => setFormData({ ...formData, scammer_details: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>Description of Incident</label>
+                                <textarea
+                                    required
+                                    rows={5}
+                                    placeholder="What happened? What did they ask for? Please provide as much detail as possible."
+                                    style={{ ...inputStyle, resize: 'vertical' }}
+                                    value={formData.description}
+                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <div className="md:col-span-2 mt-4">
+                    <div style={{ gridColumn: '1 / -1', marginTop: '1rem' }}>
                         <button
                             disabled={loading}
                             type="submit"
-                            className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-xl font-bold text-lg shadow-lg transition-all transform hover:scale-[1.01]"
+                            className="btn btn-primary"
+                            style={{
+                                width: '100%',
+                                padding: '1rem',
+                                fontSize: '1.1rem',
+                                background: 'linear-gradient(to right, var(--color-primary), var(--color-primary-dark))'
+                            }}
                         >
-                            {loading ? 'Submitting...' : 'Submit Report'}
+                            {loading ? 'Submitting Report...' : 'Submit Scam Report'}
                         </button>
-                        {status === 'error' && <p className="text-red-400 text-center mt-4">Error submitting report. Please try again.</p>}
+                        {status === 'error' && (
+                            <p style={{ color: 'var(--color-danger)', textAlign: 'center', marginTop: '1rem' }}>
+                                Error submitting report. Please try again.
+                            </p>
+                        )}
                     </div>
                 </form>
             )}
