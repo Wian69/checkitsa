@@ -51,6 +51,13 @@ export async function POST(req) {
             await db.prepare(
                 "INSERT INTO search_history (user_email, search_type, query, result_status) VALUES (?, ?, ?, ?)"
             ).bind(email, data.type, data.query, data.status).run()
+        } else if (action === 'tier') {
+            await db.prepare(
+                "UPDATE user_meta SET tier = ?, custom_limit = ?, updated_at = CURRENT_TIMESTAMP WHERE email = ?"
+            ).bind(data.tier, data.customLimit || 0, email).run()
+
+            // Also sync back to main users table for consistency
+            await db.prepare("UPDATE users SET tier = ? WHERE email = ?").bind(data.tier, email).run()
         }
 
         return NextResponse.json({ success: true })

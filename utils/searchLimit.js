@@ -122,11 +122,27 @@ export const syncFromCloud = async (email) => {
     }
 }
 
-export const setTier = (tier, customLimit = 0) => {
+export const setTier = async (tier, customLimit = 0) => {
     if (typeof window === 'undefined') return
+
+    const userStr = localStorage.getItem('checkitsa_user')
+    const user = userStr ? JSON.parse(userStr) : null
+
     localStorage.setItem('checkitsa_tier', tier)
     if (customLimit > 0) localStorage.setItem('checkitsa_custom_limit', customLimit.toString())
     localStorage.setItem('checkitsa_last_reset', new Date().toISOString())
+
+    // SYNC TO CLOUD
+    if (user && user.email) {
+        fetch('/api/user/sync', {
+            method: 'POST',
+            body: JSON.stringify({
+                email: user.email,
+                action: 'tier',
+                data: { tier, customLimit }
+            })
+        }).catch(e => console.error('Sync Error:', e))
+    }
 }
 
 export const addToReportHistory = (report) => {
