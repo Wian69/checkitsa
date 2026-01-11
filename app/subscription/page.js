@@ -29,17 +29,19 @@ export default function Subscription() {
     }, [])
 
     // State for Custom Slider
-    const [customScans, setCustomScans] = useState(2000)
-    const [customPrice, setCustomPrice] = useState(200) // Initial calculation
+    const [customScans, setCustomScans] = useState(1100)
+    const [customPrice, setCustomPrice] = useState(138) // Initial calculation
 
-    // Update price when slider moves
-    useEffect(() => {
-        // Formula: Base R50 + (Scans * R0.08)
-        // 2000 scans = 50 + 160 = R210 (Approx)
-        // Let's use a simple linear scale: R0.08 per scan overhead
-        const price = Math.round(50 + (customScans * 0.08))
-        setCustomPrice(price)
-    }, [customScans])
+    // ... (logic remains same)
+
+    // ... inside return ...
+    {/* Elite Plan */ }
+    <div className="glass-panel" style={{
+        padding: '2rem',
+        border: '2px solid var(--color-primary)',
+        background: 'linear-gradient(145deg, rgba(99, 102, 241, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%)',
+        position: 'relative'
+    }}>
 
     const handleUpgrade = (plan) => {
         if (!window.YocoSDK) {
@@ -61,7 +63,7 @@ export default function Subscription() {
         } else if (plan === 'custom') {
             amount = customPrice * 100 // Convert to cents
             desc = `Custom Subscription (${customScans.toLocaleString()} Scans)`
-            limit = customScans
+        limit = customScans
         }
 
         const yoco = new window.YocoSDK({
@@ -70,47 +72,47 @@ export default function Subscription() {
 
         yoco.showPopup({
             amountInCents: amount,
-            currency: 'ZAR',
-            name: 'CheckItSA Premium',
-            description: desc,
+        currency: 'ZAR',
+        name: 'CheckItSA Premium',
+        description: desc,
             callback: async (result) => {
                 if (result.error) {
-                    alert("Payment Failed: " + result.error.message)
-                } else {
-                    setLoading(true)
+            alert("Payment Failed: " + result.error.message)
+        } else {
+            setLoading(true)
                     try {
                         const res = await fetch('/api/checkout', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                token: result.id,
-                                email: user.email,
-                                amount: amount,
-                                customLimit: limit // Pass the custom limit
+            method: 'POST',
+        headers: {'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            token: result.id,
+        email: user.email,
+        amount: amount,
+        customLimit: limit // Pass the custom limit
                             })
                         })
 
-                        const data = await res.json()
-                        if (!res.ok) throw new Error(data.message)
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.message)
 
-                        localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
-                        localStorage.setItem('checkitsa_tier', data.user.tier)
+        localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
+        localStorage.setItem('checkitsa_tier', data.user.tier)
                         if (limit > 0) localStorage.setItem('checkitsa_custom_limit', limit)
 
-                        alert(`Upgrade Successful! You are now on the ${plan === 'custom' ? 'Enterprise' : plan} plan.`)
-                        router.push('/dashboard')
+        alert(`Upgrade Successful! You are now on the ${plan === 'custom' ? 'Enterprise' : plan} plan.`)
+        router.push('/dashboard')
                     } catch (err) {
-                        alert("Verification Failed: " + err.message)
+            alert("Verification Failed: " + err.message)
                         console.error(err)
                     } finally {
-                        setLoading(false)
-                    }
+            setLoading(false)
+        }
                 }
             }
         })
     }
 
-    return (
+        return (
         <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <Navbar />
 
@@ -166,9 +168,7 @@ export default function Subscription() {
                         padding: '2rem',
                         border: '2px solid var(--color-primary)',
                         background: 'linear-gradient(145deg, rgba(99, 102, 241, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%)',
-                        transform: 'scale(1.05)',
-                        position: 'relative',
-                        zIndex: 2
+                        position: 'relative'
                     }}>
                         <div style={{
                             position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)',
@@ -207,15 +207,15 @@ export default function Subscription() {
                             <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-muted)' }}>Adjust Verification Volume:</label>
                             <input
                                 type="range"
-                                min="2000"
+                                min="1100"
                                 max="50000"
-                                step="1000"
+                                step="100"
                                 value={customScans}
                                 onChange={(e) => setCustomScans(Number(e.target.value))}
                                 style={{ width: '100%', height: '8px', borderRadius: '4px', accentColor: 'var(--color-primary)' }}
                             />
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
-                                <span>2k</span>
+                                <span>1.1k</span>
                                 <span>50k+</span>
                             </div>
                         </div>
@@ -244,5 +244,5 @@ export default function Subscription() {
                 </div>
             </div>
         </main>
-    )
+        )
 }

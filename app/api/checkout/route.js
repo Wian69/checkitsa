@@ -37,13 +37,13 @@ export async function POST(req) {
         let newTier = 'premium' // Fallback
         let limit = 0
 
-        if (amount >= 7900 && amount < 11000) {
-            newTier = 'pro'
-        } else if (amount >= 11900 && amount < 20000) { // Elite cap to avoid overlap if needed
-            newTier = 'elite'
-        } else if (customLimit > 0) {
+        if (customLimit > 0) {
             newTier = 'custom'
             limit = customLimit
+        } else if (amount >= 7900 && amount < 11000) {
+            newTier = 'pro'
+        } else if (amount >= 11900) {
+            newTier = 'elite'
         }
 
         const expiryDate = new Date()
