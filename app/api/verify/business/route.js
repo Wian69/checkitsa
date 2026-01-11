@@ -14,7 +14,8 @@ export async function POST(request) {
     try {
         const { input } = await request.json()
         const cseKey = process.env.GOOGLE_CSE_API_KEY
-        const cx = process.env.GOOGLE_CSE_CX
+        // Use the specific CX provided by the user if the env var is missing or incorrect
+        const cx = process.env.GOOGLE_CSE_CX || 'c2a801df9059f4ada'
 
         if (!cseKey || !cx) {
             return NextResponse.json({
