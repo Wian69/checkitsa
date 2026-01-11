@@ -28,7 +28,7 @@ export async function POST(req) {
         // STRICT Login Enforcement
         if (!user) {
             if (context === 'login') {
-                return NextResponse.json({ message: 'Account not found. Please create an account via Sign Up.' }, { status: 404 })
+                return NextResponse.json({ message: 'You must signup first before logging in.' }, { status: 404 })
             }
 
             // If context is 'signup' (or undefined/fallback logic), create user

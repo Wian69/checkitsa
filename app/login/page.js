@@ -22,9 +22,9 @@ export default function Login() {
                     body: JSON.stringify({ token: response.credential, context: 'login' })
                 })
 
-                if (!res.ok) throw new Error('Google authentication failed')
-
                 const data = await res.json()
+
+                if (!res.ok) throw new Error(data.message || 'You must signup first before logging in')
                 localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
                 localStorage.setItem('checkitsa_tier', data.user.tier || 'free')
                 router.push('/')
