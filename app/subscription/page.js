@@ -1,124 +1,166 @@
 "use client"
 import Navbar from '@/components/Navbar'
-
 import { useState, useEffect } from 'react'
+import { setTier, trackSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
 
-export default function Subscription() {
-    const [user, setUser] = useState(null)
+export default function SubscriptionPage() {
     const router = useRouter()
+    const [customSearchCount, setCustomSearchCount] = useState(2500)
+    const [currentTier, setCurrentTier] = useState('free')
 
     useEffect(() => {
-        const u = localStorage.getItem('checkitsa_user')
-        if (u) setUser(JSON.parse(u))
+        const { tier } = trackSearch()
+        setCurrentTier(tier)
     }, [])
 
-    const plans = [
-        {
-            name: 'Free',
-            price: 'R0',
-            features: ['1-Time Search', 'Basic Gambling Check', 'Registration Required'],
-            limit: '1 search',
-            tier: 'guest'
-        },
-        {
-            name: 'Standard',
-            price: 'R99',
-            period: '/month',
-            features: ['20 Scans / month', 'Risk Analysis', 'Email Support'],
-            link: 'https://pay.yoco.com/r/7XrDrG',
-            tier: 'standard'
-        },
-        {
-            name: 'Pro Protection',
-            price: 'R149',
-            period: '/month',
-            features: ['100 Scans / month', 'Full ID Verification', 'Business Verification', 'Priority Support'],
-            recommended: true,
-            link: 'https://pay.yoco.com/r/mOExGp',
-            tier: 'pro'
-        },
-        {
-            name: 'Ultimate',
-            price: 'R495',
-            period: '/month',
-            features: ['Unlimited Scans', 'Deep AI Analysis', 'API Access', '24/7 Premium Support'],
-            link: 'https://pay.yoco.com/r/70jQjJ',
-            tier: 'ultimate'
-        }
-    ]
+    // Calculate Custom Price
+    // Base R30 + (Count * R0.08)
+    const customPrice = Math.round(30 + (customSearchCount * 0.08))
+
+    const handleUpgrade = (tier, limit = 0) => {
+        setTier(tier, limit)
+        setCurrentTier(tier)
+        alert(`Successfully upgraded to ${tier.toUpperCase()} plan!`)
+        router.push('/')
+    }
 
     return (
-        <main style={{ minHeight: '100vh' }}>
+        <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
             <Navbar />
 
-            <div className="container" style={{ paddingTop: '10rem', paddingBottom: '6rem' }}>
-                <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
-                    <h1 style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', marginBottom: '1.5rem', lineHeight: 1.1 }}>Investment in Security</h1>
-                    <p style={{ fontSize: '1.25rem', color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0 auto' }}>
-                        Start for free, upgrade when you need bulletproof protection.
+            <div className="container" style={{ paddingTop: '8rem' }}>
+                <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+                    <h1 style={{ fontSize: '3rem', marginBottom: '1rem', background: 'linear-gradient(to right, #fff, #a5b4fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                        Upgrade for Full Access
+                    </h1>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
+                        Choose a plan that fits your security needs. All plans include unlimited Gambling Verification.
                     </p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-                    {plans.map((plan) => (
-                        <div key={plan.name} className="glass-panel" style={{
-                            padding: '2rem',
-                            border: plan.recommended ? '1.5px solid var(--color-primary)' : '1px solid rgba(255,255,255,0.1)',
-                            position: 'relative',
-                            display: 'flex',
-                            flexDirection: 'column'
-                        }}>
-                            {plan.recommended && (
-                                <div style={{
-                                    position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)',
-                                    background: 'var(--color-primary)', padding: '0.25rem 1rem', borderRadius: '99px', fontSize: '0.875rem', fontWeight: 600
-                                }}>
-                                    Most Popular
-                                </div>
-                            )}
+                {/* Pricing Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', maxWidth: '1200px', margin: '0 auto 4rem' }}>
 
-                            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{plan.name}</h3>
-                            <div style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '1.5rem' }}>
-                                {plan.price}<span style={{ fontSize: '1rem', color: 'var(--color-text-muted)', fontWeight: 400 }}>{plan.period}</span>
+                    {/* Free Tier */}
+                    <div className="glass-panel" style={{ padding: '2rem', border: currentTier === 'free' ? '2px solid var(--color-primary)' : '1px solid var(--color-border)', position: 'relative' }}>
+                        <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Basic</h2>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>Free</div>
+                        <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>For casual checking.</p>
+
+                        <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2rem', display: 'grid', gap: '1rem' }}>
+                            <li style={{ display: 'flex', gap: '0.5rem' }}>✅ <strong>5 Lifetime Searches</strong></li>
+                            <li style={{ display: 'flex', gap: '0.5rem' }}>✅ Unlimited Gambling Check</li>
+                            <li style={{ display: 'flex', gap: '0.5rem', opacity: 0.5 }}>❌ Daily Reset</li>
+                            <li style={{ display: 'flex', gap: '0.5rem', opacity: 0.5 }}>❌ Advanced Business Reports</li>
+                        </ul>
+
+                        <button
+                            className="btn"
+                            style={{
+                                width: '100%',
+                                background: currentTier === 'free' ? 'rgba(255,255,255,0.1)' : 'var(--color-primary)',
+                                cursor: currentTier === 'free' ? 'default' : 'pointer'
+                            }}
+                            disabled={currentTier === 'free'}
+                        >
+                            {currentTier === 'free' ? 'Current Plan' : 'Downgrade'}
+                        </button>
+                    </div>
+
+                    {/* Pro Tier */}
+                    <div className="glass-panel" style={{ padding: '2rem', border: currentTier === 'pro' ? '2px solid var(--color-primary)' : '1px solid var(--color-border)', background: 'linear-gradient(145deg, rgba(99,102,241,0.1), rgba(0,0,0,0))' }}>
+                        <div style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'var(--color-primary)', padding: '0.2rem 0.8rem', borderRadius: '1rem', fontSize: '0.8rem', fontWeight: 'bold' }}>POPULAR</div>
+                        <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Pro</h2>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>R49 <span style={{ fontSize: '1rem', fontWeight: 'normal' }}>/mo</span></div>
+                        <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>For safety conscious individuals.</p>
+
+                        <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2rem', display: 'grid', gap: '1rem' }}>
+                            <li style={{ display: 'flex', gap: '0.5rem' }}>✅ <strong>100 Monthly Searches</strong></li>
+                            <li style={{ display: 'flex', gap: '0.5rem' }}>✅ Monthly Limit Resets</li>
+                            <li style={{ display: 'flex', gap: '0.5rem' }}>✅ Email & ID Analysis</li>
+                            <li style={{ display: 'flex', gap: '0.5rem' }}>✅ Priority Support</li>
+                        </ul>
+
+                        <button
+                            onClick={() => handleUpgrade('pro')}
+                            className="btn btn-primary"
+                            style={{ width: '100%' }}
+                            disabled={currentTier === 'pro'}
+                        >
+                            {currentTier === 'pro' ? 'Current Plan' : 'Upgrade to Pro'}
+                        </button>
+                    </div>
+
+                    {/* Elite Tier */}
+                    <div className="glass-panel" style={{ padding: '2rem', border: currentTier === 'elite' ? '2px solid var(--color-primary)' : '1px solid var(--color-border)' }}>
+                        <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Elite</h2>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>R99 <span style={{ fontSize: '1rem', fontWeight: 'normal' }}>/mo</span></div>
+                        <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>For power users & small biz.</p>
+
+                        <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2rem', display: 'grid', gap: '1rem' }}>
+                            <li style={{ display: 'flex', gap: '0.5rem' }}>✅ <strong>1,000 Monthly Searches</strong></li>
+                            <li style={{ display: 'flex', gap: '0.5rem' }}>✅ Monthly Limit Resets</li>
+                            <li style={{ display: 'flex', gap: '0.5rem' }}>✅ Exclusive Business Tools (Soon)</li>
+                            <li style={{ display: 'flex', gap: '0.5rem' }}>✅ Traffic Fines Check (Soon)</li>
+                        </ul>
+
+                        <button
+                            onClick={() => handleUpgrade('elite')}
+                            className="btn btn-primary"
+                            style={{ width: '100%' }}
+                            disabled={currentTier === 'elite'}
+                        >
+                            {currentTier === 'elite' ? 'Current Plan' : 'Upgrade to Elite'}
+                        </button>
+                    </div>
+
+                </div>
+
+                {/* Custom Calculator */}
+                <div className="glass-panel" style={{ padding: '3rem', maxWidth: '800px', margin: '0 auto' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                        <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Need More Power?</h2>
+                        <p style={{ color: 'var(--color-text-muted)' }}>Configure a custom plan tailored to your volume.</p>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'center' }}>
+                        <div style={{ width: '100%' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                <span>Monthly Searches</span>
+                                <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>{customSearchCount.toLocaleString()}</span>
                             </div>
-
-                            <ul style={{ marginBottom: '2rem', listStyle: 'none', flex: 1 }}>
-                                {plan.features.map(f => (
-                                    <li key={f} style={{ marginBottom: '0.6rem', display: 'flex', gap: '0.6rem', fontSize: '0.9rem' }}>
-                                        <span style={{ color: 'var(--color-success)' }}>✓</span> {f}
-                                    </li>
-                                ))}
-                            </ul>
-
-                            <div style={{ marginTop: 'auto' }}>
-                                {plan.name === 'Free' ? (
-                                    <button
-                                        onClick={() => router.push('/signup')}
-                                        className="btn btn-outline"
-                                        style={{ width: '100%' }}
-                                    >
-                                        {user ? 'Current Plan' : 'Get Started'}
-                                    </button>
-                                ) : (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                                        <a
-                                            href={`${plan.link}?plan=${plan.tier}`}
-                                            className="btn btn-primary"
-                                            style={{ width: '100%', textAlign: 'center', textDecoration: 'none' }}
-                                        >
-                                            Subscribe Now
-                                        </a>
-                                        <div style={{ textAlign: 'center' }}>
-                                            <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>Secure payment via </span>
-                                            <span style={{ fontWeight: 700, fontSize: '0.7rem' }}>Yoco</span>
-                                        </div>
-                                    </div>
-                                )}
+                            <input
+                                type="range"
+                                min="1500"
+                                max="50000"
+                                step="500"
+                                value={customSearchCount}
+                                onChange={(e) => setCustomSearchCount(parseInt(e.target.value))}
+                                style={{ width: '100%', accentColor: 'var(--color-primary)' }}
+                            />
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                                <span>1,500</span>
+                                <span>50,000+</span>
                             </div>
                         </div>
-                    ))}
+
+                        <div style={{ textAlign: 'center', padding: '1.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '1rem', width: '100%' }}>
+                            <div style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>Estimated Cost</div>
+                            <div style={{ fontSize: '3rem', fontWeight: 'bold' }}>R{customPrice} <span style={{ fontSize: '1rem', fontWeight: 'normal' }}>/mo</span></div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Based on R30 base + R0.08 per search</div>
+                        </div>
+
+                        <button
+                            onClick={() => handleUpgrade('custom', customSearchCount)}
+                            className="btn btn-primary"
+                            style={{ padding: '1rem 3rem' }}
+                        >
+                            Contact Sales & Upgrade
+                        </button>
+                    </div>
                 </div>
+
             </div>
         </main>
     )
