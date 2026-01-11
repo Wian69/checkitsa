@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import { useState, useEffect } from 'react'
 import { trackSearch, addToHistory, incrementSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
+import LoadingOverlay from '@/components/LoadingOverlay'
 
 export default function IDCheck() {
     const [idNumber, setIdNumber] = useState('')
@@ -57,6 +58,8 @@ export default function IDCheck() {
     return (
         <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
             <Navbar />
+
+            {loading && <LoadingOverlay message="Authenticating Identity..." />}
 
             <div className="container" style={{ paddingTop: '10rem', maxWidth: '800px' }}>
                 <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>Identity Check</h1>

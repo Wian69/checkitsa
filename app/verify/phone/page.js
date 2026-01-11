@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import { useState, useEffect } from 'react'
 import { trackSearch, addToHistory, incrementSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
+import LoadingOverlay from '@/components/LoadingOverlay'
 
 export default function PhoneCheck() {
     const [phone, setPhone] = useState('')
@@ -48,6 +49,8 @@ export default function PhoneCheck() {
     return (
         <main style={{ minHeight: '100vh', paddingBottom: '4rem' }}>
             <Navbar />
+
+            {loading && <LoadingOverlay message="Querying Telephony Data..." />}
 
             <div className="container" style={{ paddingTop: '8rem', maxWidth: '800px' }}>
                 <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>Phone Number Lookup</h1>

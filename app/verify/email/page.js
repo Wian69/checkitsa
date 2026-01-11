@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import { useState, useEffect } from 'react'
 import { trackSearch, addToHistory, incrementSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
+import LoadingOverlay from '@/components/LoadingOverlay'
 
 export default function EmailVerify() {
     const [formData, setFormData] = useState({ sender: '', subject: '', content: '' })
@@ -46,6 +47,9 @@ export default function EmailVerify() {
     return (
         <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
             <Navbar />
+
+            {loading && <LoadingOverlay message="Analyzing Email Reputation..." />}
+
             <div className="container" style={{ paddingTop: '10rem', maxWidth: '800px' }}>
                 <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600 mb-6 font-outfit">
                     Email Scanning

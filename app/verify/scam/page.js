@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import { useState, useEffect } from 'react'
 import { trackSearch, checkLimit, addToHistory, incrementSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
+import LoadingOverlay from '@/components/LoadingOverlay'
 
 export default function ScamCheck() {
     const [input, setInput] = useState('')
@@ -51,6 +52,8 @@ export default function ScamCheck() {
     return (
         <main style={{ minHeight: '100vh', paddingBottom: '4rem' }}>
             <Navbar />
+
+            {loading && <LoadingOverlay message="Scanning Website..." />}
 
             <div className="container" style={{ flex: 1, paddingTop: '10rem', paddingBottom: '4rem' }}>
                 <div style={{ maxWidth: '800px', margin: '0 auto' }}>
