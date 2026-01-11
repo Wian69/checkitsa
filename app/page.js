@@ -135,6 +135,7 @@ export default async function Home() {
             desc="Cross-reference CIPC and external data for legitimacy."
             href="/verify/business"
             color="#FBBF24"
+            badge="Coming Soon"
           />
           <Tile
             title="Phone Lookup"
@@ -163,6 +164,7 @@ export default async function Home() {
             desc="Search and check for outstanding traffic violations."
             href="/verify/fines"
             color="#6366f1"
+            badge="Coming Soon"
           />
         </div>
       </section>
@@ -237,7 +239,7 @@ export default async function Home() {
   )
 }
 
-function Tile({ title, icon, desc, href, color }) {
+function Tile({ title, icon, desc, href, color, badge }) {
   return (
     <Link href={href} className="glass-panel" style={{
       padding: '2rem',
@@ -246,6 +248,22 @@ function Tile({ title, icon, desc, href, color }) {
       position: 'relative',
       overflow: 'hidden'
     }}>
+      {badge && (
+        <div style={{
+          position: 'absolute',
+          top: '1rem',
+          right: '1rem',
+          background: 'rgba(255,255,255,0.1)',
+          padding: '0.25rem 0.75rem',
+          borderRadius: '1rem',
+          fontSize: '0.75rem',
+          fontWeight: 'bold',
+          color: 'var(--color-text-muted)',
+          border: '1px solid var(--color-border)'
+        }}>
+          {badge}
+        </div>
+      )}
       <div style={{
         width: '3.5rem',
         height: '3.5rem',
