@@ -298,3 +298,33 @@ function IntelFeed() {
         </>
     )
 }
+
+function CommunitySources() {
+    return (
+        <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <h4 style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span>👥</span> Verified Community Groups
+            </h4>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+                <li style={{ marginBottom: '0.75rem' }}>
+                    <a href="https://www.facebook.com/groups/828905211383464" target="_blank" rel="noopener noreferrer"
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '0.75rem',
+                            background: 'rgba(255,255,255,0.03)', padding: '0.75rem',
+                            borderRadius: '0.5rem', textDecoration: 'none', color: 'inherit',
+                            border: '1px solid rgba(255,255,255,0.05)'
+                        }}
+                        className="hover-card">
+                        <span style={{ fontSize: '1.2rem' }}>🔵</span>
+                        <div>
+                            <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Scam Alert South Africa</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Facebook Community • 140k+ Members</div>
+                        </div>
+                        <span style={{ marginLeft: 'auto', fontSize: '0.8rem', opacity: 0.5 }}>↗</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    )
+}
+
