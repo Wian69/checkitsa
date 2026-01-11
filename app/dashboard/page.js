@@ -11,9 +11,31 @@ export default function Dashboard() {
 
     useEffect(() => {
         setStats(trackSearch())
-        setHistory(getHistory())
+
+        // Load user
         const u = localStorage.getItem('checkitsa_user')
-        if (u) setUser(JSON.parse(u))
+        if (u) {
+            const userData = JSON.parse(u)
+            setUser(userData)
+
+            // Sync Reports from Server (Real DB IDs)
+            if (userData.email) {
+                fetch(`/api/report?email=${encodeURIComponent(userData.email)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        setHistory(prev => ({
+                            // Preserve local searches but overwrite reports with authoritative server data
+                            searches: getHistory().searches,
+                            reports: data.reports || []
+                        }))
+                    })
+                    .catch(e => console.error("Failed to sync reports:", e))
+            } else {
+                setHistory(getHistory())
+            }
+        } else {
+            setHistory(getHistory())
+        }
     }, [])
 
     const searchPercentage = Math.min((stats.count / stats.limit) * 100, 100)

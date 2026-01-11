@@ -119,7 +119,7 @@ export async function GET(req) {
         const db = getRequestContext().env.DB
 
         if (id) {
-            // Fetch single report
+            // Fetch single report (existing logic)
             const report = await db.prepare('SELECT * FROM scam_reports WHERE id = ?').bind(id).first()
 
             if (!report) {
@@ -135,23 +135,40 @@ export async function GET(req) {
                     type: report.scam_type || 'General',
                     has_evidence: !!report.evidence_image,
                     evidence_image: report.evidence_image, // Return image for details view
-                    date: report.created_at
+                    date: report.created_at,
+                    status: report.status || 'pending'
                 }
             })
         }
 
-        // Fetch list (existing logic)
-        // Fetch list (existing logic) - STRICTLY VERIFIED ONLY
-        const { results } = await db.prepare("SELECT * FROM scam_reports WHERE status = 'verified' ORDER BY created_at DESC LIMIT 20").all()
+        const email = searchParams.get('email')
+        let results = []
+
+        if (email) {
+            // Fetch reports for a specific user (My Reports dashboard)
+            // Returns ALL statuses (Pending, Verified, Rejected) so user can see their own history
+            const res = await db.prepare("SELECT * FROM scam_reports WHERE lower(reporter_email) = lower(?) ORDER BY created_at DESC").bind(email).all()
+            results = res.results
+        } else {
+            // Fetch public feed (existing logic) - STRICTLY VERIFIED ONLY
+            const res = await db.prepare("SELECT * FROM scam_reports WHERE status = 'verified' ORDER BY created_at DESC LIMIT 20").all()
+            results = res.results
+        }
 
         // Map to uniform frontend format
         const reports = (results || []).map(r => ({
             id: r.id,
             url: r.scammer_details || 'N/A', // Map detailed field to generic display
+            details: r.description || 'No description', // Changed 'reason' to 'details' to match frontend expected prop? 
+            // WAIT: Frontend dashboard uses `r.details`, but public feed uses `r.reason`. 
+            // Let's standardize or provide both.
             reason: r.description || 'No description',
+            details: r.description || 'No description',
             type: r.scam_type || 'General',
             has_evidence: !!r.evidence_image,
-            date: r.created_at
+            evidence_image: r.evidence_image,
+            date: r.created_at,
+            status: r.status || 'pending' // important for dashboard
         }))
 
         return NextResponse.json({ reports })
