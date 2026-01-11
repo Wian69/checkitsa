@@ -2,7 +2,7 @@
 import Navbar from '@/components/Navbar'
 
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { trackSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
 
