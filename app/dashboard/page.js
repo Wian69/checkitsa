@@ -33,11 +33,18 @@ export default function Dashboard() {
                         </h1>
                         <p style={{ color: 'var(--color-text-muted)' }}>Manage your security profile and history.</p>
                     </div>
-                    {stats.tier === 'free' && (
-                        <Link href="/subscription" className="btn btn-primary">
-                            Upgrade Plan ⚡
-                        </Link>
-                    )}
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                        {(user?.tier === 'elite' || user?.tier === 'custom' || user?.tier === 'ultimate') && (
+                            <Link href="/dashboard/developer" className="btn btn-outline" style={{ borderColor: 'var(--color-primary)', color: 'var(--color-primary)' }}>
+                                👨‍💻 Developer API
+                            </Link>
+                        )}
+                        {stats.tier === 'free' && (
+                            <Link href="/subscription" className="btn btn-primary">
+                                Upgrade Plan ⚡
+                            </Link>
+                        )}
+                    </div>
                 </div>
 
                 <div className="grid-responsive" style={{ gap: '2rem' }}>
