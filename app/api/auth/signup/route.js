@@ -29,9 +29,9 @@ export async function POST(req) {
         // Safest is to try INSERT and expect the DB handles ID.
 
         const { success } = await db.prepare(
-            'INSERT INTO users (fullName, email, password, tier, searches) VALUES (?, ?, ?, ?, ?)'
+            'INSERT INTO users (fullName, email, password, tier, searches, createdAt) VALUES (?, ?, ?, ?, ?, ?)'
         )
-            .bind(fullName, email, password, 'free', 0)
+            .bind(fullName, email, password, 'free', 0, new Date().toISOString())
             .run()
 
         if (!success) {
