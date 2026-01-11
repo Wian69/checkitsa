@@ -204,6 +204,31 @@ export async function POST(request) {
             }
         }
 
+        // Strategy C: Google Search Intelligence (Last Resort)
+        if (!createdDate && cseKey && cx) {
+            try {
+                const whoisQuery = `"${rootDomain}" whois registration date`
+                const whoisRes = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(whoisQuery)}`)
+                const whoisData = await whoisRes.json()
+                if (whoisData.items && whoisData.items.length > 0) {
+                    const snippet = (whoisData.items[0].snippet + whoisData.items[0].title).toLowerCase()
+                    // Look for 4-digit year (1990-2029)
+                    const yearMatch = snippet.match(/(199\d|20[0-2]\d)/)
+                    if (yearMatch) {
+                        // Try to find full ISO date first
+                        const dateMatch = snippet.match(/(\d{4}-\d{2}-\d{2})/)
+                        if (dateMatch) {
+                            createdDate = new Date(dateMatch[0])
+                        } else {
+                            // Fallback to Jan 1st of the found year
+                            createdDate = new Date(`${yearMatch[0]}-01-01`)
+                        }
+                        if (registrar === 'Unknown') registrar = 'Found via Web Intelligence'
+                    }
+                }
+            } catch (e) { console.log('Google WHOIS fallback failed', e) }
+        }
+
         if (createdDate) {
             const now = new Date()
             const diffDays = Math.ceil(Math.abs(now - createdDate) / (1000 * 60 * 60 * 24))
