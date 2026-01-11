@@ -8,13 +8,18 @@ export async function POST(req) {
         const { email, password } = await req.json().catch(() => ({}))
         const db = getRequestContext().env.DB
 
-        // D1 Query
-        const user = await db.prepare('SELECT * FROM users WHERE email = ? AND password = ?')
-            .bind(email, password)
+        // 1. Check if user exists first
+        const user = await db.prepare('SELECT * FROM users WHERE email = ?')
+            .bind(email)
             .first()
 
         if (!user) {
-            return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 })
+            return NextResponse.json({ message: 'Account does not exist. Please sign up first.' }, { status: 404 })
+        }
+
+        // 2. Check Password
+        if (user.password !== password) {
+            return NextResponse.json({ message: 'Invalid password' }, { status: 401 })
         }
 
         return NextResponse.json({
