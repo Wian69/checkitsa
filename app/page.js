@@ -1,47 +1,19 @@
+"use client" // Convert to Client Component for interactivity
+
 import Link from 'next/link'
-// export const runtime = 'edge'
+import { useState, useEffect } from 'react'
 
 import Navbar from '@/components/Navbar'
-import ScamReportForm from '@/components/ScamReportForm'
 import CommunityReportsFeed from '@/components/CommunityReportsFeed'
 
-// Helper to get RSS
-async function getRSSFeed() {
-  // DEBUG: Mocking RSS to isolate render issues
-  return [
-    { title: 'Debug: RSS Feed Loaded', link: '#' },
-    { title: 'System All Green', link: '#' }
-  ]
-}
+export default function Home() {
+  const [user, setUser] = useState(null)
 
-// Helper to get Community Reports
-async function getCommunityReports() {
-  // Return empty if building statically to avoid ECONNREFUSED
-  if (process.env.NEXT_PHASE === 'phase-production-build') return []
-
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-    // Don't fetch if likely to fail during build
-    if (!baseUrl.startsWith('http')) return []
-
-    const res = await fetch(`${baseUrl}/api/report`, {
-      next: { revalidate: 10 },
-      headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(2000) // Timeout fast
-    })
-
-    if (!res.ok) return []
-    const data = await res.json()
-    return data.reports || []
-  } catch (e) {
-    console.error('Community Reports Fetch Error:', e)
-    return []
-  }
-}
-
-export default async function Home() {
-  // const rssItems = await getRSSFeed()
-  const reportedSites = await getCommunityReports()
+  useEffect(() => {
+    // Check login state on mount
+    const u = localStorage.getItem('checkitsa_user')
+    if (u) setUser(JSON.parse(u))
+  }, [])
 
   // Use mock data for RSS only
   const rssItems = [
@@ -53,7 +25,6 @@ export default async function Home() {
     <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
       <Navbar />
 
-      {/* Hero Section */}
       {/* Hero Section */}
       <section className="hero-section">
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
@@ -94,7 +65,9 @@ export default async function Home() {
             </p>
 
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-              <Link href="/signup" className="btn btn-primary" style={{ padding: '1rem 2.5rem' }}>Get Started Free</Link>
+              {!user && (
+                <Link href="/signup" className="btn btn-primary" style={{ padding: '1rem 2.5rem' }}>Get Started Free</Link>
+              )}
               <a href="#tools" className="btn btn-outline" style={{ padding: '1rem 2.5rem' }}>Explore Tools</a>
             </div>
           </div>
