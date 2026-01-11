@@ -12,8 +12,8 @@ export const runtime = 'edge'
 
 export async function POST(request) {
     const { input } = await request.json()
-    const apiKey = process.env.GEMINI_API_KEY
-    if (apiKey === 'undefined' || !apiKey) {
+    const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyCfnZPUMK8n4A4IgMSddiAmajHqCvyLf00'
+    if (!apiKey || apiKey === 'undefined') {
         return NextResponse.json({
             valid: false,
             data: {
