@@ -196,9 +196,9 @@ export default function Dashboard() {
                             </table>
                         )}
                     </div>
-                    {/* Danger Zone */}
+                    {/* Account Management */}
                     <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid rgba(239, 68, 68, 0.2)' }}>
-                        <h3 style={{ fontSize: '1.2rem', color: '#f87171', marginBottom: '1rem' }}>Danger Zone</h3>
+                        <h3 style={{ fontSize: '1.2rem', color: '#f87171', marginBottom: '1rem' }}>Account Management</h3>
                         <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
                             <div>
                                 <div style={{ fontWeight: 600, color: 'var(--color-text-main)' }}>Reset Local Data</div>
@@ -206,7 +206,7 @@ export default function Dashboard() {
                             </div>
                             <button
                                 onClick={() => {
-                                    if (confirm('Are you sure? This will wipe your local history and logout.')) {
+                                    if (window.confirm('Are you sure? This will wipe your local history and logout.')) {
                                         localStorage.clear()
                                         window.location.href = '/signup'
                                     }
