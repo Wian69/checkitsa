@@ -1,7 +1,7 @@
 "use client"
 import Navbar from '@/components/Navbar'
 import { useState, useEffect } from 'react'
-import { trackSearch, getHistory } from '@/utils/searchLimit'
+import { trackSearch, getHistory, syncFromCloud } from '@/utils/searchLimit'
 import Link from 'next/link'
 
 export default function Dashboard() {
@@ -10,30 +10,29 @@ export default function Dashboard() {
     const [user, setUser] = useState(null)
 
     useEffect(() => {
-        setStats(trackSearch())
-
-        // Load user
+        // Load user first
         const u = localStorage.getItem('checkitsa_user')
         if (u) {
             const userData = JSON.parse(u)
             setUser(userData)
 
-            // Sync Reports from Server (Real DB IDs)
-            if (userData.email) {
+            // Perform Cloud Sync
+            syncFromCloud(userData.email).then(() => {
+                // After cloud sync, update UI state with fresh data
+                setStats(trackSearch())
+
+                // Also fetch reports (existing logic)
                 fetch(`/api/report?email=${encodeURIComponent(userData.email)}`)
                     .then(res => res.json())
                     .then(data => {
-                        setHistory(prev => ({
-                            // Preserve local searches but overwrite reports with authoritative server data
+                        setHistory({
                             searches: getHistory().searches,
                             reports: data.reports || []
-                        }))
+                        })
                     })
-                    .catch(e => console.error("Failed to sync reports:", e))
-            } else {
-                setHistory(getHistory())
-            }
+            })
         } else {
+            setStats(trackSearch())
             setHistory(getHistory())
         }
     }, [])

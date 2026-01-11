@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { syncFromCloud } from '@/utils/searchLimit'
 
 export default function Login() {
     const [formData, setFormData] = useState({ email: '', password: '' })
@@ -27,6 +28,7 @@ export default function Login() {
                 if (!res.ok) throw new Error(data.message || 'You must signup first before logging in')
                 localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
                 localStorage.setItem('checkitsa_tier', data.user.tier || 'free')
+                await syncFromCloud(data.user.email)
                 router.push('/')
             } catch (err) {
                 setError(err.message)
@@ -87,6 +89,7 @@ export default function Login() {
 
             localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
             localStorage.setItem('checkitsa_tier', data.user.tier || 'free')
+            await syncFromCloud(data.user.email)
             router.push('/')
         } catch (err) {
             setError(err.message)

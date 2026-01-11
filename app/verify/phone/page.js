@@ -39,8 +39,8 @@ export default function PhoneCheck() {
             })
             const data = await res.json()
             setResult(data.data)
-            addToHistory('Phone Check', phone, data.data.risk_analysis)
-            incrementSearch()
+            await addToHistory('Phone Check', phone, data.data.risk_analysis)
+            await incrementSearch()
         } catch (e) { console.error(e) }
         finally { setLoading(false) }
     }

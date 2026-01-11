@@ -38,8 +38,8 @@ export default function EmailVerify() {
             })
             const data = await res.json()
             setResult(data)
-            addToHistory('Email Analysis', formData.sender, data.message)
-            incrementSearch()
+            await addToHistory('Email Analysis', formData.sender, data.message)
+            await incrementSearch()
         } catch (e) { } finally { setLoading(false) }
     }
 

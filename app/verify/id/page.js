@@ -45,8 +45,8 @@ export default function IDCheck() {
 
             if (!res.ok) throw new Error(data.message)
             setResult(data.data)
-            addToHistory('ID Verification', idNumber, 'Verified Valid')
-            incrementSearch()
+            await addToHistory('ID Verification', idNumber, 'Verified Valid')
+            await incrementSearch()
         } catch (err) {
             setError(err.message)
         } finally {

@@ -40,8 +40,8 @@ export default function ScamCheck() {
             })
             const data = await res.json()
             setResult(data)
-            addToHistory('Website Scan', input, data.verdict)
-            incrementSearch()
+            await addToHistory('Website Scan', input, data.verdict)
+            await incrementSearch()
         } catch (err) { console.error(err) }
         finally { setLoading(false) }
     }

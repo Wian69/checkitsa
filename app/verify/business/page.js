@@ -3,7 +3,7 @@ import Navbar from '@/components/Navbar'
 
 
 import { useState } from 'react'
-import { trackSearch } from '@/utils/searchLimit'
+import { trackSearch, addToHistory, incrementSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
 
 export default function BusinessCheck() {
@@ -31,6 +31,10 @@ export default function BusinessCheck() {
             })
             const data = await res.json()
             setResult(data.data)
+
+            // Log to history and usage
+            await addToHistory('Business Verify', input, data.data.status)
+            await incrementSearch()
         } catch (e) { console.error(e) }
         finally { setLoading(false) }
     }
