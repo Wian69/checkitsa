@@ -30,21 +30,6 @@ export default function Home() {
       <section className="hero-section">
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
           <div>
-            <div style={{
-              display: 'inline-block',
-              padding: '0.5rem 1rem',
-              background: 'rgba(99, 102, 241, 0.1)',
-              border: '1px solid rgba(99, 102, 241, 0.2)',
-              borderRadius: '2rem',
-              color: 'var(--color-primary-light)',
-              fontSize: '0.875rem',
-              fontWeight: 600,
-              marginBottom: '1.5rem',
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase'
-            }}>
-              Design Update v2.0 Live
-            </div>
             <h1 style={{
               fontSize: 'clamp(2.5rem, 8vw, 4.5rem)',
               marginBottom: '1.5rem',
