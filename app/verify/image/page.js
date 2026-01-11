@@ -6,6 +6,8 @@ import { useState } from 'react'
 import { trackSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
 
+import { createWorker } from 'tesseract.js'
+
 export default function ImageScanner() {
     const [file, setFile] = useState(null)
     const [result, setResult] = useState(null)
@@ -31,13 +33,7 @@ export default function ImageScanner() {
 
         try {
             // 1. Client-Side OCR
-            // Dynamic import to avoid SSR issues
-            const { createWorker } = await import('tesseract.js')
             const worker = await createWorker('eng')
-
-            // Update loading state for better UX
-            // (Optional: could add progress callback here)
-
             const ret = await worker.recognize(file)
             const extractedText = ret.data.text
             await worker.terminate()
