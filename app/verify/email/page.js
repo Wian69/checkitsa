@@ -85,21 +85,24 @@ export default function EmailVerify() {
                             <h3 style={{ color: result.score > 50 ? 'var(--color-danger)' : 'var(--color-success)', marginBottom: '1rem' }}>
                                 {result.message}
                             </h3>
-                            <div style={{ display: 'grid', gap: '0.5rem' }}>
-                                <p><strong>Risk Score:</strong> {result.score}/100</p>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                <div className="bg-gray-700/50 p-4 rounded-xl">
-                                    <span className="text-gray-400 block text-xs uppercase tracking-wider mb-1">Domain Age:</span>
-                                    <span className="text-white font-mono">{result.domain_age}</span>
+                            <div className="grid grid-cols-2 gap-4 mt-6">
+                                <div className="bg-gray-700/50 p-4 rounded-xl border border-gray-600/30">
+                                    <span className="text-gray-400 block text-xs uppercase tracking-wider mb-2">Risk Score</span>
+                                    <span className={`text-2xl font-bold font-mono ${result.score > 50 ? 'text-red-400' : 'text-green-400'}`}>
+                                        {result.score}/100
+                                    </span>
                                 </div>
-                                <div className="bg-gray-700/50 p-4 rounded-xl">
-                                    <span className="text-gray-400 block text-xs uppercase tracking-wider mb-1">Registrar:</span>
-                                    <span className="text-white font-mono">{result.registrar || 'Unknown'}</span>
+                                <div className="bg-gray-700/50 p-4 rounded-xl border border-gray-600/30">
+                                    <span className="text-gray-400 block text-xs uppercase tracking-wider mb-2">Domain Age</span>
+                                    <span className="text-white font-mono text-sm block break-words">{result.domain_age}</span>
                                 </div>
-                                <div className="bg-gray-700/50 p-4 rounded-xl md:col-span-2">
-                                    <span className="text-gray-400 block text-xs uppercase tracking-wider mb-1">First Seen:</span>
-                                    <span className="text-white font-mono">{result.email_first_seen || 'No public footprint'}</span>
+                                <div className="bg-gray-700/50 p-4 rounded-xl border border-gray-600/30">
+                                    <span className="text-gray-400 block text-xs uppercase tracking-wider mb-2">Registrar</span>
+                                    <span className="text-white font-mono text-sm block break-words">{result.registrar || 'Unknown'}</span>
+                                </div>
+                                <div className="bg-gray-700/50 p-4 rounded-xl border border-gray-600/30">
+                                    <span className="text-gray-400 block text-xs uppercase tracking-wider mb-2">First Seen</span>
+                                    <span className="text-white font-mono text-sm block break-words">{result.email_first_seen || 'No public footprint'}</span>
                                 </div>
                             </div>
 
