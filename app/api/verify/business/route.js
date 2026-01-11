@@ -12,19 +12,14 @@ export const runtime = 'edge'
 
 export async function POST(request) {
     const { input } = await request.json()
-    const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyBjjUVH1c6w-qDyKQgvprxGnJsxKnQk-0Y'
-
-    // Fallback if no key configuration
-    if (!apiKey) {
+    const apiKey = process.env.GEMINI_API_KEY
+    if (apiKey === 'undefined' || !apiKey) {
         return NextResponse.json({
             valid: false,
             data: {
-                name: 'System Config Error',
-                identifier: 'N/A',
-                status: 'Missing API Key',
-                message: '⚠️ Service Temporarily Unavailable. Please try again later.',
-                source: 'System',
-                details: 'AI Service has not been authenticated.'
+                status: 'Config Error',
+                message: 'GEMINI_API_KEY is not set in Cloudflare Environment Variables.',
+                details: 'Please add GEMINI_API_KEY to your Pages project settings.'
             }
         })
     }
@@ -34,7 +29,12 @@ export async function POST(request) {
         // Dynamic import to prevent Edge startup crash
         const { GoogleGenerativeAI } = await import('@google/generative-ai')
         const genAI = new GoogleGenerativeAI(apiKey)
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+
+        // Use gemini-1.5-flash with explicit v1 version to avoid v1beta 404s
+        const model = genAI.getGenerativeModel(
+            { model: "gemini-1.5-flash" },
+            { apiVersion: "v1" }
+        )
 
         // Construct a strict prompt for consistent JSON output
         const prompt = `
