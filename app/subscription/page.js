@@ -32,16 +32,7 @@ export default function Subscription() {
     const [customScans, setCustomScans] = useState(1100)
     const [customPrice, setCustomPrice] = useState(138) // Initial calculation
 
-    // ... (logic remains same)
 
-    // ... inside return ...
-    {/* Elite Plan */ }
-    <div className="glass-panel" style={{
-        padding: '2rem',
-        border: '2px solid var(--color-primary)',
-        background: 'linear-gradient(145deg, rgba(99, 102, 241, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%)',
-        position: 'relative'
-    }}>
 
     const handleUpgrade = (plan) => {
         if (!window.YocoSDK) {
@@ -63,7 +54,7 @@ export default function Subscription() {
         } else if (plan === 'custom') {
             amount = customPrice * 100 // Convert to cents
             desc = `Custom Subscription (${customScans.toLocaleString()} Scans)`
-        limit = customScans
+            limit = customScans
         }
 
         const yoco = new window.YocoSDK({
@@ -72,47 +63,47 @@ export default function Subscription() {
 
         yoco.showPopup({
             amountInCents: amount,
-        currency: 'ZAR',
-        name: 'CheckItSA Premium',
-        description: desc,
+            currency: 'ZAR',
+            name: 'CheckItSA Premium',
+            description: desc,
             callback: async (result) => {
                 if (result.error) {
-            alert("Payment Failed: " + result.error.message)
-        } else {
-            setLoading(true)
+                    alert("Payment Failed: " + result.error.message)
+                } else {
+                    setLoading(true)
                     try {
                         const res = await fetch('/api/checkout', {
-            method: 'POST',
-        headers: {'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            token: result.id,
-        email: user.email,
-        amount: amount,
-        customLimit: limit // Pass the custom limit
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                token: result.id,
+                                email: user.email,
+                                amount: amount,
+                                customLimit: limit // Pass the custom limit
                             })
                         })
 
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.message)
+                        const data = await res.json()
+                        if (!res.ok) throw new Error(data.message)
 
-        localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
-        localStorage.setItem('checkitsa_tier', data.user.tier)
+                        localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
+                        localStorage.setItem('checkitsa_tier', data.user.tier)
                         if (limit > 0) localStorage.setItem('checkitsa_custom_limit', limit)
 
-        alert(`Upgrade Successful! You are now on the ${plan === 'custom' ? 'Enterprise' : plan} plan.`)
-        router.push('/dashboard')
+                        alert(`Upgrade Successful! You are now on the ${plan === 'custom' ? 'Enterprise' : plan} plan.`)
+                        router.push('/dashboard')
                     } catch (err) {
-            alert("Verification Failed: " + err.message)
+                        alert("Verification Failed: " + err.message)
                         console.error(err)
                     } finally {
-            setLoading(false)
-        }
+                        setLoading(false)
+                    }
                 }
             }
         })
     }
 
-        return (
+    return (
         <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <Navbar />
 
@@ -244,5 +235,5 @@ export default function Subscription() {
                 </div>
             </div>
         </main>
-        )
+    )
 }
