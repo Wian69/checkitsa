@@ -184,65 +184,16 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Community Reports Section */}
-      <section className="container" style={{ marginBottom: '8rem' }}>
-        <div className="glass-panel" style={{ padding: '3rem', borderLeft: '4px solid var(--color-danger)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2.5rem' }}>
-            <div style={{
-              width: '3.5rem',
-              height: '3.5rem',
-              background: 'rgba(239, 68, 68, 0.1)',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: '1.25rem',
-              fontSize: '1.5rem'
-            }}>🚨</div>
-            <div>
-              <h2 style={{ fontSize: '2rem', color: '#fff' }}>Latest Community Reports</h2>
-              <p style={{ color: 'var(--color-text-muted)' }}>Real-time threats reported by users like you.</p>
-            </div>
-          </div>
+      import CommunityReportsFeed from '@/components/CommunityReportsFeed'
 
-          {reportedSites.length === 0 ? (
-            <p style={{ color: 'var(--color-text-muted)', textAlign: 'center', padding: '2rem' }}>No recent reports. Stay safe!</p>
-          ) : (
-            <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
-              {reportedSites.map(report => (
-                <div key={report.id} className="glass-panel" style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <span style={{
-                      fontSize: '0.75rem',
-                      fontWeight: 700,
-                      padding: '0.2rem 0.6rem',
-                      borderRadius: '1rem',
-                      background: report.type === 'WhatsApp' ? 'rgba(34, 197, 94, 0.2)' :
-                        report.type === 'Email' ? 'rgba(167, 139, 250, 0.2)' :
-                          report.type === 'Social Media' ? 'rgba(59, 130, 246, 0.2)' :
-                            'rgba(239, 68, 68, 0.2)',
-                      color: report.type === 'WhatsApp' ? '#4ade80' :
-                        report.type === 'Email' ? '#a78bfa' :
-                          report.type === 'Social Media' ? '#60a5fa' :
-                            '#f87171'
-                    }}>{report.type.toUpperCase()} SCAM</span>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{new Date(report.date).toLocaleDateString()}</span>
-                  </div>
-                  <div style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--color-primary-light)', marginBottom: '0.5rem' }}>
-                    {report.url}
-                  </div>
-                  <div style={{ fontSize: '0.9rem', color: 'var(--color-text)', opacity: 0.9, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                    {report.reason}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+      // ... (keep usage of CommunityReportsFeed in the return logic below)
 
-      {/* Global Intel Section */}
-      <section className="container">
+      <CommunityReportsFeed />
+    </div>
+      </section >
+
+    {/* Global Intel Section */ }
+    < section className = "container" >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
           <div>
             <h2 style={{ fontSize: '2rem' }}>Global Security Intel</h2>
@@ -269,8 +220,8 @@ export default async function Home() {
             ))
           )}
         </div>
-      </section>
-    </main>
+      </section >
+    </main >
   )
 }
 
