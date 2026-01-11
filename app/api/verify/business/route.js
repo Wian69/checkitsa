@@ -48,34 +48,82 @@ export async function POST(request) {
             })
         }
 
-        // 2. Extract Data from Snippets
         const bestMatch = data.items[0]
-        const snippets = data.items.map(i => i.snippet).join(' ').toLowerCase()
+        const snippets = data.items.map(i => i.snippet).join('\n')
         const links = data.items.slice(0, 3).map(i => i.link)
 
-        // Basic Heuristics for "Status"
-        let status = 'Record Found'
-        let icon = '✅'
-
-        if (snippets.includes('deregistered') || snippets.includes('final liquidated')) {
-            status = 'Deregistered / Liquidated'
-            icon = '❌'
-        } else if (snippets.includes('scam') || snippets.includes('fraud') || snippets.includes('alert')) {
-            status = 'Caution: Suspicious'
-            icon = '⚠️'
+        let businessData = {
+            name: bestMatch.title.split('-')[0].split('|')[0].trim(),
+            identifier: 'Found via Web',
+            status: 'Record Found',
+            summary: bestMatch.snippet,
+            icon: '✅'
         }
 
-        // Extract potential registration number (basic regex for SA Reg Nos: YYYY/NNNNNN/NN)
-        const regMatch = snippets.match(/\d{4}\/\d{6}\/\d{2}/)
-        const identifier = regMatch ? regMatch[0] : 'Found via Web'
+        // 3. Optional: Use Gemini to summarize the Google results (Intelligence Layer)
+        const geminiApiKey = process.env.GEMINI_API_KEY
+        if (geminiApiKey && geminiApiKey !== 'undefined') {
+            try {
+                const { GoogleGenerativeAI } = await import('@google/generative-ai')
+                const genAI = new GoogleGenerativeAI(geminiApiKey.trim())
+                const model = genAI.getGenerativeModel({
+                    model: "gemini-1.5-flash",
+                    generationConfig: { responseMimeType: "application/json" }
+                }, { apiVersion: 'v1' })
+
+                const prompt = `
+                Analyze these search results for "${input}" in South Africa.
+                Search Context:
+                ${snippets}
+
+                Provide a structured verification report in JSON format.
+                Required JSON structure:
+                {
+                    "name": "Most accurate company name",
+                    "identifier": "Registration No (e.g. 2020/123456/07) or 'Not verified'",
+                    "status": "Active" | "Suspicious" | "Deregistered" | "Unknown",
+                    "summary": "Full professional summary of legitimacy and business type."
+                }
+                `
+                const result = await model.generateContent(prompt)
+                const text = result.response.text().trim()
+
+                // Robust JSON parsing
+                let aiResponse;
+                try {
+                    aiResponse = JSON.parse(text);
+                } catch (jsonErr) {
+                    // Fallback for when AI doesn't return pure JSON
+                    const jsonMatch = text.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        aiResponse = JSON.parse(jsonMatch[0]);
+                    } else {
+                        throw new Error('AI response was not valid JSON');
+                    }
+                }
+
+                businessData.name = aiResponse.name || businessData.name
+                businessData.identifier = aiResponse.identifier || businessData.identifier
+                businessData.status = aiResponse.status || businessData.status
+                businessData.summary = aiResponse.summary || businessData.summary
+
+                const statusLower = businessData.status.toLowerCase();
+                if (statusLower.includes('suspicious') || statusLower.includes('caution')) businessData.icon = '⚠️'
+                else if (statusLower.includes('deregistered') || statusLower.includes('liquidated')) businessData.icon = '❌'
+                else if (statusLower.includes('active')) businessData.icon = '✅'
+
+            } catch (aiErr) {
+                console.error('[Verify] Gemini Summarization failed:', aiErr.message)
+            }
+        }
 
         return NextResponse.json({
             valid: true,
             data: {
-                name: bestMatch.title.split('-')[0].split('|')[0].trim(),
-                identifier: identifier,
-                status: status,
-                message: `${icon} Google Summary: ${bestMatch.snippet}`,
+                name: businessData.name,
+                identifier: businessData.identifier,
+                status: businessData.status,
+                message: `${businessData.icon} ${businessData.summary}`,
                 source: 'Google verified search results',
                 details: `Authoritative Links:\n${links.map(l => `• ${new URL(l).hostname}`).join('\n')}`
             }
