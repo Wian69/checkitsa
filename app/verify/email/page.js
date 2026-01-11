@@ -97,7 +97,9 @@ export default function EmailVerify() {
                             <div className="bg-gray-700/50 p-4 rounded-xl col-span-2">
                                 <span className="text-gray-400 block text-xs uppercase tracking-wider mb-1">Email First Seen (Web)</span>
                                 <span className="text-white font-mono">{result.email_first_seen || 'No public footprint'}</span>
-                            </div>    {result.flags.length > 0 && (
+                            </div>
+
+                            {result.flags.length > 0 && (
                                     <div style={{ marginTop: '1rem' }}>
                                         <strong>Risk Factors:</strong>
                                         <ul style={{ paddingLeft: '1.2rem', color: 'var(--color-accent)' }}>
