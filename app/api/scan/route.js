@@ -146,19 +146,8 @@ export async function POST(request) {
             // Fetch failed (Blocked). Fallback to searching Google Results for policy presence
         }
 
-        // Advanced Policy Search via Google (if direct fetch missed them)
-        if ((!policies.privacy || !policies.terms) && cseKey && cx) {
-            try {
-                const policyQuery = `site:${domain} "privacy policy" OR "terms of service"`
-                const policyRes = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(policyQuery)}`)
-                const policyData = await policyRes.json()
-                if (policyData.items && policyData.items.length > 0) {
-                    const snippets = policyData.items.map(i => i.title.toLowerCase() + ' ' + i.snippet.toLowerCase()).join(' ')
-                    if (snippets.includes('privacy')) policies.privacy = true
-                    if (snippets.includes('terms') || snippets.includes('conditions')) policies.terms = true
-                }
-            } catch (err) { console.log('Policy search failed', err) }
-        }
+        // Advanced Policy Search via Google - REMOVED to save API Quota (100/day limit)
+        // We rely on the Direct Fetch above. If that fails, we assume policies are missing (safer default).
 
         // 3. Domain Age & Registrar Strategy (RDAP + Fallback)
         let domainAge = 'Unknown'
