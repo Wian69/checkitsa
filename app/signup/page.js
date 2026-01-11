@@ -84,7 +84,7 @@ export default function Signup() {
                     {/* Google Sign In */}
                     <div style={{ marginBottom: '2rem' }}>
                         <div id="g_id_onload"
-                            data-client_id={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
+                            data-client_id={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "729035479590-9dffbod3sfn21cq1q0gshqjm4358nnrq.apps.googleusercontent.com"}
                             data-context="signup"
                             data-ux_mode="popup"
                             data-callback="handleGoogleCredentialResponse"

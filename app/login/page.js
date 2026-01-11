@@ -2,7 +2,7 @@
 import Navbar from '@/components/Navbar'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function Login() {
@@ -10,6 +10,30 @@ export default function Login() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const router = useRouter()
+
+    useEffect(() => {
+        // Global handler for Google Sign In
+        window.handleGoogleCredentialResponse = async (response) => {
+            setLoading(true)
+            try {
+                const res = await fetch('/api/auth/google', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: response.credential })
+                })
+
+                if (!res.ok) throw new Error('Google authentication failed')
+
+                const data = await res.json()
+                localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
+                localStorage.setItem('checkitsa_tier', data.user.tier || 'free')
+                router.push('/')
+            } catch (err) {
+                setError(err.message)
+                setLoading(false)
+            }
+        }
+    }, [router])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -57,6 +81,32 @@ export default function Login() {
 
                     {error && <div style={{ color: 'var(--color-danger)', marginBottom: '1rem', textAlign: 'center' }}>{error}</div>}
 
+                    {/* Google Sign In */}
+                    <div style={{ marginBottom: '2rem' }}>
+                        <div id="g_id_onload"
+                            data-client_id={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "729035479590-9dffbod3sfn21cq1q0gshqjm4358nnrq.apps.googleusercontent.com"}
+                            data-context="signin"
+                            data-ux_mode="popup"
+                            data-callback="handleGoogleCredentialResponse"
+                            data-auto_prompt="false">
+                        </div>
+                        <div className="g_id_signin"
+                            data-type="standard"
+                            data-shape="rectangular"
+                            data-theme="filled_black"
+                            data-text="signin_with"
+                            data-size="large"
+                            data-logo_alignment="left"
+                            data-width="100%">
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', color: 'var(--color-text-muted)' }}>
+                        <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
+                        <span style={{ fontSize: '0.875rem' }}>OR</span>
+                        <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
+                    </div>
+
                     <form onSubmit={handleSubmit}>
                         <div style={{ marginBottom: '1.2rem' }}>
                             <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem' }}>Email Address</label>
@@ -90,6 +140,7 @@ export default function Login() {
                     </form>
                 </div>
             </div>
+            <script src="https://accounts.google.com/gsi/client" async defer></script>
         </main>
     )
 }
