@@ -3,7 +3,7 @@ import Navbar from '@/components/Navbar'
 
 
 import { useState, useEffect } from 'react'
-import { trackSearch, addToHistory } from '@/utils/searchLimit'
+import { trackSearch, addToHistory, incrementSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
 
 export default function IDCheck() {
@@ -46,6 +46,7 @@ export default function IDCheck() {
             if (!res.ok) throw new Error(data.message)
             setResult(data.data)
             addToHistory('ID Verification', idNumber, 'Verified Valid')
+            incrementSearch()
         } catch (err) {
             setError(err.message)
         } finally {

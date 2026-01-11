@@ -3,7 +3,7 @@ import Navbar from '@/components/Navbar'
 
 
 import { useState, useEffect } from 'react'
-import { trackSearch, addToHistory } from '@/utils/searchLimit'
+import { trackSearch, addToHistory, incrementSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
 
 export default function EmailVerify() {
@@ -39,6 +39,7 @@ export default function EmailVerify() {
             const data = await res.json()
             setResult(data)
             addToHistory('Email Analysis', formData.sender, data.message)
+            incrementSearch()
         } catch (e) { } finally { setLoading(false) }
     }
 

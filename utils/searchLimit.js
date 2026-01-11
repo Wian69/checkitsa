@@ -8,10 +8,15 @@ const TIERS = {
 export const trackSearch = () => {
     if (typeof window === 'undefined') return { canSearch: true, count: 0 }
 
+    let count = 0
+    let lastReset = new Date().toISOString()
+    const usageKey = getUserKey('checkitsa_usage')
+    const resetKey = getUserKey('checkitsa_last_reset')
+
     // 1. Get User State (Mocking DB persistence with LocalStorage for MVP)
     const tier = localStorage.getItem('checkitsa_tier') || 'free'
-    let count = parseInt(localStorage.getItem('checkitsa_usage') || '0')
-    let lastReset = localStorage.getItem('checkitsa_last_reset') || new Date().toISOString()
+    count = parseInt(localStorage.getItem(usageKey) || '0')
+    lastReset = localStorage.getItem(resetKey) || new Date().toISOString()
     const customLimit = parseInt(localStorage.getItem('checkitsa_custom_limit') || '0')
 
     // 2. Determine Limit
@@ -27,8 +32,8 @@ export const trackSearch = () => {
 
     if (TIERS[tier] && TIERS[tier].reset === 'monthly' && isNewMonth) {
         count = 0
-        localStorage.setItem('checkitsa_usage', '0')
-        localStorage.setItem('checkitsa_last_reset', now.toISOString())
+        localStorage.setItem(usageKey, '0')
+        localStorage.setItem(resetKey, now.toISOString())
         // console.log('Monthly usage reset!')
     }
 
@@ -46,8 +51,9 @@ export const trackSearch = () => {
 
 export const incrementSearch = () => {
     if (typeof window === 'undefined') return
-    let count = parseInt(localStorage.getItem('checkitsa_usage') || '0')
-    localStorage.setItem('checkitsa_usage', (count + 1).toString())
+    const key = getUserKey('checkitsa_usage')
+    let count = parseInt(localStorage.getItem(key) || '0')
+    localStorage.setItem(key, (count + 1).toString())
 }
 
 export const setTier = (tier, customLimit = 0) => {
