@@ -11,104 +11,83 @@ export const runtime = 'edge'
 // }
 
 export async function POST(request) {
-    const { input } = await request.json()
-    const apiKey = process.env.GEMINI_API_KEY
-    if (!apiKey || apiKey === 'undefined') {
-        return NextResponse.json({
-            valid: false,
-            data: {
-                status: 'Config Error',
-                message: 'GEMINI_API_KEY is missing from Cloudflare Settings.',
-                details: 'Please ensure GEMINI_API_KEY is set in the Cloudflare Pages dashboard.'
-            }
-        })
-    }
-
     try {
-        console.log(`[Verify] Querying Gemini for: ${input}`)
-        // Dynamic import to prevent Edge startup crash
-        const { GoogleGenerativeAI } = await import('@google/generative-ai')
-        const genAI = new GoogleGenerativeAI(apiKey.trim())
+        const { input } = await request.json()
+        const cseKey = process.env.GOOGLE_CSE_API_KEY
+        const cx = process.env.GOOGLE_CSE_CX
 
-        let model
-        try {
-            // Attempt to get the latest flash model
-            model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" })
-        } catch (mErr) {
-            // Fallback to standard flash if latest alias fails
-            model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+        if (!cseKey || !cx) {
+            return NextResponse.json({
+                valid: false,
+                data: {
+                    status: 'Config Error',
+                    message: 'Search services are not configured.',
+                    details: 'GOOGLE_CSE_API_KEY or CX is missing in Cloudflare dashboard.'
+                }
+            })
         }
 
-        // Construct a strict prompt for consistent JSON output
-        const prompt = `
-        You are a business verification agent for South Africa.
-        Analyze the company or entity: "${input}".
-        
-        Task:
-        1. Determine if this appears to be a real, legitimate South African business.
-        2. Estimate its status (Active, Deregistered, Suspicious, Unknown).
-        3. Provide a brief 1-sentence summary of what they do.
-        4. Find 3 authoritative external URLs (links) that validate them (e.g. CIPC, LinkedIn, Official Site, News, HelloPeter).
-        
-        Output stricly in this JSON format (no markdown code blocks):
-        {
-            "name": "Official Business Name",
-            "identifier": "Registration Number or 'Unknown'",
-            "status": "Active" | "Deregistered" | "Suspicious" | "Unknown",
-            "summary": "Short description.",
-            "links": ["url1", "url2", "url3"]
+        console.log(`[Verify] Google Search for: ${input}`)
+
+        // 1. Fetch from Google Search
+        const query = `"${input}" South Africa business registration OR linkedin OR contact`
+        const res = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(query)}`)
+        const data = await res.json()
+
+        if (!data.items || data.items.length === 0) {
+            return NextResponse.json({
+                valid: false,
+                data: {
+                    name: input,
+                    identifier: 'Not Found',
+                    status: 'Unknown',
+                    message: `❓ No digital footprint found for "${input}" in South Africa.`,
+                    source: 'Google Search Registry Check',
+                    details: 'Try searching for the official registered name or registration number.'
+                }
+            })
         }
-        
-        If you genuinely cannot find any trace of it in South Africa, set status to "Unknown" and summary to "No digital footprint found.".
-        `
 
-        const result = await model.generateContent(prompt)
-        const responseText = result.response.text()
+        // 2. Extract Data from Snippets
+        const bestMatch = data.items[0]
+        const snippets = data.items.map(i => i.snippet).join(' ').toLowerCase()
+        const links = data.items.slice(0, 3).map(i => i.link)
 
-        // clean up code fences if Gemini adds them despite instructions
-        const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim()
-        const data = JSON.parse(cleanJson)
+        // Basic Heuristics for "Status"
+        let status = 'Record Found'
+        let icon = '✅'
 
-        // Map AI response to frontend format
-        let statusColor = 'Unknown'
-        let icon = '❓'
-
-        const aiStatus = data.status.toLowerCase()
-        if (aiStatus.includes('active')) {
-            statusColor = 'Active Record Found'
-            icon = '✅'
-        } else if (aiStatus.includes('suspicious')) {
-            statusColor = 'Caution: Suspicious'
-            icon = '⚠️'
-        } else if (aiStatus.includes('deregistered')) {
-            statusColor = 'Deregistered'
+        if (snippets.includes('deregistered') || snippets.includes('final liquidated')) {
+            status = 'Deregistered / Liquidated'
             icon = '❌'
+        } else if (snippets.includes('scam') || snippets.includes('fraud') || snippets.includes('alert')) {
+            status = 'Caution: Suspicious'
+            icon = '⚠️'
         }
 
-        // Format links for display
-        const linkList = data.links && data.links.length > 0
-            ? data.links.map(l => `• ${new URL(l).hostname}`).join('\n')
-            : 'No direct links found.'
+        // Extract potential registration number (basic regex for SA Reg Nos: YYYY/NNNNNN/NN)
+        const regMatch = snippets.match(/\d{4}\/\d{6}\/\d{2}/)
+        const identifier = regMatch ? regMatch[0] : 'Found via Web'
 
         return NextResponse.json({
-            valid: aiStatus !== 'unknown',
+            valid: true,
             data: {
-                name: data.name,
-                identifier: data.identifier,
-                status: statusColor,
-                message: `${icon} AI Analysis: ${data.summary}`,
-                source: 'Google Gemini Analysis',
-                details: `References Found:\n${linkList}`
+                name: bestMatch.title.split('-')[0].split('|')[0].trim(),
+                identifier: identifier,
+                status: status,
+                message: `${icon} Google Summary: ${bestMatch.snippet}`,
+                source: 'Google verified search results',
+                details: `Authoritative Links:\n${links.map(l => `• ${new URL(l).hostname}`).join('\n')}`
             }
         })
 
     } catch (e) {
-        console.error('[Verify] Gemini Error:', e)
+        console.error('[Verify] Business Search Error:', e)
         return NextResponse.json({
             valid: false,
             data: {
-                status: 'AI Error',
-                message: `AI Analysis failed: ${e.message}`,
+                status: 'Error',
+                message: 'Unable to perform business search.',
                 details: e.message
             }
         })
