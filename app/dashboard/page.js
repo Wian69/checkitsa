@@ -121,16 +121,12 @@ export default function Dashboard() {
                                 <Link href="/subscription" className="btn btn-outline" style={{ fontSize: '0.9rem' }}>Unlock Intel</Link>
                             </div>
                         ) : (
-                            <ul style={{ listStyle: 'none', padding: 0 }}>
-                                <li style={{ padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                                    <div style={{ fontSize: '0.9rem', color: '#ef4444', marginBottom: '0.25rem' }}>High Alert • Today</div>
-                                    <div>Spike in "Post Office" SMS scams detected.</div>
-                                </li>
-                                <li style={{ padding: '1rem' }}>
-                                    <div style={{ fontSize: '0.9rem', color: '#fbbf24', marginBottom: '0.25rem' }}>Warning • Yesterday</div>
-                                    <div>New "Tax Refund" phishing campaign active.</div>
-                                </li>
-                            </ul>
+                            <>
+                                <ul style={{ listStyle: 'none', padding: 0 }}>
+                                    <IntelFeed />
+                                </ul>
+                                <CommunitySources />
+                            </>
                         )}
                     </div>
                 </div>
@@ -264,5 +260,41 @@ export default function Dashboard() {
 
             </div>
         </main>
+    )
+}
+
+function IntelFeed() {
+    const [items, setItems] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        fetch('/api/intel')
+            .then(res => res.json())
+            .then(data => {
+                setItems(data.items || [])
+                setLoading(false)
+            })
+            .catch(() => setLoading(false))
+    }, [])
+
+    if (loading) return <li style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>Loading Intel...</li>
+    if (items.length === 0) return <li style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>No recent alerts.</li>
+
+    return (
+        <>
+            {items.map((item, i) => (
+                <li key={i} style={{ padding: '1rem', borderBottom: i < items.length - 1 ? '1px solid rgba(255,255,255,0.1)' : 'none' }}>
+                    <div style={{ fontSize: '0.8rem', color: item.color, marginBottom: '0.25rem', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{item.category} • {new Date(item.date).toLocaleDateString()}</span>
+                        <span style={{ opacity: 0.7 }}>{item.source}</span>
+                    </div>
+                    <div>
+                        <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none', fontWeight: '500' }} className="hover:underline">
+                            {item.title}
+                        </a>
+                    </div>
+                </li>
+            ))}
+        </>
     )
 }

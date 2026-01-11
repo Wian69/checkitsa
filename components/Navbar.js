@@ -132,6 +132,9 @@ export default function Navbar() {
                         <div style={{ fontSize: '1.1rem', color: 'var(--color-text-muted)' }}>
                             Signed in as <span style={{ color: '#fff' }}>{user.fullName}</span>
                         </div>
+                        <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', margin: '1rem 0' }}>
+                            Go to Dashboard
+                        </Link>
                         <button onClick={handleLogout} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }}>
                             Logout
                         </button>

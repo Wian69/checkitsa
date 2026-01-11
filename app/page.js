@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 
 import Navbar from '@/components/Navbar'
 import CommunityReportsFeed from '@/components/CommunityReportsFeed'
+import BusinessReviews from '@/components/BusinessReviews'
 
 export default function Home() {
   const [user, setUser] = useState(null)
@@ -185,6 +186,9 @@ export default function Home() {
           <CommunityReportsFeed />
         </div>
       </section>
+
+      {/* Business Reviews Section (HelloPeter Style) */}
+      <BusinessReviews />
 
       {/* Global Intel Section */}
       <section className="container">

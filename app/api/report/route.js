@@ -61,45 +61,73 @@ export async function POST(req) {
             )
             .run()
 
-        // 3. Send Email Notification (Via Raw Fetch to avoid Resend SDK issues)
+        // 3. Send Email Notification (Provider Agnostic)
         const resendApiKey = process.env.RESEND_API_KEY
-        if (resendApiKey && success) {
-            const adminSecret = process.env.ADMIN_SECRET || 'secret'
-            const baseUrl = 'https://checkitsa.co.za'
+        const brevoApiKey = process.env.BREVO_API_KEY
 
-            // Get ID (Best effort: select latest from this user)
-            const reportId = await db.prepare('SELECT id FROM scam_reports WHERE reporter_email = ? ORDER BY created_at DESC LIMIT 1').bind(email || 'N/A').first('id')
+        let sentEmail = false
+        const adminSecret = process.env.ADMIN_SECRET || 'secret'
+        const baseUrl = 'https://checkitsa.co.za'
+        const reportId = success ? await db.prepare('SELECT id FROM scam_reports WHERE reporter_email = ? ORDER BY created_at DESC LIMIT 1').bind(email || 'N/A').first('id') : null
 
-            if (reportId) {
-                await fetch('https://api.resend.com/emails', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${resendApiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        from: 'CheckItSA Reports <onboarding@resend.dev>',
-                        to: 'wiandurandt69@gmail.com', // MUST be this address for Resend Free Tier
-                        subject: `🚨 New Scam Report: ${type}`,
-                        html: `
-                            <h2>New Report Received</h2>
-                            <p><strong>Reporter:</strong> ${name} (${email})</p>
-                            <p><strong>Scammer:</strong> ${scammer_details}</p>
-                            <p><strong>Description:</strong> ${description}</p>
-                            <br/>
-                            <div style="display: flex; gap: 10px;">
-                                <a href="${baseUrl}/api/admin/moderate?id=${reportId}&action=verify&token=${adminSecret}" 
-                                   style="background: #22c55e; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-                                   ✅ VERIFY (Public)
-                                </a>
-                                <a href="${baseUrl}/api/admin/moderate?id=${reportId}&action=reject&token=${adminSecret}" 
-                                   style="background: #ef4444; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-                                   ❌ REJECT
-                                </a>
-                            </div>
-                        `
+        const emailSubject = `🚨 New Scam Report: ${type}`
+        const emailHtml = `
+            <h2>New Report Received</h2>
+            <p><strong>Reporter:</strong> ${name} (${email})</p>
+            <p><strong>Scammer:</strong> ${scammer_details}</p>
+            <p><strong>Description:</strong> ${description}</p>
+            <br/>
+            <div style="display: flex; gap: 10px;">
+                <a href="${baseUrl}/api/admin/moderate?id=${reportId}&action=verify&token=${adminSecret}" 
+                   style="background: #22c55e; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                   ✅ VERIFY (Public)
+                </a>
+                <a href="${baseUrl}/api/admin/moderate?id=${reportId}&action=reject&token=${adminSecret}" 
+                   style="background: #ef4444; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                   ❌ REJECT
+                </a>
+            </div>
+        `
+
+        if (reportId) {
+            // TRY BREVO (Available in SA)
+            if (brevoApiKey) {
+                try {
+                    await fetch('https://api.brevo.com/v3/smtp/email', {
+                        method: 'POST',
+                        headers: {
+                            'api-key': brevoApiKey,
+                            'Content-Type': 'application/json',
+                            'accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            sender: { name: 'CheckItSA Reports', email: 'info@checkitsa.co.za' }, // Brevo allows any verified sender
+                            to: [{ email: 'wiandurandt69@gmail.com', name: 'Admin arg' }],
+                            subject: emailSubject,
+                            htmlContent: emailHtml
+                        })
                     })
-                })
+                    sentEmail = true
+                } catch (e) { console.error('Brevo Error:', e) }
+            }
+
+            // FALLBACK TO RESEND
+            if (!sentEmail && resendApiKey) {
+                try {
+                    await fetch('https://api.resend.com/emails', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${resendApiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            from: 'CheckItSA Reports <onboarding@resend.dev>',
+                            to: 'wiandurandt69@gmail.com',
+                            subject: emailSubject,
+                            html: emailHtml
+                        })
+                    })
+                } catch (e) { console.error('Resend Error:', e) }
             }
         }
 
