@@ -64,9 +64,18 @@ export const setTier = (tier, customLimit = 0) => {
 const getUserKey = (base) => {
     if (typeof window === 'undefined') return base
     try {
-        const user = JSON.parse(localStorage.getItem('checkitsa_user'))
-        if (user && user.email) return `${base}_${user.email}`
-    } catch (e) { }
+        const userStr = localStorage.getItem('checkitsa_user')
+        if (!userStr) {
+            console.log('History: No user found in storage')
+            return base
+        }
+        const user = JSON.parse(userStr)
+        if (user && user.email) {
+            console.log('History: Using user key for', user.email)
+            return `${base}_${user.email}`
+        }
+        console.log('History: User found but no email', user)
+    } catch (e) { console.error('History Error:', e) }
     return base
 }
 

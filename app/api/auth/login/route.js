@@ -21,7 +21,7 @@ export async function POST(req) {
             message: 'Login successful',
             user: {
                 id: user.id,
-                fullName: user.full_name,
+                fullName: user.fullName,
                 email: user.email,
                 tier: user.tier || 'free'
             }
