@@ -5,7 +5,7 @@ export const runtime = 'edge'
 
 export async function POST(req) {
     try {
-        const { token } = await req.json()
+        const { token, context } = await req.json()
         const db = getRequestContext().env.DB
 
         if (!token) {
@@ -25,10 +25,13 @@ export async function POST(req) {
         // Check if user exists
         let user = await db.prepare('SELECT * FROM users WHERE email = ?').bind(email).first()
 
+        // STRICT Login Enforcement
         if (!user) {
-            // Create new user via Google
-            // Use 'google' as password placeholder or handle differently in login
-            // Using a random string for password basically disables password login unless they reset it, which is standard
+            if (context === 'login') {
+                return NextResponse.json({ message: 'Account not found. Please create an account via Sign Up.' }, { status: 404 })
+            }
+
+            // If context is 'signup' (or undefined/fallback logic), create user
             const tempPassword = Math.random().toString(36).slice(-8)
 
             await db.prepare(

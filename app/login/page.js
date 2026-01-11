@@ -19,7 +19,7 @@ export default function Login() {
                 const res = await fetch('/api/auth/google', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token: response.credential })
+                    body: JSON.stringify({ token: response.credential, context: 'login' })
                 })
 
                 if (!res.ok) throw new Error('Google authentication failed')
