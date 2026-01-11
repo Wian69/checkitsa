@@ -21,9 +21,9 @@ export async function POST(request) {
 
         if (!input) return NextResponse.json({ message: 'Missing input' }, { status: 400 })
 
-        const sbKey = process.env.GOOGLE_SAFE_BROWSING_API_KEY || 'AIzaSyAa_UvfwNnjcEX_5sABhgr-fETXTVeX_wA'
-        const cseKey = process.env.GOOGLE_CSE_API_KEY || 'AIzaSyCWX0SE7QsnrImcVPBLNsvOzCccQGlbqrg'
-        const cx = process.env.GOOGLE_CSE_CX || '16e9212fe3fcf4cea'
+        const sbKey = process.env.GOOGLE_SAFE_BROWSING_API_KEY
+        const cseKey = process.env.GOOGLE_CSE_API_KEY
+        const cx = process.env.GOOGLE_CSE_CX
 
         // 1. URL Resolution & Shortener Detection
         let finalUrl = input

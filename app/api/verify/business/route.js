@@ -12,14 +12,14 @@ export const runtime = 'edge'
 
 export async function POST(request) {
     const { input } = await request.json()
-    const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyCfnZPUMK8n4A4IgMSddiAmajHqCvyLf00'
+    const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey || apiKey === 'undefined') {
         return NextResponse.json({
             valid: false,
             data: {
                 status: 'Config Error',
-                message: 'GEMINI_API_KEY is not set in Cloudflare Environment Variables.',
-                details: 'Please add GEMINI_API_KEY to your Pages project settings.'
+                message: 'GEMINI_API_KEY is missing from Cloudflare Settings.',
+                details: 'Please ensure GEMINI_API_KEY is set in the Cloudflare Pages dashboard.'
             }
         })
     }
@@ -28,10 +28,16 @@ export async function POST(request) {
         console.log(`[Verify] Querying Gemini for: ${input}`)
         // Dynamic import to prevent Edge startup crash
         const { GoogleGenerativeAI } = await import('@google/generative-ai')
-        const genAI = new GoogleGenerativeAI(apiKey)
+        const genAI = new GoogleGenerativeAI(apiKey.trim())
 
-        // Use gemini-1.5-flash-latest for best compatibility
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" })
+        let model
+        try {
+            // Attempt to get the latest flash model
+            model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" })
+        } catch (mErr) {
+            // Fallback to standard flash if latest alias fails
+            model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+        }
 
         // Construct a strict prompt for consistent JSON output
         const prompt = `
