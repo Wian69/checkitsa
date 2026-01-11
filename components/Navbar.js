@@ -76,6 +76,9 @@ export default function Navbar() {
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '2rem' }}>
                         {user ? (
                             <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
+                                <Link href="/dashboard" style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', textDecoration: 'none', borderBottom: '1px solid transparent', transition: 'border-color 0.2s' }} className="hover:text-white">
+                                    Dashboard
+                                </Link>
                                 <span style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
                                     Hi, <span style={{ color: '#fff', fontWeight: 600 }}>{user.fullName.split(' ')[0]}</span>
                                 </span>

@@ -1,76 +1,203 @@
+"use client"
 import Navbar from '@/components/Navbar'
-
+import { useState, useEffect } from 'react'
+import { trackSearch, getHistory } from '@/utils/searchLimit'
 import Link from 'next/link'
 
 export default function Dashboard() {
-    const tools = [
-        { title: 'Scam Detector', href: '/verify/scam', icon: '🕵️', desc: 'Check emails & links' },
-        { title: 'Gambling Check', href: '/verify/gambling', icon: '🎰', desc: 'Verify site license' },
-        { title: 'ID Verification', href: '/verify/id', icon: '🆔', desc: 'Validate SA ID' },
-        { title: 'Business Verify', href: '/verify/business', icon: '🏢', desc: 'CIPC Check' },
-        { title: 'Traffic Fines', href: '/verify/fines', icon: '🚗', desc: 'Check outstanding fines' },
-        { title: 'Phone Lookup', href: '/verify/phone', icon: '📱', desc: 'Caller Identity' }
-    ]
+    const [stats, setStats] = useState({ count: 0, limit: 5, tier: 'free', resetType: 'lifetime' })
+    const [history, setHistory] = useState({ searches: [], reports: [] })
+    const [user, setUser] = useState(null)
+
+    useEffect(() => {
+        setStats(trackSearch())
+        setHistory(getHistory())
+        const u = localStorage.getItem('checkitsa_user')
+        if (u) setUser(JSON.parse(u))
+    }, [])
+
+    const searchPercentage = Math.min((stats.count / stats.limit) * 100, 100)
+    const isCrisis = searchPercentage >= 80
 
     return (
-        <main style={{ minHeight: '100vh', paddingBottom: '4rem' }}>
+        <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
             <Navbar />
 
             <div className="container" style={{ paddingTop: '8rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', marginBottom: '2rem' }}>
+
+                {/* Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
                     <div>
-                        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>Dashboard</h1>
-                        <p style={{ color: 'var(--color-text-muted)' }}>Welcome back, User</p>
+                        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>
+                            {user ? `Welcome back, ${user.fullName.split(' ')[0]}` : 'My Dashboard'}
+                        </h1>
+                        <p style={{ color: 'var(--color-text-muted)' }}>Manage your security profile and history.</p>
                     </div>
-                    <button className="btn btn-primary">+ New Scan</button>
-                </div>
-
-                {/* Quick Tools */}
-                <h3 style={{ marginBottom: '1.5rem' }}>Verification Tools</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '4rem' }}>
-                    {tools.map((tool) => (
-                        <Link href={tool.href} key={tool.title} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', transition: 'background 0.2s', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <div style={{ fontSize: '2rem', background: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: '0.75rem' }}>{tool.icon}</div>
-                            <div>
-                                <h4 style={{ marginBottom: '0.25rem' }}>{tool.title}</h4>
-                                <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>{tool.desc}</p>
-                            </div>
+                    {stats.tier === 'free' && (
+                        <Link href="/subscription" className="btn btn-primary">
+                            Upgrade Plan ⚡
                         </Link>
-                    ))}
+                    )}
                 </div>
 
-                {/* Recent Activity Mock */}
-                <h3 style={{ marginBottom: '1.5rem' }}>Recent Activity</h3>
-                <div className="glass-panel" style={{ overflow: 'hidden' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr style={{ background: 'rgba(255,255,255,0.03)', textAlign: 'left' }}>
-                                <th style={{ padding: '1rem', borderBottom: '1px solid var(--color-border)' }}>Type</th>
-                                <th style={{ padding: '1rem', borderBottom: '1px solid var(--color-border)' }}>Target</th>
-                                <th style={{ padding: '1rem', borderBottom: '1px solid var(--color-border)' }}>Status</th>
-                                <th style={{ padding: '1rem', borderBottom: '1px solid var(--color-border)' }}>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {[
-                                { type: 'ID Check', target: '9202...089', status: 'Verified', color: 'var(--color-success)' },
-                                { type: 'Scam Scan', target: 'suspicious-link.com', status: 'High Risk', color: 'var(--color-danger)' },
-                                { type: 'Gambling', target: 'lottostar.co.za', status: 'Safe', color: 'var(--color-success)' },
-                            ].map((row, i) => (
-                                <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <td style={{ padding: '1rem' }}>{row.type}</td>
-                                    <td style={{ padding: '1rem', fontFamily: 'monospace' }}>{row.target}</td>
-                                    <td style={{ padding: '1rem' }}>
-                                        <span style={{ padding: '0.25rem 0.75rem', borderRadius: '99px', background: `${row.color}20`, color: row.color, fontSize: '0.875rem', fontWeight: 600 }}>
-                                            {row.status}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '1rem', color: 'var(--color-text-muted)' }}>Today</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                <div className="grid-responsive" style={{ gap: '2rem' }}>
+
+                    {/* Usage Card */}
+                    <div className="glass-panel" style={{ padding: '2rem', gridColumn: 'span 1' }}>
+                        <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span>📊</span> Usage & Quota
+                        </h3>
+
+                        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                            <div style={{
+                                width: '150px',
+                                height: '150px',
+                                borderRadius: '50%',
+                                border: `8px solid ${isCrisis ? 'var(--color-danger)' : 'var(--color-primary)'}`,
+                                borderRightColor: 'rgba(255,255,255,0.1)', // Simplistic CSS loader look
+                                margin: '0 auto 1.5rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexDirection: 'column'
+                            }}>
+                                <span style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{stats.count}</span>
+                                <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>/ {stats.limit}</span>
+                            </div>
+                            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', textTransform: 'uppercase', color: stats.tier === 'free' ? 'var(--color-text-muted)' : 'var(--color-primary)' }}>
+                                {stats.tier} Plan
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
+                                {stats.resetType === 'monthly' ? 'Resets Monthly' : 'Lifetime Limit (No Reset)'}
+                            </div>
+                        </div>
+
+                        {stats.tier === 'free' && stats.count >= stats.limit && (
+                            <div style={{ padding: '1rem', background: 'rgba(220, 38, 38, 0.1)', border: '1px solid var(--color-danger)', borderRadius: '0.5rem', color: '#fca5a5', fontSize: '0.9rem', textAlign: 'center' }}>
+                                Limit Reached. Upgrade to continue searching.
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Security Intel / Notifications */}
+                    <div className="glass-panel" style={{ padding: '2rem', gridColumn: 'span 1' }}>
+                        <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span>🛡️</span> Security Intel
+                        </h3>
+
+                        {stats.tier === 'free' ? (
+                            <div style={{ textAlign: 'center', padding: '2rem 0', opacity: 0.7 }}>
+                                <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🔒</div>
+                                <p style={{ marginBottom: '1.5rem' }}>Global Security Intel is locked.</p>
+                                <Link href="/subscription" className="btn btn-outline" style={{ fontSize: '0.9rem' }}>Unlock Intel</Link>
+                            </div>
+                        ) : (
+                            <ul style={{ listStyle: 'none', padding: 0 }}>
+                                <li style={{ padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <div style={{ fontSize: '0.9rem', color: '#ef4444', marginBottom: '0.25rem' }}>High Alert • Today</div>
+                                    <div>Spike in "Post Office" SMS scams detected.</div>
+                                </li>
+                                <li style={{ padding: '1rem' }}>
+                                    <div style={{ fontSize: '0.9rem', color: '#fbbf24', marginBottom: '0.25rem' }}>Warning • Yesterday</div>
+                                    <div>New "Tax Refund" phishing campaign active.</div>
+                                </li>
+                            </ul>
+                        )}
+                    </div>
                 </div>
+
+                {/* Search History */}
+                <div style={{ marginTop: '3rem' }}>
+                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Search History</h2>
+                    <div className="glass-panel" style={{ overflow: 'hidden' }}>
+                        {history.searches.length === 0 ? (
+                            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                                No recent searches found.
+                            </div>
+                        ) : (
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
+                                        <th style={{ padding: '1rem' }}>Type</th>
+                                        <th style={{ padding: '1rem' }}>Query</th>
+                                        <th style={{ padding: '1rem' }}>Status</th>
+                                        <th style={{ padding: '1rem' }}>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {history.searches.map(s => (
+                                        <tr key={s.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <td style={{ padding: '1rem' }}>{s.type}</td>
+                                            <td style={{ padding: '1rem', fontFamily: 'monospace' }}>{s.query}</td>
+                                            <td style={{ padding: '1rem' }}>
+                                                <span style={{
+                                                    padding: '0.25rem 0.5rem',
+                                                    borderRadius: '1rem',
+                                                    fontSize: '0.8rem',
+                                                    background: s.status === 'Dangerous' ? 'rgba(220, 38, 38, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                                                    color: s.status === 'Dangerous' ? '#fca5a5' : '#6ee7b7'
+                                                }}>
+                                                    {s.status}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
+                                                {new Date(s.date).toLocaleDateString()}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                </div>
+
+                {/* Report History */}
+                <div style={{ marginTop: '3rem' }}>
+                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>My Reports</h2>
+                    <div className="glass-panel" style={{ overflow: 'hidden' }}>
+                        {history.reports.length === 0 ? (
+                            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                                You haven't submitted any reports yet.
+                            </div>
+                        ) : (
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
+                                        <th style={{ padding: '1rem' }}>Type</th>
+                                        <th style={{ padding: '1rem' }}>Details</th>
+                                        <th style={{ padding: '1rem' }}>Evidence</th>
+                                        <th style={{ padding: '1rem' }}>Status</th>
+                                        <th style={{ padding: '1rem' }}>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {history.reports.map(r => (
+                                        <tr key={r.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <td style={{ padding: '1rem' }}>{r.type}</td>
+                                            <td style={{ padding: '1rem', fontFamily: 'monospace' }}>{r.details}</td>
+                                            <td style={{ padding: '1rem' }}>{r.evidence ? '📎 Attached' : '-'}</td>
+                                            <td style={{ padding: '1rem' }}>
+                                                <span style={{
+                                                    padding: '0.25rem 0.5rem',
+                                                    borderRadius: '1rem',
+                                                    fontSize: '0.8rem',
+                                                    background: 'rgba(251, 191, 36, 0.1)',
+                                                    color: '#fcd34d'
+                                                }}>
+                                                    {r.status}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
+                                                {new Date(r.date).toLocaleDateString()}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                </div>
+
             </div>
         </main>
     )

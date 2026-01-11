@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react'
+import { addToReportHistory } from '@/utils/searchLimit'
 
 export default function ScamReportForm() {
     const [type, setType] = useState('WhatsApp')
@@ -23,6 +23,10 @@ export default function ScamReportForm() {
             })
             if (res.ok) {
                 setStatus('success')
+                addToReportHistory({
+                    type: type + ' Scam',
+                    details: formData.scammer_details
+                })
                 setFormData({ name: '', email: '', phone: '', scammer_details: '', description: '', evidence: '' })
             } else {
                 throw new Error('Failed to submit')

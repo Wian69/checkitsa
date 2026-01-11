@@ -59,3 +59,40 @@ export const setTier = (tier, customLimit = 0) => {
     // Usually better to keep usage but reset "last_reset" to start the cycle.
     localStorage.setItem('checkitsa_last_reset', new Date().toISOString())
 }
+
+export const addToHistory = (type, query, status) => {
+    if (typeof window === 'undefined') return
+    const history = JSON.parse(localStorage.getItem('checkitsa_history') || '[]')
+    const newEntry = {
+        id: Date.now(),
+        type,
+        query,
+        status,
+        date: new Date().toISOString()
+    }
+    // Keep last 50
+    const updated = [newEntry, ...history].slice(0, 50)
+    localStorage.setItem('checkitsa_history', JSON.stringify(updated))
+}
+
+export const addToReportHistory = (report) => {
+    if (typeof window === 'undefined') return
+    const history = JSON.parse(localStorage.getItem('checkitsa_my_reports') || '[]')
+    const newEntry = {
+        id: Date.now(),
+        ...report,
+        status: 'Pending Review',
+        date: new Date().toISOString()
+    }
+    // Keep last 20
+    const updated = [newEntry, ...history].slice(0, 20)
+    localStorage.setItem('checkitsa_my_reports', JSON.stringify(updated))
+}
+
+export const getHistory = () => {
+    if (typeof window === 'undefined') return { searches: [], reports: [] }
+    return {
+        searches: JSON.parse(localStorage.getItem('checkitsa_history') || '[]'),
+        reports: JSON.parse(localStorage.getItem('checkitsa_my_reports') || '[]')
+    }
+}
