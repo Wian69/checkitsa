@@ -39,7 +39,7 @@ export default function ScamReportForm() {
         }
     }
 
-    const types = ['WhatsApp', 'Social Media', 'SMS', 'Email']
+    const types = ['WhatsApp', 'Social Media', 'SMS', 'Email', 'Gambling']
 
     const inputStyle = {
         width: '100%',
@@ -94,6 +94,7 @@ export default function ScamReportForm() {
                         {t === 'Social Media' && '🌐 '}
                         {t === 'SMS' && '📱 '}
                         {t === 'Email' && '📧 '}
+                        {t === 'Gambling' && '🎰 '}
                         {t} Scam
                     </button>
                 ))}
@@ -167,7 +168,7 @@ export default function ScamReportForm() {
                         <div style={{ display: 'grid', gap: '1.25rem' }}>
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
-                                    {type === 'Social Media' ? 'Scammer Profile Link / Name' : (type === 'Email' ? 'Scammer Email Address' : 'Scammer Number / Sender ID')}
+                                    {type === 'Social Media' ? 'Scammer Profile Link / Name' : (type === 'Email' ? 'Scammer Email Address' : (type === 'Gambling' ? 'Casino URL / Name' : 'Scammer Number / Sender ID'))}
                                 </label>
                                 <input
                                     required
@@ -175,7 +176,8 @@ export default function ScamReportForm() {
                                     placeholder={
                                         type === 'Social Media' ? 'e.g. facebook.com/scammer123' :
                                             type === 'Email' ? 'e.g. scammer@gmail.com' :
-                                                'e.g. +27 12 345 6789'
+                                                type === 'Gambling' ? 'e.g. illegalcasino.com' :
+                                                    'e.g. +27 12 345 6789'
                                     }
                                     style={inputStyle}
                                     value={formData.scammer_details}
