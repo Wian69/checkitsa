@@ -33,6 +33,33 @@ export default function Login() {
                 setLoading(false)
             }
         }
+
+        // Initialize Google Button
+        const initGoogle = () => {
+            if (window.google && window.google.accounts) {
+                window.google.accounts.id.initialize({
+                    client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "729035479590-9dffbod3sfn21cq1q0gshqjm4358nnrq.apps.googleusercontent.com",
+                    callback: window.handleGoogleCredentialResponse,
+                    auto_select: false,
+                    cancel_on_tap_outside: true
+                })
+                window.google.accounts.id.renderButton(
+                    document.getElementById("google-login-btn"),
+                    { theme: "filled_black", size: "large", type: "standard", shape: "rectangular", text: "signin_with", width: "100%" }
+                )
+            }
+        }
+
+        // Try initializing immediately, and retry if script hasn't loaded
+        initGoogle()
+        const timer = setInterval(() => {
+            if (window.google) {
+                initGoogle()
+                clearInterval(timer)
+            }
+        }, 500)
+
+        return () => clearInterval(timer)
     }, [router])
 
     const handleSubmit = async (e) => {
@@ -82,23 +109,8 @@ export default function Login() {
                     {error && <div style={{ color: 'var(--color-danger)', marginBottom: '1rem', textAlign: 'center' }}>{error}</div>}
 
                     {/* Google Sign In */}
-                    <div style={{ marginBottom: '2rem' }}>
-                        <div id="g_id_onload"
-                            data-client_id={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "729035479590-9dffbod3sfn21cq1q0gshqjm4358nnrq.apps.googleusercontent.com"}
-                            data-context="signin"
-                            data-ux_mode="popup"
-                            data-callback="handleGoogleCredentialResponse"
-                            data-auto_prompt="false">
-                        </div>
-                        <div className="g_id_signin"
-                            data-type="standard"
-                            data-shape="rectangular"
-                            data-theme="filled_black"
-                            data-text="signin_with"
-                            data-size="large"
-                            data-logo_alignment="left"
-                            data-width="100%">
-                        </div>
+                    <div style={{ marginBottom: '2rem', minHeight: '50px' }}>
+                        <div id="google-login-btn"></div>
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', color: 'var(--color-text-muted)' }}>
