@@ -64,9 +64,131 @@ export default async function Home() {
     <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
       <Navbar />
 
-      {/* ... (Hero and Tools sections remain unchanged) ... */}
+      {/* Hero Section */}
+      <section style={{
+        paddingTop: '10rem',
+        paddingBottom: '6rem',
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+          <div>
+            <div style={{
+              display: 'inline-block',
+              padding: '0.5rem 1rem',
+              background: 'rgba(99, 102, 241, 0.1)',
+              border: '1px solid rgba(99, 102, 241, 0.2)',
+              borderRadius: '2rem',
+              color: 'var(--color-primary-light)',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              marginBottom: '1.5rem',
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase'
+            }}>
+              Design Update v2.0 Live
+            </div>
+            <h1 style={{
+              fontSize: 'clamp(2.5rem, 8vw, 4.5rem)',
+              marginBottom: '1.5rem',
+              lineHeight: 1.1,
+              background: 'linear-gradient(to bottom, #fff 0%, #a5b4fc 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}>
+              Verify Everything.<br />Trust No One.
+            </h1>
+            <p style={{
+              fontSize: '1.25rem',
+              color: 'var(--color-text-muted)',
+              maxWidth: '700px',
+              margin: '0 auto 3.5rem',
+              lineHeight: 1.6
+            }}>
+              South Africa's most advanced automated verification platform. Protect yourself against phishing, fraud, and digital threats with real-time intelligence.
+            </p>
 
-      {/* (Skipping strictly unchanged parts for brevity in edit, ensuring context matching) */}
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+              <Link href="/signup" className="btn btn-primary" style={{ padding: '1rem 2.5rem' }}>Get Started Free</Link>
+              <a href="#tools" className="btn btn-outline" style={{ padding: '1rem 2.5rem' }}>Explore Tools</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Tools Section */}
+      <section id="tools" className="container" style={{ marginBottom: '8rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+          <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Our Verification Suite</h2>
+          <p style={{ color: 'var(--color-text-muted)' }}>Professional-grade investigative tools for everyday users.</p>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '1.5rem',
+          maxWidth: '1200px',
+          margin: '0 auto'
+        }}>
+          <Tile
+            title="Website Scanner"
+            icon="🔍"
+            desc="Deep scan URLs for phishing, malware, and hidden redirects."
+            href="/verify/scam"
+            color="var(--color-primary)"
+          />
+          <Tile
+            title="Email Scanning"
+            icon="📧"
+            desc="Verify sender identity, MX records, and domain reputation."
+            href="/verify/email"
+            color="#A78BFA"
+          />
+          <Tile
+            title="Identity Check"
+            icon="🆔"
+            desc="Verify SA ID numbers and validate citizenship status."
+            href="/verify/id"
+            color="#F472B6"
+          />
+          <Tile
+            title="Business Verify"
+            icon="🏢"
+            desc="Cross-reference CIPC and external data for legitimacy."
+            href="/verify/business"
+            color="#FBBF24"
+          />
+          <Tile
+            title="Phone Lookup"
+            icon="📱"
+            desc="Identify carrier, location, and check spam reports."
+            href="/verify/phone"
+            color="#34D399"
+          />
+          <Tile
+            title="Image Analysis"
+            icon="🖼️"
+            desc="Scan screenshots for hidden scam text and patterns."
+            href="/verify/image"
+            color="#ec4899"
+          />
+          <Tile
+            title="Gambling Check"
+            icon="🎰"
+            desc="Verify if a betting site is legally licensed in SA."
+            href="/verify/gambling"
+            color="#F87171"
+          />
+          <Tile
+            title="Traffic Fines"
+            icon="🚔"
+            desc="Search and check for outstanding traffic violations."
+            href="/verify/fines"
+            color="#6366f1"
+          />
+        </div>
+      </section>
 
       {/* Community Reports Section */}
       <section className="container" style={{ marginBottom: '8rem' }}>
