@@ -18,23 +18,23 @@ export default function GamblingCheck() {
         }
     }, [])
 
-    // Static List
+    // Static List - Now with Affiliate Capability
     const legalSites = [
-        { domain: 'lottostar.co.za', name: 'LottoStar', license: 'Mpumalanga Economic Regulator' },
-        { domain: 'betway.co.za', name: 'Betway', license: 'Western Cape Gambling Board' },
-        { domain: 'hollywoodbets.net', name: 'Hollywoodbets', license: 'Gauteng Gambling Board' },
-        { domain: 'supabets.co.za', name: 'Supabets', license: 'Mpumalanga Economic Regulator' },
-        { domain: 'sunbet.co.za', name: 'SunBet', license: 'Western Cape Gambling Board' },
-        { domain: 'bet.co.za', name: 'BET.co.za', license: 'Western Cape Gambling Board' },
-        { domain: 'sportingbet.co.za', name: 'Sportingbet', license: 'Western Cape Gambling Board' },
-        { domain: 'gbets.co.za', name: 'Gbets', license: 'Western Cape Gambling Board' },
-        { domain: '10bet.co.za', name: '10Bet', license: 'Mpumalanga Economic Regulator' },
-        { domain: 'palacebet.co.za', name: 'PalaceBet', license: 'Western Cape Gambling Board' },
-        { domain: 'tic-tac.co.za', name: 'Tic Tac Bets', license: 'Northern Cape Gambling Board' },
-        { domain: 'playabets.co.za', name: 'Playa Bets', license: 'KZN Gaming & Betting Board' },
-        { domain: 'wsb.co.za', name: 'World Sports Betting', license: 'Gauteng Gambling Board' },
-        { domain: 'yesplay.bet', name: 'YesPlay', license: 'Western Cape Gambling Board' },
-        { domain: 'betfred.co.za', name: 'Betfred', license: 'Mpumalanga Economic Regulator' }
+        { domain: 'lottostar.co.za', name: 'LottoStar', license: 'Mpumalanga Economic Regulator', affiliateUrl: 'https://lottostar.co.za/?ref=checkitsa' },
+        { domain: 'betway.co.za', name: 'Betway', license: 'Western Cape Gambling Board', affiliateUrl: 'https://betway.co.za/?ref=checkitsa' },
+        { domain: 'hollywoodbets.net', name: 'Hollywoodbets', license: 'Gauteng Gambling Board', affiliateUrl: 'https://hollywoodbets.net/?ref=checkitsa' },
+        { domain: 'supabets.co.za', name: 'Supabets', license: 'Mpumalanga Economic Regulator', affiliateUrl: 'https://supabets.co.za/?ref=checkitsa' },
+        { domain: 'sunbet.co.za', name: 'SunBet', license: 'Western Cape Gambling Board', affiliateUrl: 'https://sunbet.co.za/?ref=checkitsa' },
+        { domain: 'bet.co.za', name: 'BET.co.za', license: 'Western Cape Gambling Board', affiliateUrl: 'https://bet.co.za/?ref=checkitsa' },
+        { domain: 'sportingbet.co.za', name: 'Sportingbet', license: 'Western Cape Gambling Board', affiliateUrl: 'https://sportingbet.co.za/?ref=checkitsa' },
+        { domain: 'gbets.co.za', name: 'Gbets', license: 'Western Cape Gambling Board', affiliateUrl: 'https://gbets.co.za/?ref=checkitsa' },
+        { domain: '10bet.co.za', name: '10Bet', license: 'Mpumalanga Economic Regulator', affiliateUrl: 'https://10bet.co.za/?ref=checkitsa' },
+        { domain: 'palacebet.co.za', name: 'PalaceBet', license: 'Western Cape Gambling Board', affiliateUrl: 'https://palacebet.co.za/?ref=checkitsa' },
+        { domain: 'tic-tac.co.za', name: 'Tic Tac Bets', license: 'Northern Cape Gambling Board', affiliateUrl: 'https://tic-tac.co.za/?ref=checkitsa' },
+        { domain: 'playabets.co.za', name: 'Playa Bets', license: 'KZN Gaming & Betting Board', affiliateUrl: 'https://playabets.co.za/?ref=checkitsa' },
+        { domain: 'wsb.co.za', name: 'World Sports Betting', license: 'Gauteng Gambling Board', affiliateUrl: 'https://wsb.co.za/?ref=checkitsa' },
+        { domain: 'yesplay.bet', name: 'YesPlay', license: 'Western Cape Gambling Board', affiliateUrl: 'https://yesplay.bet/?ref=checkitsa' },
+        { domain: 'betfred.co.za', name: 'Betfred', license: 'Mpumalanga Economic Regulator', affiliateUrl: 'https://betfred.co.za/?ref=checkitsa' }
     ]
 
     const filteredSites = legalSites.filter(site =>
@@ -42,9 +42,10 @@ export default function GamblingCheck() {
         site.domain.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
-    const handleVisit = (url) => {
+    const handleVisit = (site) => {
         // Gambling checks are free and do not count towards limits
-        window.open(`https://${url}`, '_blank')
+        const targetUrl = site.affiliateUrl || `https://${site.domain}`
+        window.open(targetUrl, '_blank')
     }
 
     return (
@@ -91,7 +92,7 @@ export default function GamblingCheck() {
                             <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
                                 <strong>License:</strong> {site.license}
                             </div>
-                            <button onClick={() => handleVisit(site.domain)} className="btn btn-outline" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center', fontSize: '0.875rem' }}>
+                            <button onClick={() => handleVisit(site)} className="btn btn-outline" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center', fontSize: '0.875rem' }}>
                                 Visit Safe Site ↗
                             </button>
                         </div>

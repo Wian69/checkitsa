@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { trackSearch, checkLimit, addToHistory, incrementSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
 import LoadingOverlay from '@/components/LoadingOverlay'
+import ShareButton from '@/components/ShareButton'
 
 export default function ScamCheck() {
     const [input, setInput] = useState('')
@@ -103,6 +104,15 @@ export default function ScamCheck() {
                                     </div>
                                 </div>
                             </div>
+
+                            <div style={{ marginBottom: '2rem' }}>
+                                <div style={{ fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--color-primary)' }}>📢 Warn Your Community:</div>
+                                <ShareButton
+                                    query={result.details.domain}
+                                    status={result.verdict}
+                                />
+                            </div>
+
                             <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', textAlign: 'right', marginTop: '0.5rem' }}>
                                 To report a scam, please use the <a href="/report" style={{ textDecoration: 'underline', fontWeight: 'bold' }}>Report Incident</a> feature.
                             </p>

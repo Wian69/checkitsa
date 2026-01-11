@@ -130,6 +130,51 @@ export default function Dashboard() {
                     </div>
                 </div>
 
+                {/* Promotion & Growth Hub */}
+                <div style={{ marginTop: '3rem' }}>
+                    <div className="glass-panel" style={{
+                        padding: '2.5rem',
+                        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%)',
+                        border: '1px solid rgba(99, 102, 241, 0.2)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
+                            <div style={{ flex: '1', minWidth: '300px' }}>
+                                <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <span>🚀</span> Help Grow CheckItSA
+                                </h3>
+                                <p style={{ color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>
+                                    The more people use our platform, the safer South Africa becomes.
+                                    Share your experience and prevent more people from getting scammed.
+                                </p>
+                            </div>
+                            <div style={{ minWidth: '250px' }}>
+                                <div style={{ fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--color-primary)' }}>📢 Spread the Word:</div>
+                                <div style={{
+                                    background: 'rgba(0,0,0,0.2)',
+                                    padding: '1rem',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid var(--color-border)',
+                                    marginBottom: '1rem'
+                                }}>
+                                    <code style={{ fontSize: '0.9rem', color: '#fff' }}>
+                                        https://checkitsa.co.za
+                                    </code>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        const msg = `⚠️ South Africans! Stop getting scammed. I use CheckItSA to verify everything before I trust it. Check it out: https://checkitsa.co.za`;
+                                        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank')
+                                    }}
+                                    className="btn btn-primary"
+                                    style={{ width: '100%', justifyContent: 'center' }}
+                                >
+                                    💬 Share to WhatsApp
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Search History */}
                 <div style={{ marginTop: '3rem' }}>
                     <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Search History</h2>
@@ -287,10 +332,20 @@ function IntelFeed() {
                         <span>{item.category} • {new Date(item.date).toLocaleDateString()}</span>
                         <span style={{ opacity: 0.7 }}>{item.source}</span>
                     </div>
-                    <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none', fontWeight: '500' }} className="hover:underline">
                             {item.title}
                         </a>
+                        <button
+                            onClick={() => {
+                                const msg = `⚠️ NEW SCAM ALERT: ${item.title} \n\nCheck for more safety intel on CheckItSA: https://checkitsa.co.za`;
+                                window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank')
+                            }}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', marginLeft: '1rem' }}
+                            title="Share to WhatsApp"
+                        >
+                            💬
+                        </button>
                     </div>
                 </li>
             ))}
