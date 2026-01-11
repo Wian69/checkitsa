@@ -197,6 +197,41 @@ export default function Dashboard() {
                                             <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
                                                 {new Date(r.date).toLocaleDateString()}
                                             </td>
+                                            <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                                <button
+                                                    onClick={async () => {
+                                                        if (confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+                                                            try {
+                                                                const res = await fetch('/api/report', {
+                                                                    method: 'DELETE',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({ id: r.id, email: user.email })
+                                                                })
+                                                                if (res.ok) {
+                                                                    setHistory(prev => ({ ...prev, reports: prev.reports.filter(item => item.id !== r.id) }))
+                                                                    alert('Report deleted.')
+                                                                } else {
+                                                                    alert('Failed to delete report.')
+                                                                }
+                                                            } catch (e) {
+                                                                console.error(e)
+                                                                alert('Error deleting report.')
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="btn"
+                                                    style={{
+                                                        padding: '0.25rem 0.75rem',
+                                                        fontSize: '0.8rem',
+                                                        background: 'rgba(220, 38, 38, 0.1)',
+                                                        color: '#fca5a5',
+                                                        border: '1px solid var(--color-danger)',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    🗑️ Delete
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>

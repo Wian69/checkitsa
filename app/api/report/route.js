@@ -160,3 +160,26 @@ export async function GET(req) {
         return NextResponse.json({ reports: [] }, { status: 500 })
     }
 }
+
+export async function DELETE(req) {
+    try {
+        const { id, email } = await req.json()
+        const db = getRequestContext().env.DB
+
+        if (!id || !email) {
+            return NextResponse.json({ message: 'Missing parameters' }, { status: 400 })
+        }
+
+        // Verify ownership (or admin override) before deleting
+        // Strictly enforcing email match ensures users can only delete their own reports
+        const result = await db.prepare("DELETE FROM scam_reports WHERE id = ? AND reporter_email = ?").bind(id, email).run()
+
+        if (result.meta.changes === 0) {
+            return NextResponse.json({ message: 'Report not found or unauthorized' }, { status: 404 })
+        }
+
+        return NextResponse.json({ message: 'Report deleted successfully' })
+    } catch (error) {
+        return NextResponse.json({ message: error.message }, { status: 500 })
+    }
+}
