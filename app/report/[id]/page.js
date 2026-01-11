@@ -1,18 +1,31 @@
-export const runtime = 'edge'
-
+import { getRequestContext } from '@cloudflare/next-on-pages'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 
+export const runtime = 'edge'
+
 async function getReport(id) {
     try {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-        const res = await fetch(`${baseUrl}/api/report?id=${id}`, {
-            next: { revalidate: 0 }, // Always fresh for details
-            headers: { 'Content-Type': 'application/json' }
-        })
-        if (!res.ok) return null
-        const data = await res.json()
-        return data.report
+        // Direct DB Access for Edge Runtime (Faster & More Reliable)
+        const ctx = getRequestContext()
+        if (!ctx || !ctx.env || !ctx.env.DB) {
+            console.error('DB Binding missing in context')
+            return null
+        }
+
+        const report = await ctx.env.DB.prepare('SELECT * FROM scam_reports WHERE id = ?').bind(id).first()
+
+        if (!report) return null
+
+        return {
+            id: report.id,
+            url: report.scammer_details || 'N/A',
+            reason: report.description || 'No description',
+            type: report.scam_type || 'General',
+            has_evidence: !!report.evidence_image,
+            evidence_image: report.evidence_image,
+            date: report.created_at
+        }
     } catch (error) {
         console.error('Error fetching report:', error)
         return null
