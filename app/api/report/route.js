@@ -64,10 +64,35 @@ export async function POST(req) {
     }
 }
 
-export async function GET() {
+export async function GET(req) {
     try {
+        const { searchParams } = new URL(req.url)
+        const id = searchParams.get('id')
         const db = getRequestContext().env.DB
-        // Fetch from the new, unified table
+
+        if (id) {
+            // Fetch single report
+            const report = await db.prepare('SELECT * FROM scam_reports WHERE id = ?').bind(id).first()
+
+            if (!report) {
+                return NextResponse.json({ error: 'Report not found' }, { status: 404 })
+            }
+
+            // Return sanitized single report
+            return NextResponse.json({
+                report: {
+                    id: report.id,
+                    url: report.scammer_details || 'N/A',
+                    reason: report.description || 'No description',
+                    type: report.scam_type || 'General',
+                    has_evidence: !!report.evidence_image,
+                    evidence_image: report.evidence_image, // Return image for details view
+                    date: report.created_at
+                }
+            })
+        }
+
+        // Fetch list (existing logic)
         const { results } = await db.prepare('SELECT * FROM scam_reports ORDER BY created_at DESC LIMIT 20').all()
 
         // Map to uniform frontend format
@@ -83,6 +108,6 @@ export async function GET() {
         return NextResponse.json({ reports })
     } catch (error) {
         console.error('Fetch reports error:', error)
-        return NextResponse.json({ reports: [] })
+        return NextResponse.json({ reports: [] }, { status: 500 })
     }
 }
