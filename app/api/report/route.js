@@ -79,7 +79,7 @@ export async function POST(req) {
                     },
                     body: JSON.stringify({
                         from: 'CheckItSA Reports <onboarding@resend.dev>',
-                        to: 'info@checkitsa.co.za',
+                        to: 'wiandurandt69@gmail.com', // MUST be this address for Resend Free Tier
                         subject: `🚨 New Scam Report: ${type}`,
                         html: `
                             <h2>New Report Received</h2>
