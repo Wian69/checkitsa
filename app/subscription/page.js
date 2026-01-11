@@ -32,6 +32,13 @@ export default function Subscription() {
     const [customScans, setCustomScans] = useState(1100)
     const [customPrice, setCustomPrice] = useState(138) // Initial calculation
 
+    // Update price when slider moves
+    useEffect(() => {
+        // Formula: Base R50 + (Scans * R0.08)
+        const price = Math.round(50 + (customScans * 0.08))
+        setCustomPrice(price)
+    }, [customScans])
+
 
 
     const handleUpgrade = (plan) => {
