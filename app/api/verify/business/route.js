@@ -13,6 +13,38 @@ export const runtime = 'edge'
 export async function POST(request) {
     try {
         const { input } = await request.json()
+
+        // --- API KEY AUTHENTICATION ---
+        const authHeader = request.headers.get('Authorization')
+        let isApiRequest = false
+
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const apiKey = authHeader.split(' ')[1]
+            const db = getRequestContext().env.DB
+
+            // Verify Key
+            const user = await db.prepare('SELECT * FROM users WHERE api_key = ?').bind(apiKey).first()
+
+            if (!user) {
+                return NextResponse.json({
+                    valid: false,
+                    data: { status: 'Unauthorized', message: 'Invalid API Key' }
+                }, { status: 401 })
+            }
+
+            // Check Quota (Basic Implementation: strictly relying on subscription status for now)
+            if (user.tier !== 'elite' && user.tier !== 'custom' && user.tier !== 'ultimate') {
+                return NextResponse.json({
+                    valid: false,
+                    data: { status: 'Forbidden', message: 'API access requires Elite or Enterprise plan.' }
+                }, { status: 403 })
+            }
+
+            isApiRequest = true
+            // TODO: Increment API Usage Counter here
+        }
+        // ------------------------------
+
         const cseKey = process.env.GOOGLE_CSE_API_KEY
         // Use the specific CX provided by the user if the env var is missing or incorrect
         const cx = process.env.GOOGLE_CSE_CX || '16e9212fe3fcf4cea'

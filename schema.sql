@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     searches INTEGER DEFAULT 0,
     subscription_end DATETIME,
     custom_limit INTEGER DEFAULT 0,
+    api_key TEXT UNIQUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
