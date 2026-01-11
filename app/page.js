@@ -1,7 +1,11 @@
-import Link from 'next/link'
-// export const runtime = 'edge'
+import { getRequestContext } from '@cloudflare/next-on-pages'
+
+export const runtime = 'edge'
+
 import Navbar from '@/components/Navbar'
 import ScamReportForm from '@/components/ScamReportForm'
+import Link from 'next/link'
+
 // Helper to get RSS
 async function getRSSFeed() {
   // DEBUG: Mocking RSS to isolate render issues
@@ -9,45 +13,26 @@ async function getRSSFeed() {
     { title: 'Debug: RSS Feed Loaded', link: '#' },
     { title: 'System All Green', link: '#' }
   ]
-  /*
-  try {
-    const res = await fetch('https://feeds.feedburner.com/TheHackersNews', { next: { revalidate: 3600 } })
-    const text = await res.text()
-    
-    const items = []
-    const itemRegex = /<item>([\s\S]*?)<\/item>/g
-    let match
-    
-    while ((match = itemRegex.exec(text)) !== null && items.length < 4) {
-      const itemContent = match[1]
-      const titleMatch = /<title>([\s\S]*?)<\/title>/.exec(itemContent)
-      const linkMatch = /<link>([\s\S]*?)<\/link>/.exec(itemContent)
-      
-      if (titleMatch && linkMatch) {
-        // Basic cleanup for CDATA if present
-        const title = titleMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').trim()
-        const link = linkMatch[1].trim()
-        items.push({ title, link })
-      }
-    }
-    return items
-  } catch (e) {
-    console.error('RSS Error:', e)
-    return []
-  }
-  */
 }
 
 // Helper to get Community Reports
 async function getCommunityReports() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-    const res = await fetch(`${baseUrl}/api/report`, { next: { revalidate: 10 } })
-    const data = await res.json()
-    return data.reports || []
+    const ctx = getRequestContext()
+    if (ctx && ctx.env && ctx.env.DB) {
+      const { results } = await ctx.env.DB.prepare('SELECT * FROM scam_reports ORDER BY created_at DESC LIMIT 20').all()
+      return (results || []).map(r => ({
+        id: r.id,
+        url: r.scammer_details || 'N/A',
+        reason: r.description || 'No description',
+        type: r.scam_type || 'General',
+        date: r.created_at
+      }))
+    }
   } catch (e) {
-    return []
+    console.error('DB Error:', e)
   }
+  return []
 }
 
 export default async function Home() {
