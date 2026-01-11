@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     password TEXT NOT NULL, -- Note: In production, hash this!
     tier TEXT DEFAULT 'free',
     searches INTEGER DEFAULT 0,
+    subscription_end DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
