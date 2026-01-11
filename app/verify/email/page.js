@@ -37,9 +37,11 @@ export default function EmailVerify() {
         <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
             <Navbar />
             <div className="container" style={{ paddingTop: '10rem', maxWidth: '800px' }}>
-                <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>Email Forensics</h1>
-                <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', marginBottom: '4rem' }}>
-                    Verify sender identity, MX records, and domain reputation.
+                <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600 mb-6 font-outfit">
+                    Email Scanning
+                </h1>
+                <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto font-light">
+                    Analyze headers, domain age, and sender reputation to detect phishing attempts.
                 </p>
 
                 <div className="glass-panel" style={{ padding: '2rem' }}>
@@ -100,21 +102,21 @@ export default function EmailVerify() {
                             </div>
 
                             {result.flags.length > 0 && (
-                                    <div style={{ marginTop: '1rem' }}>
-                                        <strong>Risk Factors:</strong>
-                                        <ul style={{ paddingLeft: '1.2rem', color: 'var(--color-accent)' }}>
-                                            {result.flags.map((f, i) => <li key={i}>{f}</li>)}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
+                                <div style={{ marginTop: '1rem' }}>
+                                    <strong>Risk Factors:</strong>
+                                    <ul style={{ paddingLeft: '1.2rem', color: 'var(--color-accent)' }}>
+                                        {result.flags.map((f, i) => <li key={i}>{f}</li>)}
+                                    </ul>
+                                </div>
+                            )}
+
                             <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
                                 <ReportButton url={formData.sender} type="Email" reason="Phishing/Scam Email" />
                             </div>
                         </div>
                     )}
+                </div>
             </div>
-        </div>
         </main >
     )
 }
