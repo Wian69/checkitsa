@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import CommunityReportsFeed from '@/components/CommunityReportsFeed'
 import BusinessReviews from '@/components/BusinessReviews'
+import BusinessReviews from '@/components/BusinessReviews'
 
 export default function Home() {
   const [user, setUser] = useState(null)
