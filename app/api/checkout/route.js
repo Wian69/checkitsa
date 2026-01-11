@@ -35,11 +35,15 @@ export async function POST(req) {
         // 2. Determine Plan Details
         let daysToAdd = 30
         let newTier = 'premium' // Fallback
+        let limit = 0
 
         if (amount >= 7900 && amount < 11000) {
             newTier = 'pro'
-        } else if (amount >= 11900) {
+        } else if (amount >= 11900 && amount < 20000) { // Elite cap to avoid overlap if needed
             newTier = 'elite'
+        } else if (customLimit > 0) {
+            newTier = 'custom'
+            limit = customLimit
         }
 
         const expiryDate = new Date()
@@ -48,10 +52,10 @@ export async function POST(req) {
         // 3. Update User in DB
         await db.prepare(`
             UPDATE users 
-            SET tier = ?, subscription_end = ?, searches = 0 
+            SET tier = ?, subscription_end = ?, searches = 0, custom_limit = ?
             WHERE email = ?
         `)
-            .bind(newTier, expiryDate.toISOString(), email)
+            .bind(newTier, expiryDate.toISOString(), limit, email)
             .run()
 
         // 4. Fetch Updated User

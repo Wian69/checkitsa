@@ -21,7 +21,12 @@ export const trackSearch = () => {
 
     // 2. Determine Limit
     let limit = TIERS[tier] ? TIERS[tier].limit : 5
-    if (tier === 'custom' && customLimit > 0) limit = customLimit
+
+    // Check if user has a custom limit from DB (stored in localstorage for now)
+    // The checkout/login response should now populate 'checkitsa_custom_limit'
+    if (tier === 'custom' || customLimit > 0) {
+        limit = customLimit > 0 ? customLimit : limit
+    }
 
     // 3. Check for Reset (For Paid Tiers)
     const now = new Date()

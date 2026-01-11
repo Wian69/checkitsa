@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     tier TEXT DEFAULT 'free',
     searches INTEGER DEFAULT 0,
     subscription_end DATETIME,
+    custom_limit INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

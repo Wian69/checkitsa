@@ -28,6 +28,19 @@ export default function Subscription() {
         }
     }, [])
 
+    // State for Custom Slider
+    const [customScans, setCustomScans] = useState(2000)
+    const [customPrice, setCustomPrice] = useState(200) // Initial calculation
+
+    // Update price when slider moves
+    useEffect(() => {
+        // Formula: Base R50 + (Scans * R0.08)
+        // 2000 scans = 50 + 160 = R210 (Approx)
+        // Let's use a simple linear scale: R0.08 per scan overhead
+        const price = Math.round(50 + (customScans * 0.08))
+        setCustomPrice(price)
+    }, [customScans])
+
     const handleUpgrade = (plan) => {
         if (!window.YocoSDK) {
             alert("Payment system loading... please try again in a moment.")
@@ -37,6 +50,7 @@ export default function Subscription() {
         // Pricing Logic
         let amount = 0
         let desc = ''
+        let limit = 0
 
         if (plan === 'pro') {
             amount = 7900 // R79.00
@@ -44,10 +58,14 @@ export default function Subscription() {
         } else if (plan === 'elite') {
             amount = 11900 // R119.00
             desc = 'Elite Subscription (1k Scans)'
+        } else if (plan === 'custom') {
+            amount = customPrice * 100 // Convert to cents
+            desc = `Custom Subscription (${customScans.toLocaleString()} Scans)`
+            limit = customScans
         }
 
         const yoco = new window.YocoSDK({
-            publicKey: process.env.NEXT_PUBLIC_YOCO_PUBLIC_KEY
+            publicKey: process.env.NEXT_PUBLIC_YOCO_PUBLIC_KEY || 'pk_live_535be7d6Ld0qG9711634'
         })
 
         yoco.showPopup({
@@ -67,7 +85,8 @@ export default function Subscription() {
                             body: JSON.stringify({
                                 token: result.id,
                                 email: user.email,
-                                amount: amount
+                                amount: amount,
+                                customLimit: limit // Pass the custom limit
                             })
                         })
 
@@ -75,12 +94,14 @@ export default function Subscription() {
                         if (!res.ok) throw new Error(data.message)
 
                         localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
-                        localStorage.setItem('checkitsa_tier', data.user.tier) // Expecting 'pro' or 'elite'
+                        localStorage.setItem('checkitsa_tier', data.user.tier)
+                        if (limit > 0) localStorage.setItem('checkitsa_custom_limit', limit)
 
-                        alert(`Upgrade Successful! You are now on the ${plan.charAt(0).toUpperCase() + plan.slice(1)} plan.`)
+                        alert(`Upgrade Successful! You are now on the ${plan === 'custom' ? 'Enterprise' : plan} plan.`)
                         router.push('/dashboard')
                     } catch (err) {
                         alert("Verification Failed: " + err.message)
+                        console.error(err)
                     } finally {
                         setLoading(false)
                     }
@@ -118,7 +139,7 @@ export default function Subscription() {
                         </div>
                         <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2rem', color: 'var(--color-text-muted)', lineHeight: '1.8', fontSize: '0.95rem' }}>
                             <li>✅ 5 Searches Total</li>
-                            <li>✅ Basic Web Scanning</li>
+                            <li>✅ Basic Scanning</li>
                             <li>✅ Community Reports</li>
                             <li style={{ opacity: 0.5 }}>❌ Image Analysis</li>
                         </ul>
@@ -170,19 +191,54 @@ export default function Subscription() {
                         <button onClick={() => handleUpgrade('elite')} disabled={loading} className="btn btn-primary" style={{ width: '100%', padding: '1rem' }}>Get Elite</button>
                     </div>
 
-                    {/* Custom Plan */}
-                    <div className="glass-panel" style={{ padding: '2rem', border: '1px solid rgba(255,255,255,0.1)' }}>
-                        <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>Custom</h3>
-                        <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '2rem' }}>
-                            R50+
+                    {/* Custom Plan (Slider) */}
+                    <div className="glass-panel" style={{ padding: '2rem', border: '1px solid rgba(255,255,255,0.1)', gridColumn: '1 / -1', maxWidth: '100%' }}>
+                        <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>Custom Enterprise</h3>
+                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '1rem', marginBottom: '1rem' }}>
+                            <div style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>
+                                R{customPrice} <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>/ month</span>
+                            </div>
+                            <div style={{ paddingBottom: '0.5rem', color: 'var(--color-success)', fontWeight: 'bold' }}>
+                                {customScans.toLocaleString()} Scans
+                            </div>
                         </div>
-                        <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2rem', color: 'var(--color-text-muted)', lineHeight: '1.8', fontSize: '0.95rem' }}>
-                            <li>✅ Volume-based Pricing</li>
-                            <li>✅ Base Fee + Usage</li>
-                            <li>✅ Tailored Limits</li>
-                            <li>✅ API Integration</li>
+
+                        <div style={{ marginBottom: '2rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-muted)' }}>Adjust Verification Volume:</label>
+                            <input
+                                type="range"
+                                min="2000"
+                                max="50000"
+                                step="1000"
+                                value={customScans}
+                                onChange={(e) => setCustomScans(Number(e.target.value))}
+                                style={{ width: '100%', height: '8px', borderRadius: '4px', accentColor: 'var(--color-primary)' }}
+                            />
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
+                                <span>2k</span>
+                                <span>50k+</span>
+                            </div>
+                        </div>
+
+                        <ul style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                            gap: '1rem',
+                            listStyle: 'none',
+                            padding: 0,
+                            marginBottom: '2rem',
+                            color: 'var(--color-text-muted)',
+                            lineHeight: '1.8',
+                            fontSize: '0.95rem'
+                        }}>
+                            <li>✅ <strong>Volume-based Discount</strong></li>
+                            <li>✅ <strong>Dedicated API Keys</strong></li>
+                            <li>✅ <strong>Priority 24/7 Support</strong></li>
+                            <li>✅ <strong>Custom Integration</strong></li>
                         </ul>
-                        <a href="mailto:sales@checkitsa.co.za" className="btn btn-outline" style={{ display: 'block', textAlign: 'center', width: '100%' }}>Contact Sales</a>
+                        <button onClick={() => handleUpgrade('custom')} disabled={loading} className="btn btn-outline" style={{ width: '100%', maxWidth: '300px' }}>
+                            Upgrade to Enterprise
+                        </button>
                     </div>
 
                 </div>
