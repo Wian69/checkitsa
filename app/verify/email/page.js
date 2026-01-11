@@ -85,8 +85,19 @@ export default function EmailVerify() {
                             </h3>
                             <div style={{ display: 'grid', gap: '0.5rem' }}>
                                 <p><strong>Risk Score:</strong> {result.score}/100</p>
-                                {result.domain_age && <p><strong>Domain Age:</strong> {result.domain_age}</p>}
-                                {result.flags.length > 0 && (
+                            </div>
+                            <div className="bg-gray-700/50 p-4 rounded-xl">
+                                <span className="text-gray-400 block text-xs uppercase tracking-wider mb-1">Domain Age</span>
+                                <span className="text-white font-mono">{result.domain_age}</span>
+                            </div>
+                            <div className="bg-gray-700/50 p-4 rounded-xl">
+                                <span className="text-gray-400 block text-xs uppercase tracking-wider mb-1">Registrar</span>
+                                <span className="text-white font-mono">{result.registrar || 'Unknown'}</span>
+                            </div>
+                            <div className="bg-gray-700/50 p-4 rounded-xl col-span-2">
+                                <span className="text-gray-400 block text-xs uppercase tracking-wider mb-1">Email First Seen (Web)</span>
+                                <span className="text-white font-mono">{result.email_first_seen || 'No public footprint'}</span>
+                            </div>    {result.flags.length > 0 && (
                                     <div style={{ marginTop: '1rem' }}>
                                         <strong>Risk Factors:</strong>
                                         <ul style={{ paddingLeft: '1.2rem', color: 'var(--color-accent)' }}>
@@ -100,8 +111,8 @@ export default function EmailVerify() {
                             </div>
                         </div>
                     )}
-                </div>
             </div>
-        </main>
+        </div>
+        </main >
     )
 }
