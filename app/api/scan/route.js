@@ -35,6 +35,12 @@ export async function POST(request) {
             if (!finalUrl.startsWith('http')) {
                 finalUrl = `https://${finalUrl}`
             }
+            // SSL Check: If we can connect via HTTPS, it has SSL.
+            if (finalUrl.startsWith('https://')) {
+                const sslCheck = await fetch(finalUrl, { method: 'HEAD', signal: AbortSignal.timeout(3000) }).catch(() => null)
+                if (sslCheck && sslCheck.ok) policies.ssl = true
+            }
+
             domain = new URL(finalUrl).hostname
 
             // Recursive expansion (max 3 hops)
@@ -86,7 +92,8 @@ export async function POST(request) {
 
         // 2. Data Gathering Strategy: Parallel Fetch + Google Search
         let siteSummary = 'Summary unavailable.'
-        let policies = { privacy: false, terms: false }
+        // Default SSL to true if Protocol is HTTPS (verified above), else false
+        let policies = { privacy: false, terms: false, ssl: finalUrl.startsWith('https') }
 
         // Perform Google Search FIRST to get snippet (most reliable)
         let googleResults = []
@@ -137,9 +144,20 @@ export async function POST(request) {
             }
         } catch (e) {
             // Fetch failed (Blocked). Fallback to searching Google Results for policy presence
-            const combinedSnippets = googleResults.map(i => i.title + ' ' + i.snippet).join(' ').toLowerCase()
-            if (combinedSnippets.includes('privacy')) policies.privacy = true
-            if (combinedSnippets.includes('terms')) policies.terms = true
+        }
+
+        // Advanced Policy Search via Google (if direct fetch missed them)
+        if ((!policies.privacy || !policies.terms) && cseKey && cx) {
+            try {
+                const policyQuery = `site:${domain} "privacy policy" OR "terms of service"`
+                const policyRes = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(policyQuery)}`)
+                const policyData = await policyRes.json()
+                if (policyData.items && policyData.items.length > 0) {
+                    const snippets = policyData.items.map(i => i.title.toLowerCase() + ' ' + i.snippet.toLowerCase()).join(' ')
+                    if (snippets.includes('privacy')) policies.privacy = true
+                    if (snippets.includes('terms') || snippets.includes('conditions')) policies.terms = true
+                }
+            } catch (err) { console.log('Policy search failed', err) }
         }
 
         // 3. Domain Age & Registrar (creation.date fallback)
@@ -185,8 +203,12 @@ export async function POST(request) {
             else if (daysOld < 30) score += 30  // Less than a month
             else if (daysOld < 90) score += 15  // Less than 3 months
         } else {
-            // Unknown age = suspicious
-            score += 20
+            // Unknown age = suspicious, BUT if Google found results, it's likely established.
+            if (googleResults.length > 0) {
+                score += 5 // Minimal penalty if indexed
+            } else {
+                score += 20 // High penalty if unknown AND not on Google
+            }
         }
 
         // Reputation Check (Re-using Google Results to save calls)
