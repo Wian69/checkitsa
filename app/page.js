@@ -143,7 +143,7 @@ export default async function Home() {
             color="var(--color-primary)"
           />
           <Tile
-            title="Email Forensics"
+            title="Email Scanning"
             icon="📧"
             desc="Verify sender identity, MX records, and domain reputation."
             href="/verify/email"

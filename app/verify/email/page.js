@@ -88,17 +88,19 @@ export default function EmailVerify() {
                             <div style={{ display: 'grid', gap: '0.5rem' }}>
                                 <p><strong>Risk Score:</strong> {result.score}/100</p>
                             </div>
-                            <div className="bg-gray-700/50 p-4 rounded-xl">
-                                <span className="text-gray-400 block text-xs uppercase tracking-wider mb-1">Domain Age</span>
-                                <span className="text-white font-mono">{result.domain_age}</span>
-                            </div>
-                            <div className="bg-gray-700/50 p-4 rounded-xl">
-                                <span className="text-gray-400 block text-xs uppercase tracking-wider mb-1">Registrar</span>
-                                <span className="text-white font-mono">{result.registrar || 'Unknown'}</span>
-                            </div>
-                            <div className="bg-gray-700/50 p-4 rounded-xl col-span-2">
-                                <span className="text-gray-400 block text-xs uppercase tracking-wider mb-1">Email First Seen (Web)</span>
-                                <span className="text-white font-mono">{result.email_first_seen || 'No public footprint'}</span>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div className="bg-gray-700/50 p-4 rounded-xl">
+                                    <span className="text-gray-400 block text-xs uppercase tracking-wider mb-1">Domain Age:</span>
+                                    <span className="text-white font-mono">{result.domain_age}</span>
+                                </div>
+                                <div className="bg-gray-700/50 p-4 rounded-xl">
+                                    <span className="text-gray-400 block text-xs uppercase tracking-wider mb-1">Registrar:</span>
+                                    <span className="text-white font-mono">{result.registrar || 'Unknown'}</span>
+                                </div>
+                                <div className="bg-gray-700/50 p-4 rounded-xl md:col-span-2">
+                                    <span className="text-gray-400 block text-xs uppercase tracking-wider mb-1">First Seen:</span>
+                                    <span className="text-white font-mono">{result.email_first_seen || 'No public footprint'}</span>
+                                </div>
                             </div>
 
                             {result.flags.length > 0 && (
