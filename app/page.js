@@ -1,6 +1,5 @@
-import { getRequestContext } from '@cloudflare/next-on-pages'
-
-export const runtime = 'edge'
+import Link from 'next/link'
+// export const runtime = 'edge'
 
 import Navbar from '@/components/Navbar'
 import ScamReportForm from '@/components/ScamReportForm'
@@ -18,21 +17,19 @@ async function getRSSFeed() {
 // Helper to get Community Reports
 async function getCommunityReports() {
   try {
-    const ctx = getRequestContext()
-    if (ctx && ctx.env && ctx.env.DB) {
-      const { results } = await ctx.env.DB.prepare('SELECT * FROM scam_reports ORDER BY created_at DESC LIMIT 20').all()
-      return (results || []).map(r => ({
-        id: r.id,
-        url: r.scammer_details || 'N/A',
-        reason: r.description || 'No description',
-        type: r.scam_type || 'General',
-        date: r.created_at
-      }))
-    }
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const res = await fetch(`${baseUrl}/api/report`, {
+      next: { revalidate: 10 },
+      headers: { 'Content-Type': 'application/json' }
+    })
+
+    if (!res.ok) return []
+    const data = await res.json()
+    return data.reports || []
   } catch (e) {
-    console.error('DB Error:', e)
+    console.error('Community Reports Fetch Error:', e)
+    return []
   }
-  return []
 }
 
 export default async function Home() {
