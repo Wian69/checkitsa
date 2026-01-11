@@ -55,7 +55,7 @@ export default function GamblingCheck() {
                         <p style={{ color: 'var(--color-text-muted)' }}>Only bet on sites licensed by South African Provincial Gambling Boards.</p>
                     </div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', maxWidth: '200px', textAlign: 'right' }}>
-                        To report illegal sites, use <strong>Report Incident</strong> on the <a href="/" style={{ textDecoration: 'underline' }}>Home Page</a>.
+                        To report illegal sites, use <a href="/report" style={{ textDecoration: 'underline', fontWeight: 'bold' }}>Report Incident</a>.
                     </div>
                 </div>
 
