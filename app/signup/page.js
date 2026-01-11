@@ -22,9 +22,23 @@ export default function Signup() {
                     body: JSON.stringify({ token: response.credential, context: 'signup' })
                 })
 
-                if (!res.ok) throw new Error('Google authentication failed')
+                if (!res.ok) {
+                    const data = await res.json()
+                    throw new Error(data.message || 'Google authentication failed')
+                }
 
                 const data = await res.json()
+
+                // CRITICAL: Wipe any stale local data for this email (in case DB was reset)
+                try {
+                    const emailKey = `_${data.user.email || 'user'}` // Use returned email if possible
+                    localStorage.removeItem(`checkitsa_usage${emailKey}`)
+                    localStorage.removeItem(`checkitsa_history${emailKey}`)
+                    localStorage.removeItem(`checkitsa_search_stats${emailKey}`)
+                    localStorage.removeItem(`checkitsa_last_reset${emailKey}`)
+                    if (localStorage.getItem('checkitsa_usage')) localStorage.removeItem('checkitsa_usage')
+                } catch (e) { }
+
                 localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
                 localStorage.setItem('checkitsa_tier', data.user.tier || 'free')
                 router.push('/')
@@ -33,6 +47,33 @@ export default function Signup() {
                 setLoading(false)
             }
         }
+
+        // Initialize Google Button
+        const initGoogle = () => {
+            if (window.google && window.google.accounts) {
+                window.google.accounts.id.initialize({
+                    client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "729035479590-9dffbod3sfn21cq1q0gshqjm4358nnrq.apps.googleusercontent.com",
+                    callback: window.handleGoogleCredentialResponse,
+                    auto_select: false,
+                    cancel_on_tap_outside: true
+                })
+                window.google.accounts.id.renderButton(
+                    document.getElementById("google-signup-btn"),
+                    { theme: "filled_black", size: "large", type: "standard", shape: "rectangular", text: "signup_with", width: "100%" }
+                )
+            }
+        }
+
+        // Try initializing immediately, and retry if script hasn't loaded
+        initGoogle()
+        const timer = setInterval(() => {
+            if (window.google) {
+                initGoogle()
+                clearInterval(timer)
+            }
+        }, 500)
+
+        return () => clearInterval(timer)
     }, [router])
 
     const handleSubmit = async (e) => {
@@ -93,23 +134,8 @@ export default function Signup() {
                     {error && <div style={{ color: 'var(--color-danger)', marginBottom: '1rem', textAlign: 'center' }}>{error}</div>}
 
                     {/* Google Sign In */}
-                    <div style={{ marginBottom: '2rem' }}>
-                        <div id="g_id_onload"
-                            data-client_id={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "729035479590-9dffbod3sfn21cq1q0gshqjm4358nnrq.apps.googleusercontent.com"}
-                            data-context="signup"
-                            data-ux_mode="popup"
-                            data-callback="handleGoogleCredentialResponse"
-                            data-auto_prompt="false">
-                        </div>
-                        <div className="g_id_signin"
-                            data-type="standard"
-                            data-shape="rectangular"
-                            data-theme="filled_black"
-                            data-text="signup_with"
-                            data-size="large"
-                            data-logo_alignment="left"
-                            data-width="100%">
-                        </div>
+                    <div style={{ marginBottom: '2rem', minHeight: '50px' }}>
+                        <div id="google-signup-btn"></div>
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', color: 'var(--color-text-muted)' }}>
