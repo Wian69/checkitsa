@@ -92,32 +92,32 @@ export default function BusinessCheck() {
                     )}
                 </div>
             </div>
-        </div>
 
-            {/* Blocking Overlay */ }
-    <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        background: 'rgba(0, 0, 0, 0.85)',
-        backdropFilter: 'blur(5px)',
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem'
-    }}>
-        <div className="glass-panel" style={{ padding: '3rem', maxWidth: '500px', textAlign: 'center', border: '1px solid var(--color-primary)' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>🚧</div>
-            <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: 'white' }}>Coming Soon</h2>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem', marginBottom: '2rem' }}>
-                This feature is still in development and will be available soon.
-            </p>
-            <a href="/" className="btn btn-primary">Return Home</a>
-        </div>
-    </div>
+
+            {/* Blocking Overlay */}
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: 'rgba(0, 0, 0, 0.85)',
+                backdropFilter: 'blur(5px)',
+                zIndex: 9999,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '2rem'
+            }}>
+                <div className="glass-panel" style={{ padding: '3rem', maxWidth: '500px', textAlign: 'center', border: '1px solid var(--color-primary)' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>🚧</div>
+                    <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: 'white' }}>Coming Soon</h2>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem', marginBottom: '2rem' }}>
+                        This feature is still in development and will be available soon.
+                    </p>
+                    <a href="/" className="btn btn-primary">Return Home</a>
+                </div>
+            </div>
         </main >
     )
 }
