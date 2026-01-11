@@ -197,7 +197,7 @@ export default async function Home() {
       </section>
 
       {/* Global Intel Section */}
-      < section className="container" >
+      <section className="container">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
           <div>
             <h2 style={{ fontSize: '2rem' }}>Global Security Intel</h2>
