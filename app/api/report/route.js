@@ -59,9 +59,19 @@ export async function POST(req) {
 export async function GET() {
     try {
         const db = getRequestContext().env.DB
-        const { results } = await db.prepare('SELECT * FROM reports ORDER BY created_at DESC LIMIT 20').all()
+        // Fetch from the new, unified table
+        const { results } = await db.prepare('SELECT * FROM scam_reports ORDER BY created_at DESC LIMIT 20').all()
 
-        return NextResponse.json({ reports: results || [] })
+        // Map to uniform frontend format
+        const reports = (results || []).map(r => ({
+            id: r.id,
+            url: r.scammer_details || 'N/A', // Map detailed field to generic display
+            reason: r.description || 'No description',
+            type: r.scam_type || 'General',
+            date: r.created_at
+        }))
+
+        return NextResponse.json({ reports })
     } catch (error) {
         console.error('Fetch reports error:', error)
         return NextResponse.json({ reports: [] })

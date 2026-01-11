@@ -34,7 +34,7 @@ export default function ScamReportForm() {
         }
     }
 
-    const types = ['WhatsApp', 'Social Media', 'SMS']
+    const types = ['WhatsApp', 'Social Media', 'SMS', 'Email']
 
     const inputStyle = {
         width: '100%',
@@ -88,6 +88,7 @@ export default function ScamReportForm() {
                         {t === 'WhatsApp' && '💬 '}
                         {t === 'Social Media' && '🌐 '}
                         {t === 'SMS' && '📱 '}
+                        {t === 'Email' && '📧 '}
                         {t} Scam
                     </button>
                 ))}
@@ -161,12 +162,16 @@ export default function ScamReportForm() {
                         <div style={{ display: 'grid', gap: '1.25rem' }}>
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
-                                    {type === 'Social Media' ? 'Scammer Profile Link / Name' : 'Scammer Number / Sender ID'}
+                                    {type === 'Social Media' ? 'Scammer Profile Link / Name' : (type === 'Email' ? 'Scammer Email Address' : 'Scammer Number / Sender ID')}
                                 </label>
                                 <input
                                     required
                                     type="text"
-                                    placeholder={type === 'Social Media' ? 'e.g. facebook.com/scammer123' : 'e.g. +27 12 345 6789'}
+                                    placeholder={
+                                        type === 'Social Media' ? 'e.g. facebook.com/scammer123' :
+                                            type === 'Email' ? 'e.g. scammer@gmail.com' :
+                                                'e.g. +27 12 345 6789'
+                                    }
                                     style={inputStyle}
                                     value={formData.scammer_details}
                                     onChange={e => setFormData({ ...formData, scammer_details: e.target.value })}
