@@ -16,11 +16,18 @@ async function getRSSFeed() {
 
 // Helper to get Community Reports
 async function getCommunityReports() {
+  // Return empty if building statically to avoid ECONNREFUSED
+  if (process.env.NEXT_PHASE === 'phase-production-build') return []
+
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    // Don't fetch if likely to fail during build
+    if (!baseUrl.startsWith('http')) return []
+
     const res = await fetch(`${baseUrl}/api/report`, {
       next: { revalidate: 10 },
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(2000) // Timeout fast
     })
 
     if (!res.ok) return []

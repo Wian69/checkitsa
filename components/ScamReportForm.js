@@ -1,4 +1,5 @@
 "use client"
+import { useState } from 'react'
 import { addToReportHistory } from '@/utils/searchLimit'
 
 export default function ScamReportForm() {
