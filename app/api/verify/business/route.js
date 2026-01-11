@@ -105,7 +105,7 @@ export async function POST(request) {
             valid: false,
             data: {
                 status: 'AI Error',
-                message: 'Could not complete analysis.',
+                message: `AI Analysis failed: ${e.message}`,
                 details: e.message
             }
         })
