@@ -3,7 +3,6 @@ import Link from 'next/link'
 
 import Navbar from '@/components/Navbar'
 import ScamReportForm from '@/components/ScamReportForm'
-import Link from 'next/link'
 
 // Helper to get RSS
 async function getRSSFeed() {
