@@ -190,6 +190,19 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Report CTA Section */}
+      <section className="container" style={{ marginBottom: '8rem', textAlign: 'center' }}>
+        <div className="glass-panel" style={{ padding: '4rem 2rem', background: 'linear-gradient(to right, rgba(99, 102, 241, 0.1), rgba(167, 139, 250, 0.1))' }}>
+          <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Have you been targeted?</h2>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '1.2rem', marginBottom: '2rem', maxWidth: '600px', margin: '0 auto 2rem' }}>
+            Help protect the community. Report scam numbers, profiles, and websites anonymously.
+          </p>
+          <Link href="/report" className="btn btn-primary" style={{ padding: '1rem 3rem', fontSize: '1.2rem', borderRadius: '2rem' }}>
+            🚨 Report an Incident
+          </Link>
+        </div>
+      </section>
+
       {/* Community Reports Section */}
       <section className="container" style={{ marginBottom: '8rem' }}>
         <div className="glass-panel" style={{ padding: '3rem', borderLeft: '4px solid var(--color-danger)' }}>
