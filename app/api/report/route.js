@@ -166,20 +166,24 @@ export async function DELETE(req) {
         const { id, email } = await req.json()
         const db = getRequestContext().env.DB
 
-        console.log(`[DELETE] Attempting to delete report ${id} for user ${email}`)
-
         if (!id || !email) {
             return NextResponse.json({ message: 'Missing parameters' }, { status: 400 })
         }
 
-        // Verify ownership (or admin override) before deleting
-        // Strictly enforcing email match ensures users can only delete their own reports
-        const result = await db.prepare("DELETE FROM scam_reports WHERE id = ? AND reporter_email = ?").bind(id, email).run()
+        console.log(`[DELETE] Request - ID: ${id}, Email: ${email}`)
 
-        console.log(`[DELETE] Result: ${JSON.stringify(result)}`)
+        // 1. Cast ID to integer (D1 strictness)
+        const reportId = parseInt(id)
+
+        // 2. Perform Delete with Case-Insensitive Email Check
+        const result = await db.prepare("DELETE FROM scam_reports WHERE id = ? AND lower(reporter_email) = lower(?)")
+            .bind(reportId, email)
+            .run()
+
+        console.log(`[DELETE] Changes: ${result.meta.changes}`)
 
         if (result.meta.changes === 0) {
-            console.warn(`[DELETE] Failed: Report ${id} not found or email ${email} mismatch.`)
+            console.warn(`[DELETE] Fail - No match found for ID ${reportId} and Email ${email}`)
             return NextResponse.json({ message: 'Report not found or unauthorized' }, { status: 404 })
         }
 
