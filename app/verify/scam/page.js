@@ -91,7 +91,7 @@ export default function ScamCheck() {
                                 </div>
                             </div>
                             <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', textAlign: 'right', marginTop: '0.5rem' }}>
-                                To report a scam, please use the <strong>Report Incident</strong> feature on the <a href="/" style={{ textDecoration: 'underline' }}>Home Page</a>.
+                                To report a scam, please use the <a href="/report" style={{ textDecoration: 'underline', fontWeight: 'bold' }}>Report Incident</a> feature.
                             </p>
 
 
