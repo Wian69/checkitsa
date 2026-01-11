@@ -1,7 +1,7 @@
 "use client"
 import Navbar from '@/components/Navbar'
 
-import ReportButton from '@/components/ReportButton'
+
 import { useState, useEffect } from 'react'
 import { trackSearch, checkLimit } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
@@ -89,53 +89,56 @@ export default function ScamCheck() {
                                         )}
                                     </div>
                                 </div>
-                                <ReportButton url={result.details.url} type="Website" reason="Scam/Phishing" />
                             </div>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', textAlign: 'right', marginTop: '0.5rem' }}>
+                                To report a scam, please use the <strong>Report Incident</strong> feature on the <a href="/" style={{ textDecoration: 'underline' }}>Home Page</a>.
+                            </p>
+                        </div>
 
                             {/* Summary Section */}
-                            <div style={{ marginBottom: '2rem' }}>
-                                <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', color: 'var(--color-primary)' }}>📝 Content Summary</h3>
-                                <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '0.5rem', fontStyle: 'italic', color: 'var(--color-text-muted)' }}>
-                                    "{result.details.summary}"
-                                </div>
-                            </div>
+                    <div style={{ marginBottom: '2rem' }}>
+                        <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', color: 'var(--color-primary)' }}>📝 Content Summary</h3>
+                        <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '0.5rem', fontStyle: 'italic', color: 'var(--color-text-muted)' }}>
+                            "{result.details.summary}"
+                        </div>
+                    </div>
 
-                            {/* Deep Data Grid */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
-                                {/* Ownership */}
-                                <div className="glass-panel" style={{ padding: '1.5rem' }}>
-                                    <h4 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>🏢 Ownership & Age</h4>
-                                    <div style={{ display: 'grid', gap: '0.8rem' }}>
-                                        <div>
-                                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Domain Age</span>
-                                            <div style={{ fontWeight: 600 }}>{result.details.domain_age}</div>
-                                        </div>
-                                        <div>
-                                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Registrar</span>
-                                            <div style={{ fontWeight: 600 }}>{result.details.registrar}</div>
-                                        </div>
-                                    </div>
+                    {/* Deep Data Grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
+                        {/* Ownership */}
+                        <div className="glass-panel" style={{ padding: '1.5rem' }}>
+                            <h4 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>🏢 Ownership & Age</h4>
+                            <div style={{ display: 'grid', gap: '0.8rem' }}>
+                                <div>
+                                    <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Domain Age</span>
+                                    <div style={{ fontWeight: 600 }}>{result.details.domain_age}</div>
                                 </div>
-
-                                {/* Policies */}
-                                <div className="glass-panel" style={{ padding: '1.5rem' }}>
-                                    <h4 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>📜 Legal & Trust</h4>
-                                    <div style={{ display: 'grid', gap: '0.5rem' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <span>Privacy Policy</span>
-                                            <span>{result.details.policies.privacy ? '✅ Found' : '❌ Missing'}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <span>Terms of Service</span>
-                                            <span>{result.details.policies.terms ? '✅ Found' : '❌ Missing'}</span>
-                                        </div>
-                                    </div>
+                                <div>
+                                    <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Registrar</span>
+                                    <div style={{ fontWeight: 600 }}>{result.details.registrar}</div>
                                 </div>
                             </div>
                         </div>
-                    )}
+
+                        {/* Policies */}
+                        <div className="glass-panel" style={{ padding: '1.5rem' }}>
+                            <h4 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>📜 Legal & Trust</h4>
+                            <div style={{ display: 'grid', gap: '0.5rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span>Privacy Policy</span>
+                                    <span>{result.details.policies.privacy ? '✅ Found' : '❌ Missing'}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span>Terms of Service</span>
+                                    <span>{result.details.policies.terms ? '✅ Found' : '❌ Missing'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                    )}
             </div>
-        </main>
+        </div>
+        </main >
     )
 }

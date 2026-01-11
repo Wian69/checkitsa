@@ -1,7 +1,7 @@
 "use client"
 import Navbar from '@/components/Navbar'
 
-import ReportButton from '@/components/ReportButton'
+
 import { useState } from 'react'
 import { trackSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
@@ -81,7 +81,9 @@ export default function BusinessCheck() {
                                         </div>
                                         {result.details && <div style={{ fontSize: '0.9rem', opacity: 0.8, marginTop: '0.5rem', whiteSpace: 'pre-line' }}>{result.details}</div>}
                                         <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
-                                            <ReportButton url={result.name} type="Business" reason="Fraudulent Business" />
+                                            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', textAlign: 'center' }}>
+                                                To report this business, please use the <strong>Report Incident</strong> feature on the <a href="/" style={{ textDecoration: 'underline' }}>Home Page</a>.
+                                            </p>
                                         </div>
                                     </div>
                                 )}

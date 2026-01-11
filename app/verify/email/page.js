@@ -1,7 +1,7 @@
 "use client"
 import Navbar from '@/components/Navbar'
 
-import ReportButton from '@/components/ReportButton'
+
 import { useState } from 'react'
 import { trackSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
@@ -113,7 +113,9 @@ export default function EmailVerify() {
                             )}
 
                             <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
-                                <ReportButton url={formData.sender} type="Email" reason="Phishing/Scam Email" />
+                                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', textAlign: 'center' }}>
+                                    To report this email, please use the <strong>Report Incident</strong> feature on the <a href="/" style={{ textDecoration: 'underline' }}>Home Page</a>.
+                                </p>
                             </div>
                         </div>
                     )}

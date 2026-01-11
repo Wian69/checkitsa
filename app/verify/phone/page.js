@@ -1,7 +1,7 @@
 "use client"
 import Navbar from '@/components/Navbar'
 
-import ReportButton from '@/components/ReportButton'
+
 import { useState } from 'react'
 import { trackSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
@@ -86,7 +86,9 @@ export default function PhoneCheck() {
                                 {result.flags.length > 0 && <ul style={{ marginTop: '0.5rem' }}>{result.flags.map((f, i) => <li key={i}>{f}</li>)}</ul>}
                             </div>
                             <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
-                                <ReportButton url={phone} type="Phone" reason="Spam/Scam Number" />
+                                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', textAlign: 'center' }}>
+                                    To report this number, please use the <strong>Report Incident</strong> feature on the <a href="/" style={{ textDecoration: 'underline' }}>Home Page</a>.
+                                </p>
                             </div>
                         </div>
                     )}

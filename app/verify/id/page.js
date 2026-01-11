@@ -1,7 +1,7 @@
 "use client"
 import Navbar from '@/components/Navbar'
 
-import ReportButton from '@/components/ReportButton'
+
 import { useState } from 'react'
 import { trackSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
@@ -109,7 +109,9 @@ export default function IDCheck() {
                                 ))}
                             </div>
                             <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
-                                <ReportButton url={idNumber} type="General" reason="Fraudulent ID" />
+                                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', textAlign: 'center' }}>
+                                    To report a fraudulent ID, please use the <strong>Report Incident</strong> feature on the <a href="/" style={{ textDecoration: 'underline' }}>Home Page</a>.
+                                </p>
                             </div>
                         </div>
                     )}

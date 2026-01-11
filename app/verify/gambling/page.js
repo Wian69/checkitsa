@@ -1,7 +1,7 @@
 "use client"
 import Navbar from '@/components/Navbar'
 
-import ReportButton from '@/components/ReportButton'
+
 import { useState } from 'react'
 import { trackSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
@@ -54,7 +54,9 @@ export default function GamblingCheck() {
                         <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>Licensed Gambling Directory</h1>
                         <p style={{ color: 'var(--color-text-muted)' }}>Only bet on sites licensed by South African Provincial Gambling Boards.</p>
                     </div>
-                    <ReportButton url="" type="Gambling" reason="Illegal Gambling Site" />
+                    <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', maxWidth: '200px', textAlign: 'right' }}>
+                        To report illegal sites, use <strong>Report Incident</strong> on the <a href="/" style={{ textDecoration: 'underline' }}>Home Page</a>.
+                    </div>
                 </div>
 
                 <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>

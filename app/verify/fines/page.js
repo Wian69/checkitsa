@@ -1,7 +1,7 @@
 "use client"
 import Navbar from '@/components/Navbar'
 
-import ReportButton from '@/components/ReportButton'
+
 import { useState } from 'react'
 
 export default function FinesCheck() {
@@ -73,7 +73,9 @@ export default function FinesCheck() {
 
                     <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--color-border)', textAlign: 'center' }}>
                         <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '1rem' }}>Found a fraudulent fine notice?</p>
-                        <ReportButton url="" type="General" reason="Fraudulent Fine Notice" />
+                        <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
+                            To report a fraudulent fine, please use the <strong>Report Incident</strong> feature on the <a href="/" style={{ textDecoration: 'underline' }}>Home Page</a>.
+                        </p>
                     </div>
 
                 </div>
