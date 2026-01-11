@@ -3,7 +3,7 @@ import Navbar from '@/components/Navbar'
 
 
 import { useState, useEffect } from 'react'
-import { trackSearch, checkLimit } from '@/utils/searchLimit'
+import { trackSearch, checkLimit, addToHistory } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
 
 export default function ScamCheck() {
@@ -40,6 +40,7 @@ export default function ScamCheck() {
             })
             const data = await res.json()
             setResult(data)
+            addToHistory('Website Scan', input, data.verdict)
         } catch (err) { console.error(err) }
         finally { setLoading(false) }
     }

@@ -60,9 +60,20 @@ export const setTier = (tier, customLimit = 0) => {
     localStorage.setItem('checkitsa_last_reset', new Date().toISOString())
 }
 
+// Helper to get user-specific key
+const getUserKey = (base) => {
+    if (typeof window === 'undefined') return base
+    try {
+        const user = JSON.parse(localStorage.getItem('checkitsa_user'))
+        if (user && user.email) return `${base}_${user.email}`
+    } catch (e) { }
+    return base
+}
+
 export const addToHistory = (type, query, status) => {
     if (typeof window === 'undefined') return
-    const history = JSON.parse(localStorage.getItem('checkitsa_history') || '[]')
+    const key = getUserKey('checkitsa_history')
+    const history = JSON.parse(localStorage.getItem(key) || '[]')
     const newEntry = {
         id: Date.now(),
         type,
@@ -72,12 +83,13 @@ export const addToHistory = (type, query, status) => {
     }
     // Keep last 50
     const updated = [newEntry, ...history].slice(0, 50)
-    localStorage.setItem('checkitsa_history', JSON.stringify(updated))
+    localStorage.setItem(key, JSON.stringify(updated))
 }
 
 export const addToReportHistory = (report) => {
     if (typeof window === 'undefined') return
-    const history = JSON.parse(localStorage.getItem('checkitsa_my_reports') || '[]')
+    const key = getUserKey('checkitsa_my_reports')
+    const history = JSON.parse(localStorage.getItem(key) || '[]')
     const newEntry = {
         id: Date.now(),
         ...report,
@@ -86,13 +98,15 @@ export const addToReportHistory = (report) => {
     }
     // Keep last 20
     const updated = [newEntry, ...history].slice(0, 20)
-    localStorage.setItem('checkitsa_my_reports', JSON.stringify(updated))
+    localStorage.setItem(key, JSON.stringify(updated))
 }
 
 export const getHistory = () => {
     if (typeof window === 'undefined') return { searches: [], reports: [] }
+    const searchKey = getUserKey('checkitsa_history')
+    const reportKey = getUserKey('checkitsa_my_reports')
     return {
-        searches: JSON.parse(localStorage.getItem('checkitsa_history') || '[]'),
-        reports: JSON.parse(localStorage.getItem('checkitsa_my_reports') || '[]')
+        searches: JSON.parse(localStorage.getItem(searchKey) || '[]'),
+        reports: JSON.parse(localStorage.getItem(reportKey) || '[]')
     }
 }

@@ -3,7 +3,7 @@ import Navbar from '@/components/Navbar'
 
 
 import { useState, useEffect } from 'react'
-import { trackSearch } from '@/utils/searchLimit'
+import { trackSearch, addToHistory } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
 
 export default function PhoneCheck() {
@@ -39,6 +39,7 @@ export default function PhoneCheck() {
             })
             const data = await res.json()
             setResult(data.data)
+            addToHistory('Phone Check', phone, data.data.risk_analysis)
         } catch (e) { console.error(e) }
         finally { setLoading(false) }
     }
