@@ -47,13 +47,8 @@ export default async function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section style={{
-        paddingTop: '10rem',
-        paddingBottom: '6rem',
-        textAlign: 'center',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
+      {/* Hero Section */}
+      <section className="hero-section">
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
           <div>
             <div style={{
@@ -100,7 +95,7 @@ export default async function Home() {
       </section>
 
       {/* Tools Section */}
-      <section id="tools" className="container" style={{ marginBottom: '8rem' }}>
+      <section id="tools" className="container content-section">
         <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
           <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Our Verification Suite</h2>
           <p style={{ color: 'var(--color-text-muted)' }}>Professional-grade investigative tools for everyday users.</p>
@@ -173,7 +168,7 @@ export default async function Home() {
       </section>
 
       {/* Report CTA Section */}
-      <section className="container" style={{ marginBottom: '8rem', textAlign: 'center' }}>
+      <section className="container content-section" style={{ textAlign: 'center' }}>
         <div className="glass-panel" style={{ padding: '4rem 2rem', background: 'linear-gradient(to right, rgba(99, 102, 241, 0.1), rgba(167, 139, 250, 0.1))' }}>
           <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Have you been targeted?</h2>
           <p style={{ color: 'var(--color-text-muted)', fontSize: '1.2rem', marginBottom: '2rem', maxWidth: '600px', margin: '0 auto 2rem' }}>
@@ -186,7 +181,7 @@ export default async function Home() {
       </section>
 
       {/* Community Reports Section */}
-      <section className="container" style={{ marginBottom: '8rem' }}>
+      <section className="container content-section">
         <div className="glass-panel" style={{ padding: '3rem', borderLeft: '4px solid var(--color-danger)' }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2.5rem' }}>
             <div style={{
