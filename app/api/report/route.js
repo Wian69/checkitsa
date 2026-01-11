@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { getRequestContext } from '@cloudflare/next-on-pages'
-import { Resend } from 'resend'
 
 export const runtime = 'edge'
 
@@ -26,13 +25,19 @@ export async function POST(req) {
                 description TEXT,
                 scammer_details TEXT,
                 evidence_image TEXT,
-                created_at DATETIME
+                created_at DATETIME,
+                status TEXT DEFAULT 'pending'
             )
         `).run()
 
-        // 1b. Attempt Migration for existing tables (Add evidence column)
+        // 1b. Attempt Migration for existing tables
         try {
             await db.prepare('ALTER TABLE scam_reports ADD COLUMN evidence_image TEXT').run()
+        } catch (e) {
+            // Column likely exists, ignore
+        }
+        try {
+            await db.prepare("ALTER TABLE scam_reports ADD COLUMN status TEXT DEFAULT 'pending'").run()
         } catch (e) {
             // Column likely exists, ignore
         }
@@ -41,8 +46,8 @@ export async function POST(req) {
         const { success } = await db.prepare(
             `INSERT INTO scam_reports (
                 reporter_name, reporter_email, reporter_phone, 
-                scam_type, description, scammer_details, evidence_image, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+                scam_type, description, scammer_details, evidence_image, created_at, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')`
         )
             .bind(
                 name || 'Anonymous',
@@ -55,6 +60,48 @@ export async function POST(req) {
                 new Date().toISOString()
             )
             .run()
+
+        // 3. Send Email Notification (Via Raw Fetch to avoid Resend SDK issues)
+        const resendApiKey = process.env.RESEND_API_KEY
+        if (resendApiKey && success) {
+            const adminSecret = process.env.ADMIN_SECRET || 'secret'
+            const baseUrl = 'https://checkitsa.co.za'
+
+            // Get ID (Best effort: select latest from this user)
+            const reportId = await db.prepare('SELECT id FROM scam_reports WHERE reporter_email = ? ORDER BY created_at DESC LIMIT 1').bind(email || 'N/A').first('id')
+
+            if (reportId) {
+                await fetch('https://api.resend.com/emails', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${resendApiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        from: 'CheckItSA Reports <onboarding@resend.dev>',
+                        to: 'info@checkitsa.co.za',
+                        subject: `🚨 New Scam Report: ${type}`,
+                        html: `
+                            <h2>New Report Received</h2>
+                            <p><strong>Reporter:</strong> ${name} (${email})</p>
+                            <p><strong>Scammer:</strong> ${scammer_details}</p>
+                            <p><strong>Description:</strong> ${description}</p>
+                            <br/>
+                            <div style="display: flex; gap: 10px;">
+                                <a href="${baseUrl}/api/admin/moderate?id=${reportId}&action=verify&token=${adminSecret}" 
+                                   style="background: #22c55e; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                                   ✅ VERIFY (Public)
+                                </a>
+                                <a href="${baseUrl}/api/admin/moderate?id=${reportId}&action=reject&token=${adminSecret}" 
+                                   style="background: #ef4444; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                                   ❌ REJECT
+                                </a>
+                            </div>
+                        `
+                    })
+                })
+            }
+        }
 
         if (!success) throw new Error('D1 Insert Failed')
 
