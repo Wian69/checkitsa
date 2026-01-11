@@ -43,12 +43,7 @@ export default function GamblingCheck() {
     )
 
     const handleVisit = (url) => {
-        const { canSearch } = trackSearch()
-        if (!canSearch) {
-            alert("You've reached your limit of 5 free searches. Please upgrade to Pro for unlimited access.")
-            router.push('/subscription')
-            return
-        }
+        // Gambling checks are free and do not count towards limits
         window.open(`https://${url}`, '_blank')
     }
 

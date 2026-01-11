@@ -2,7 +2,7 @@ const TIERS = {
     free: { limit: 5, reset: 'lifetime', label: 'Free Trial' },
     pro: { limit: 100, reset: 'monthly', label: 'Pro' },
     elite: { limit: 1000, reset: 'monthly', label: 'Elite' },
-    custom: { limit: 5000, reset: 'monthly', label: 'Enterprise' } // Example custom
+    custom: { limit: 5000, reset: 'monthly', label: 'Enterprise' }
 }
 
 export const trackSearch = () => {

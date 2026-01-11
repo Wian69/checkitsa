@@ -5,11 +5,11 @@ export const runtime = 'edge'
 
 export async function POST(req) {
     try {
-        const { token, email } = await req.json()
+        const { token, email, amount } = await req.json()
         const db = getRequestContext().env.DB
 
-        if (!token || !email) {
-            return NextResponse.json({ message: 'Missing token or email' }, { status: 400 })
+        if (!token || !email || !amount) {
+            return NextResponse.json({ message: 'Missing token, email, or amount' }, { status: 400 })
         }
 
         // 1. Charge Card via Yoco
@@ -17,11 +17,11 @@ export async function POST(req) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Auth-Secret-Key': process.env.YOCO_SECRET_KEY || 'sk_test_9605494bxu8a31k9a359' // Fallback to Test Key
+                'X-Auth-Secret-Key': process.env.YOCO_SECRET_KEY
             },
             body: JSON.stringify({
                 token: token,
-                amountInCents: 9900, // R99.00
+                amountInCents: amount,
                 currency: 'ZAR'
             })
         })
@@ -32,17 +32,26 @@ export async function POST(req) {
             throw new Error(yocoData.errorCode || 'Payment failed')
         }
 
-        // 2. Calculate Expiry Date (Now + 30 Days)
+        // 2. Determine Plan Details
+        let daysToAdd = 30
+        let newTier = 'premium' // Fallback
+
+        if (amount >= 7900 && amount < 11000) {
+            newTier = 'pro'
+        } else if (amount >= 11900) {
+            newTier = 'elite'
+        }
+
         const expiryDate = new Date()
-        expiryDate.setDate(expiryDate.getDate() + 30)
+        expiryDate.setDate(expiryDate.getDate() + daysToAdd)
 
         // 3. Update User in DB
         await db.prepare(`
             UPDATE users 
-            SET tier = 'premium', subscription_end = ?, searches = 0 
+            SET tier = ?, subscription_end = ?, searches = 0 
             WHERE email = ?
         `)
-            .bind(expiryDate.toISOString(), email)
+            .bind(newTier, expiryDate.toISOString(), email)
             .run()
 
         // 4. Fetch Updated User
