@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getRequestContext } from '@cloudflare/next-on-pages'
+import { Resend } from 'resend'
 
 export const runtime = 'edge'
 
