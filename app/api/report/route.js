@@ -166,6 +166,8 @@ export async function DELETE(req) {
         const { id, email } = await req.json()
         const db = getRequestContext().env.DB
 
+        console.log(`[DELETE] Attempting to delete report ${id} for user ${email}`)
+
         if (!id || !email) {
             return NextResponse.json({ message: 'Missing parameters' }, { status: 400 })
         }
@@ -174,12 +176,16 @@ export async function DELETE(req) {
         // Strictly enforcing email match ensures users can only delete their own reports
         const result = await db.prepare("DELETE FROM scam_reports WHERE id = ? AND reporter_email = ?").bind(id, email).run()
 
+        console.log(`[DELETE] Result: ${JSON.stringify(result)}`)
+
         if (result.meta.changes === 0) {
+            console.warn(`[DELETE] Failed: Report ${id} not found or email ${email} mismatch.`)
             return NextResponse.json({ message: 'Report not found or unauthorized' }, { status: 404 })
         }
 
         return NextResponse.json({ message: 'Report deleted successfully' })
     } catch (error) {
+        console.error(`[DELETE] Error: ${error.message}`)
         return NextResponse.json({ message: error.message }, { status: 500 })
     }
 }
