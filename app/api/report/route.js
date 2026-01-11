@@ -94,7 +94,8 @@ export async function GET(req) {
         }
 
         // Fetch list (existing logic)
-        const { results } = await db.prepare('SELECT * FROM scam_reports ORDER BY created_at DESC LIMIT 20').all()
+        // Fetch list (existing logic) - STRICTLY VERIFIED ONLY
+        const { results } = await db.prepare("SELECT * FROM scam_reports WHERE status = 'verified' ORDER BY created_at DESC LIMIT 20").all()
 
         // Map to uniform frontend format
         const reports = (results || []).map(r => ({
