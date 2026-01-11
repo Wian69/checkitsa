@@ -160,24 +160,48 @@ export async function POST(request) {
             } catch (err) { console.log('Policy search failed', err) }
         }
 
-        // 3. Domain Age & Registrar (creation.date fallback)
+        // 3. Domain Age & Registrar Strategy (RDAP + Fallback)
         let domainAge = 'Unknown'
         let registrar = 'Unknown'
         let createdDate = null
 
-        // Fallback: Use creation.date API
+        // Strategy A: RDAP (Standard Protocol)
         try {
-            const creationRes = await fetch(`https://creation.date/api/${rootDomain}`, {
-                signal: AbortSignal.timeout(3000)
-            })
-            if (creationRes.ok) {
-                const creationData = await creationRes.json()
-                if (creationData.created) {
-                    createdDate = new Date(creationData.created)
+            const rdapRes = await fetch(`https://rdap.org/domain/${rootDomain}`, { signal: AbortSignal.timeout(3000) })
+            if (rdapRes.ok) {
+                const rdap = await rdapRes.json()
+
+                // Extract Registration Date
+                const events = rdap.events || []
+                const regEvent = events.find(e => e.eventAction === 'registration' || e.eventAction === 'last changed')
+                if (regEvent) createdDate = new Date(regEvent.eventDate)
+
+                // Extract Registrar
+                const entities = rdap.entities || []
+                const registrarEntity = entities.find(e => e.roles && e.roles.includes('registrar'))
+                if (registrarEntity && registrarEntity.vcardArray) {
+                    const vcard = registrarEntity.vcardArray[1]
+                    const fn = vcard.find(item => item[0] === 'fn')
+                    if (fn) registrar = fn[3]
                 }
             }
-        } catch (e) {
-            console.log('Fallback domain age failed:', e)
+        } catch (e) { console.log('RDAP lookup failed', e) }
+
+        // Strategy B: creation.date (Fallback)
+        if (!createdDate) {
+            try {
+                const creationRes = await fetch(`https://creation.date/api/${rootDomain}`, {
+                    signal: AbortSignal.timeout(3000)
+                })
+                if (creationRes.ok) {
+                    const creationData = await creationRes.json()
+                    if (creationData.created) {
+                        createdDate = new Date(creationData.created)
+                    }
+                }
+            } catch (e) {
+                console.log('Fallback domain age failed:', e)
+            }
         }
 
         if (createdDate) {
