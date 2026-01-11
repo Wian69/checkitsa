@@ -34,6 +34,18 @@ export async function POST(request) {
         const res = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(query)}`)
         const data = await res.json()
 
+        if (data.error) {
+            console.error('[Verify] Google Search API Error:', data.error);
+            return NextResponse.json({
+                valid: false,
+                data: {
+                    status: 'Search Error',
+                    message: 'Google Search API failed.',
+                    details: data.error.message || 'Unknown error from Google.'
+                }
+            });
+        }
+
         if (!data.items || data.items.length === 0) {
             return NextResponse.json({
                 valid: false,
