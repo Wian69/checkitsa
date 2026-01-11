@@ -1,11 +1,7 @@
-import { NextResponse } from 'next/server'
-
 export const runtime = 'edge'
 
 export function GET() {
-    return NextResponse.json({
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        mode: 'static_fallback'
+    return new Response(JSON.stringify({ status: 'ok', msg: 'bare response' }), {
+        headers: { 'Content-Type': 'application/json' }
     })
 }
