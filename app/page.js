@@ -1,6 +1,7 @@
 import Link from 'next/link'
 // export const runtime = 'edge'
 import Navbar from '@/components/Navbar'
+import ScamReportForm from '@/components/ScamReportForm'
 // Helper to get RSS
 async function getRSSFeed() {
   // DEBUG: Mocking RSS to isolate render issues
@@ -192,6 +193,11 @@ export default async function Home() {
             color="#6366f1"
           />
         </div>
+      </section>
+
+      {/* Report Incident Section */}
+      <section className="container" id="report" style={{ marginBottom: '8rem' }}>
+        <ScamReportForm />
       </section>
 
       {/* Community Reports Section */}
