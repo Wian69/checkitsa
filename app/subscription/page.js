@@ -15,8 +15,8 @@ export default function SubscriptionPage() {
     }, [])
 
     // Calculate Custom Price
-    // Base R30 + (Count * R0.08)
-    const customPrice = Math.round(30 + (customSearchCount * 0.08))
+    // Base R50 + (Count * R0.08)
+    const customPrice = Math.round(50 + (customSearchCount * 0.08))
 
     const handleUpgrade = (tier, limit = 0) => {
         setTier(tier, limit)
@@ -72,14 +72,14 @@ export default function SubscriptionPage() {
                     <div className="glass-panel" style={{ padding: '2rem', border: currentTier === 'pro' ? '2px solid var(--color-primary)' : '1px solid var(--color-border)', background: 'linear-gradient(145deg, rgba(99,102,241,0.1), rgba(0,0,0,0))' }}>
                         <div style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'var(--color-primary)', padding: '0.2rem 0.8rem', borderRadius: '1rem', fontSize: '0.8rem', fontWeight: 'bold' }}>POPULAR</div>
                         <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Pro</h2>
-                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>R49 <span style={{ fontSize: '1rem', fontWeight: 'normal' }}>/mo</span></div>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>R79 <span style={{ fontSize: '1rem', fontWeight: 'normal' }}>/mo</span></div>
                         <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>For safety conscious individuals.</p>
 
                         <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2rem', display: 'grid', gap: '1rem' }}>
                             <li style={{ display: 'flex', gap: '0.5rem' }}>✅ <strong>100 Monthly Searches</strong></li>
+                            <li style={{ display: 'flex', gap: '0.5rem' }}>✅ <strong>Global Security Intel</strong></li>
                             <li style={{ display: 'flex', gap: '0.5rem' }}>✅ Monthly Limit Resets</li>
                             <li style={{ display: 'flex', gap: '0.5rem' }}>✅ Email & ID Analysis</li>
-                            <li style={{ display: 'flex', gap: '0.5rem' }}>✅ Priority Support</li>
                         </ul>
 
                         <button
@@ -95,14 +95,14 @@ export default function SubscriptionPage() {
                     {/* Elite Tier */}
                     <div className="glass-panel" style={{ padding: '2rem', border: currentTier === 'elite' ? '2px solid var(--color-primary)' : '1px solid var(--color-border)' }}>
                         <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Elite</h2>
-                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>R99 <span style={{ fontSize: '1rem', fontWeight: 'normal' }}>/mo</span></div>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>R119 <span style={{ fontSize: '1rem', fontWeight: 'normal' }}>/mo</span></div>
                         <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>For power users & small biz.</p>
 
                         <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2rem', display: 'grid', gap: '1rem' }}>
                             <li style={{ display: 'flex', gap: '0.5rem' }}>✅ <strong>1,000 Monthly Searches</strong></li>
+                            <li style={{ display: 'flex', gap: '0.5rem' }}>✅ <strong>Global Security Intel</strong></li>
                             <li style={{ display: 'flex', gap: '0.5rem' }}>✅ Monthly Limit Resets</li>
                             <li style={{ display: 'flex', gap: '0.5rem' }}>✅ Exclusive Business Tools (Soon)</li>
-                            <li style={{ display: 'flex', gap: '0.5rem' }}>✅ Traffic Fines Check (Soon)</li>
                         </ul>
 
                         <button
@@ -148,7 +148,7 @@ export default function SubscriptionPage() {
                         <div style={{ textAlign: 'center', padding: '1.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '1rem', width: '100%' }}>
                             <div style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>Estimated Cost</div>
                             <div style={{ fontSize: '3rem', fontWeight: 'bold' }}>R{customPrice} <span style={{ fontSize: '1rem', fontWeight: 'normal' }}>/mo</span></div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Based on R30 base + R0.08 per search</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Based on R50 base + R0.08 per search</div>
                         </div>
 
                         <button
