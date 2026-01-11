@@ -12,6 +12,14 @@ export default function ScamCheck() {
     const [loading, setLoading] = useState(false)
     const router = useRouter()
 
+    useEffect(() => {
+        const user = localStorage.getItem('checkitsa_user')
+        if (!user) {
+            alert('Please create a free account or login to access our verification tools.')
+            router.push('/signup')
+        }
+    }, [])
+
     const handleScan = async (e) => {
         e.preventDefault()
 

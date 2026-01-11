@@ -10,6 +10,14 @@ export default function GamblingCheck() {
     const [searchTerm, setSearchTerm] = useState('')
     const router = useRouter()
 
+    useEffect(() => {
+        const user = localStorage.getItem('checkitsa_user')
+        if (!user) {
+            alert('Please create a free account or login to access our verification tools.')
+            router.push('/signup')
+        }
+    }, [])
+
     // Static List
     const legalSites = [
         { domain: 'lottostar.co.za', name: 'LottoStar', license: 'Mpumalanga Economic Regulator' },

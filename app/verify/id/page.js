@@ -13,6 +13,14 @@ export default function IDCheck() {
     const [error, setError] = useState('')
     const router = useRouter()
 
+    useEffect(() => {
+        const user = localStorage.getItem('checkitsa_user')
+        if (!user) {
+            alert('Please create a free account or login to access our verification tools.')
+            router.push('/signup')
+        }
+    }, [])
+
     const handleVerify = async (e) => {
         e.preventDefault()
 
