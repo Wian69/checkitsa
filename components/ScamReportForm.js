@@ -1,6 +1,7 @@
 "use client"
 import { useState } from 'react'
 import { addToReportHistory } from '@/utils/searchLimit'
+import LoadingOverlay from '@/components/LoadingOverlay'
 
 export default function ScamReportForm() {
     const [type, setType] = useState('WhatsApp')
@@ -55,6 +56,7 @@ export default function ScamReportForm() {
 
     return (
         <div className="glass-panel" style={{ padding: '3rem', maxWidth: '1000px', margin: '0 auto' }}>
+            {loading && <LoadingOverlay message="Submitting Report..." />}
             <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
                 <h2 style={{
                     fontSize: '2.5rem',

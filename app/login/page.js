@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { syncFromCloud } from '@/utils/searchLimit'
+import LoadingOverlay from '@/components/LoadingOverlay'
 
 export default function Login() {
     const [formData, setFormData] = useState({ email: '', password: '' })
@@ -101,6 +102,8 @@ export default function Login() {
     return (
         <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <Navbar />
+
+            {loading && <LoadingOverlay message="Authenticating Session..." />}
 
             <div className="container" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: '4rem' }}>
                 <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '2.5rem' }}>
