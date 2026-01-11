@@ -41,7 +41,14 @@ export default function CommunityReportsFeed() {
     return (
         <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
             {reports.map(report => (
-                <div key={report.id} className="glass-panel" style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)' }}>
+                <Link key={report.id} href={`/report/${report.id}`} className="glass-panel" style={{
+                    padding: '1.5rem',
+                    background: 'rgba(255,255,255,0.02)',
+                    display: 'block',
+                    textDecoration: 'none',
+                    transition: 'transform 0.2s',
+                    cursor: 'pointer'
+                }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                         <span style={{
                             fontSize: '0.75rem',
@@ -71,7 +78,7 @@ export default function CommunityReportsFeed() {
                             📎 Evidence Attached
                         </div>
                     )}
-                </div>
+                </Link>
             ))}
         </div>
     )
