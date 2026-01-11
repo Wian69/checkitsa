@@ -8,14 +8,13 @@ export async function POST(req) {
         const body = await req.json()
         const {
             name, email, phone,
-            type, description, scammer_details, // New fields
+            type, description, scammer_details, evidence, // New fields
             url, reason // Legacy fields fallback
         } = body
 
         const db = getRequestContext().env.DB
 
-        // 1. Ensure Table Exists (Auto-Migration for new features)
-        // We use a separate table 'scam_reports' for the detailed incidents to avoid conflicts with the old 'reports' table if it exists.
+        // 1. Ensure Table Exists
         await db.prepare(`
             CREATE TABLE IF NOT EXISTS scam_reports (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,16 +24,24 @@ export async function POST(req) {
                 scam_type TEXT,
                 description TEXT,
                 scammer_details TEXT,
+                evidence_image TEXT,
                 created_at DATETIME
             )
         `).run()
+
+        // 1b. Attempt Migration for existing tables (Add evidence column)
+        try {
+            await db.prepare('ALTER TABLE scam_reports ADD COLUMN evidence_image TEXT').run()
+        } catch (e) {
+            // Column likely exists, ignore
+        }
 
         // 2. Insert Data
         const { success } = await db.prepare(
             `INSERT INTO scam_reports (
                 reporter_name, reporter_email, reporter_phone, 
-                scam_type, description, scammer_details, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)`
+                scam_type, description, scammer_details, evidence_image, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
         )
             .bind(
                 name || 'Anonymous',
@@ -43,6 +50,7 @@ export async function POST(req) {
                 type || 'General',
                 description || reason || 'No description',
                 scammer_details || url || 'N/A',
+                evidence || null,
                 new Date().toISOString()
             )
             .run()
@@ -68,6 +76,7 @@ export async function GET() {
             url: r.scammer_details || 'N/A', // Map detailed field to generic display
             reason: r.description || 'No description',
             type: r.scam_type || 'General',
+            has_evidence: !!r.evidence_image,
             date: r.created_at
         }))
 

@@ -7,7 +7,7 @@ export default function ScamReportForm() {
     const [status, setStatus] = useState(null)
     const [formData, setFormData] = useState({
         name: '', email: '', phone: '',
-        scammer_details: '', description: ''
+        scammer_details: '', description: '', evidence: ''
     })
 
     const handleSubmit = async (e) => {
@@ -23,7 +23,7 @@ export default function ScamReportForm() {
             })
             if (res.ok) {
                 setStatus('success')
-                setFormData({ name: '', email: '', phone: '', scammer_details: '', description: '' })
+                setFormData({ name: '', email: '', phone: '', scammer_details: '', description: '', evidence: '' })
             } else {
                 throw new Error('Failed to submit')
             }
@@ -187,6 +187,64 @@ export default function ScamReportForm() {
                                     value={formData.description}
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
                                 />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+                                    Upload Evidence (Optional)
+                                </label>
+                                <div style={{
+                                    border: '2px dashed var(--color-border)',
+                                    padding: '2rem',
+                                    borderRadius: '0.5rem',
+                                    textAlign: 'center',
+                                    cursor: 'pointer',
+                                    background: 'rgba(255,255,255,0.02)',
+                                    transition: 'border-color 0.2s'
+                                }}
+                                    onClick={() => document.getElementById('evidence-upload').click()}
+                                >
+                                    <input
+                                        id="evidence-upload"
+                                        type="file"
+                                        accept="image/*"
+                                        style={{ display: 'none' }}
+                                        onChange={(e) => {
+                                            const file = e.target.files[0]
+                                            if (file) {
+                                                if (file.size > 1024 * 1024) { // 1MB Limit
+                                                    alert('File size too large. Max 1MB.')
+                                                    return
+                                                }
+                                                const reader = new FileReader()
+                                                reader.onloadend = () => {
+                                                    setFormData({ ...formData, evidence: reader.result })
+                                                }
+                                                reader.readAsDataURL(file)
+                                            }
+                                        }}
+                                    />
+                                    {formData.evidence ? (
+                                        <div>
+                                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✅</div>
+                                            <p style={{ color: 'var(--color-success)' }}>Image Attached</p>
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setFormData({ ...formData, evidence: '' })
+                                                }}
+                                                style={{ marginTop: '0.5rem', color: 'var(--color-danger)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📎</div>
+                                            <p style={{ color: 'var(--color-text-muted)' }}>Click to upload screenshot (Max 1MB)</p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
