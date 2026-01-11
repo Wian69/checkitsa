@@ -196,9 +196,36 @@ export default function Dashboard() {
                             </table>
                         )}
                     </div>
-                </div>
+                    {/* Danger Zone */}
+                    <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                        <h3 style={{ fontSize: '1.2rem', color: '#f87171', marginBottom: '1rem' }}>Danger Zone</h3>
+                        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
+                            <div>
+                                <div style={{ fontWeight: 600, color: 'var(--color-text-main)' }}>Reset Local Data</div>
+                                <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Clears all history, usage counts, and local session data.</div>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    if (confirm('Are you sure? This will wipe your local history and logout.')) {
+                                        localStorage.clear()
+                                        window.location.href = '/signup'
+                                    }
+                                }}
+                                className="btn"
+                                style={{
+                                    background: 'rgba(220, 38, 38, 0.1)',
+                                    color: '#f87171',
+                                    border: '1px solid #f87171',
+                                    padding: '0.5rem 1rem',
+                                    fontSize: '0.9rem'
+                                }}
+                            >
+                                Reset & Logout
+                            </button>
+                        </div>
+                    </div>
 
-            </div>
+                </div>
         </main>
     )
 }
