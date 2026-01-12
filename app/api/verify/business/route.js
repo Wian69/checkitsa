@@ -65,46 +65,60 @@ export async function POST(request) {
 
         const items = data.items || []
 
-        // 2. Web-Only Intelligence Layer (Advanced Smart Parser v3)
-        // STRATEGY: 
-        // 1. NO Filtering (Accept all snippets to catch rich data)
-        // 2. Trust Google's top result IF it matches the company name context check.
+        // 2. Web-Only Intelligence Layer (Advanced Smart Parser v4 - Tiered Authority)
 
         let identifier = "Not found in web index";
         const regNumRegex = /\b(\d{4})\/\d{6}\/\d{2}\b/;
 
-        // Scan items. We look for a "High Confidence" match first.
-        // High Confidence = Snippet contains Reg No AND Title/Snippet contains exact Company Name.
+        // Tiered Priority Search:
+        // Tier 1: Title STARTS WITH input (High Authority - e.g. "Grain Carriers - Home")
+        // Tier 2: Title CONTAINS input (Medium - e.g. "About Grain Carriers (Pty) Ltd")
+        // Tier 3: Snippet CONTAINS input (Low - e.g. "Partners list: ... Grain Carriers ...")
+
+        let tier1Match = null;
+        let tier2Match = null;
+        let tier3Match = null;
 
         for (const item of items) {
-            // 1. Check if snippet actually relates to the company (Context Match)
-            if (item.title.toLowerCase().includes(input.toLowerCase()) || item.snippet.toLowerCase().includes(input.toLowerCase())) {
-                const match = item.snippet.match(regNumRegex);
-                if (match) {
-                    const year = parseInt(match[1], 10);
-                    if (year > 1900 && year <= new Date().getFullYear()) {
-                        identifier = match[0];
-                        break; // Found matching entity in relevant snippet. Stop.
+            const title = item.title.toLowerCase();
+            const snippet = item.snippet.toLowerCase();
+            const cleanInput = input.toLowerCase();
+
+            const match = item.snippet.match(regNumRegex);
+            if (match) {
+                const year = parseInt(match[1], 10);
+                if (year > 1900 && year <= new Date().getFullYear()) {
+
+                    if (title.startsWith(cleanInput)) {
+                        if (!tier1Match) tier1Match = match[0];
+                    } else if (title.includes(cleanInput)) {
+                        if (!tier2Match) tier2Match = match[0];
+                    } else if (snippet.includes(cleanInput)) {
+                        if (!tier3Match) tier3Match = match[0];
                     }
                 }
             }
         }
 
-        // Fallback: If no "Context Match" found, just take the first Reg No from the top result (Relevance Fallback)
-        if (identifier === "Not found in web index") {
+        // Select best match based on Tier Priority
+        if (tier1Match) identifier = tier1Match;
+        else if (tier2Match) identifier = tier2Match;
+        else if (tier3Match) identifier = tier3Match;
+        else {
+            // Absolute Fallback: Just take the first valid one we found anywhere
             for (const item of items) {
                 const match = item.snippet.match(regNumRegex);
                 if (match) {
                     const year = parseInt(match[1], 10);
                     if (year > 1900 && year <= new Date().getFullYear()) {
                         identifier = match[0];
-                        break; // Trust ranking.
+                        break;
                     }
                 }
             }
         }
 
-        // Use loose regex fallback ONLY if strictly verified one failed
+        // Loose Regex Fallback (only if specific regex failed)
         if (identifier === "Not found in web index" && items.length > 0) {
             const altMatch = items[0].snippet.match(/(?:Reg(?:istration)?(?:\s+No)?\.?|Number)[\s:.-]*((?:\d{4}\/\d+|\d{9,}))/i);
             if (altMatch) identifier = altMatch[1];
@@ -139,7 +153,6 @@ export async function POST(request) {
             addressHint = `${hqMatch[1]} (Headquarters)`;
         } else {
             // 2. Standard Address Patterns (Street, Box, or explicit City/Area)
-            // We search item by item to find the best address snippet
             const addressItem = items.find(i =>
                 /\d+\s+[A-Za-z]+\s+(Street|St|Road|Rd|Ave|Box|Crescent|Way)/i.test(i.snippet) ||
                 /(?:Randfontein|Johannesburg|Cape Town|Durban|Pretoria|Sandton|Polokwane|Bloemfontein)/.test(i.snippet)
@@ -152,7 +165,12 @@ export async function POST(request) {
         const potentialDirectors = [...cleanSnippets.matchAll(directorRegex)].map(m => m[1]).slice(0, 3);
         const directors = potentialDirectors.length > 0 ? potentialDirectors : ["Listed in full report"];
 
-        // F. Status
+        // F. Employees (Re-enabled simple heuristic)
+        const employeeRegex = /(?:approx\.?|over|more than|staff of|employing)\s*(\d+(?:,\d+)?\+?)\s*(?:employees|staff|people|workers)/i;
+        const employeeMatch = cleanSnippets.match(employeeRegex);
+        const employees = employeeMatch ? `${employeeMatch[1]} (Est.)` : "Unknown (Not public)";
+
+        // G. Status
         const lowerSnippets = cleanSnippets.toLowerCase();
         let status = "Active";
         if (lowerSnippets.includes('liquidation') || lowerSnippets.includes('liquidated')) status = 'Liquidated';
@@ -168,11 +186,11 @@ export async function POST(request) {
             address: addressHint,
             registrationDate: identifier !== "Not found in web index" ? identifier.substring(0, 4) : "Unknown",
             directors: directors,
-            employees: "Unknown",
+            employees: employees,
             operations: operations,
             globalRole: "National Entity",
             summary: `Automated web profile generated from verified sources.`,
-            source: "Global Web Index (Filtered)",
+            source: "Global Web Index (Tiered)",
             icon: status === 'Active' ? '🏢' : '⚠️',
             details: `Synthesized from ${items.length} public web endpoints.`
         };
