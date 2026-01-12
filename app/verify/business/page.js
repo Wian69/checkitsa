@@ -101,7 +101,7 @@ export default function BusinessVerificationPage() {
 
                 {result && (
                     <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '3rem' }}>
                             {/* Company Identity */}
                             <div style={{ background: 'rgba(255,255,255,0.03)', padding: '2rem', borderRadius: '1.5rem', border: '1px solid var(--color-border)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
