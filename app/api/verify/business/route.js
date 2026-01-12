@@ -43,31 +43,34 @@ export async function POST(request) {
         }
 
         // --------------------------------------------------------------------------------
-        // 1. MULTI-VECTOR WEB SEARCH (Parallel Execution)
+        // 1. DIRECTED SOURCE INTELLIGENCE (Targeted Search)
         // --------------------------------------------------------------------------------
 
-        console.log(`[Intelligence] Multi-Vector Search for: ${input}`);
+        console.log(`[Intelligence] Directed Search for: ${input}`);
 
-        // Vector A: Legal & Compliance (Focus on Registration Number, Address)
-        const queryLegal = `"${input}" ("Registration Number" OR "Reg No" OR "Headquarters") South Africa`;
+        // Vector A: DIRECTORY AUTHORITY (The "Truth" Source)
+        // We explicitly search authoritative databases that put Reg No in the Title.
+        // b2bhint.com, sa-companies.com, localpros.co.za often have strict data.
+        const queryRegistry = `site:b2bhint.com OR site:sa-companies.com OR site:easyinfo.co.za "${input}"`;
 
-        // Vector B: Profile & Operations (Focus on Description, Employees, Directors, Founded)
-        const queryProfile = `"${input}" ("Founded" OR "CEO" OR "Employees" OR "Global" OR "Directors")`;
+        // Vector B: CORPORATE PROFILE (The "Rich" Source)
+        // Generic search for qualitative data (Employees, CEO, Founded)
+        const queryProfile = `"${input}" ("Founded" OR "CEO" OR "Employees" OR "Headquarters" OR "Registration Number") -site:b2bhint.com`;
 
         const fetchSearch = async (q) => {
-            const url = `https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(q)}&num=8`; // 8 results per vector
+            const url = `https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(q)}&num=5`;
             const res = await fetch(url);
             const data = await res.json();
             return data.items || [];
         };
 
-        const [itemsLegal, itemsProfile] = await Promise.all([
-            fetchSearch(queryLegal),
+        const [itemsRegistry, itemsProfile] = await Promise.all([
+            fetchSearch(queryRegistry),
             fetchSearch(queryProfile)
         ]);
 
-        // Merge Results (Legal first for ID priority, then Profile for richness)
-        const allItems = [...itemsLegal, ...itemsProfile];
+        // Merge Results: Registry first (for ID), then Profile (for richness)
+        const allItems = [...itemsRegistry, ...itemsProfile];
 
         if (allItems.length === 0) {
             return NextResponse.json({
@@ -81,60 +84,58 @@ export async function POST(request) {
         }
 
         // --------------------------------------------------------------------------------
-        // 2. UNIVERSAL SMART PARSER v6 (Multi-Vector)
+        // 2. SMART PARSER v7 (Source-Weighted)
         // --------------------------------------------------------------------------------
 
         let identifier = "Not found in web index";
         const regNumRegex = /\b(\d{4})\/\d{6}\/\d{2}\b/;
 
-        // A. Registration Number Extraction (Tiered Authority)
-        // We prioritize the "Legal" search results for this, but check everything.
+        // A. Registration Number Extraction
+        // STRATEGY: Trust the Registry Vector (B2BHint) implicitly if it matches the name.
 
-        let tier1Match = null; // Title STARTS WITH input
-        let tier2Match = null; // Title CONTAINS input
-        let tier3Match = null; // Snippet CONTAINS input
+        let registryMatch = null;
 
-        // Helper to check year validity
-        const isValidYear = (yStr) => {
-            const y = parseInt(yStr, 10);
-            return y > 1900 && y <= new Date().getFullYear();
-        };
-
-        for (const item of allItems) {
-            const title = item.title.toLowerCase();
-            const cleanInput = input.toLowerCase();
-
-            const match = item.snippet.match(regNumRegex);
-            if (match && isValidYear(match[1])) {
-                if (title.startsWith(cleanInput)) {
-                    if (!tier1Match) tier1Match = match[0];
-                } else if (title.includes(cleanInput)) {
-                    if (!tier2Match) tier2Match = match[0];
-                } else if (item.snippet.toLowerCase().includes(cleanInput)) {
-                    if (!tier3Match) tier3Match = match[0];
+        // 1. Check Registry Items first (High Trust)
+        for (const item of itemsRegistry) {
+            if (item.title.toLowerCase().includes(input.toLowerCase())) {
+                const match = item.title.match(regNumRegex) || item.snippet.match(regNumRegex);
+                if (match) {
+                    const year = parseInt(match[1], 10);
+                    if (year > 1900 && year <= new Date().getFullYear()) {
+                        registryMatch = match[0];
+                        break; // Stop at first valid registry match
+                    }
                 }
             }
         }
 
-        // Select Best Identifier
-        if (tier1Match) identifier = tier1Match;
-        else if (tier2Match) identifier = tier2Match;
-        else if (tier3Match) identifier = tier3Match;
-        else {
-            // Fallback: First valid number found anywhere
-            for (const item of allItems) {
+        // 2. If no registry match, fallback to Tiered Search on Profile items
+        if (registryMatch) {
+            identifier = registryMatch;
+        } else {
+            // Fallback Logic from v6
+            let tier1Match = null;
+            let tier2Match = null;
+
+            for (const item of itemsProfile) {
                 const match = item.snippet.match(regNumRegex);
-                if (match && isValidYear(match[1])) {
-                    identifier = match[0];
-                    break;
+                if (match) {
+                    const year = parseInt(match[1], 10);
+                    if (year > 1900 && year <= new Date().getFullYear()) {
+                        if (item.title.toLowerCase().startsWith(input.toLowerCase())) tier1Match = match[0];
+                        else if (item.title.toLowerCase().includes(input.toLowerCase())) tier2Match = match[0];
+                    }
                 }
             }
-        }
-
-        // Loose Regex Fallback (if strict CIPC failed)
-        if (identifier === "Not found in web index") {
-            const altMatch = allItems[0]?.snippet.match(/(?:Reg(?:istration)?(?:\s+No)?\.?|Number)[\s:.-]*((?:\d{4}\/\d+|\d{9,}))/i);
-            if (altMatch) identifier = altMatch[1];
+            if (tier1Match) identifier = tier1Match;
+            else if (tier2Match) identifier = tier2Match;
+            else {
+                // Last Resort
+                for (const item of itemsProfile) {
+                    const match = item.snippet.match(regNumRegex);
+                    if (match) { identifier = match[0]; break; }
+                }
+            }
         }
 
         const cleanSnippets = allItems.map(i => `${i.title} ${i.snippet}`).join(' | ');
@@ -151,9 +152,8 @@ export async function POST(request) {
         const foundIndustry = industries.find(ind => lowerSnippets.includes(ind.toLowerCase()));
         const industry = foundIndustry ? `${foundIndustry} (Web Verified)` : "Multi-Sector (Web Index)";
 
-        // C. Operations / Description
-        // Prioritize "Profile" vector items for description
-        const bestDescItem = itemsProfile.concat(itemsLegal).find(i =>
+        // C. Operations
+        const bestDescItem = itemsProfile.find(i =>
             /(?:part of|subsidiary of|owned by|group|holding)/i.test(i.snippet) ||
             /is a|specializes|provides|manufacturer|supplier|distributor|solutions|services/i.test(i.snippet)
         );
@@ -163,22 +163,20 @@ export async function POST(request) {
         let addressHint = "See web results below";
         let globalRole = "National Entity";
 
-        // Global Role Heuristic
-        if (lowerSnippets.includes('global') || lowerSnippets.includes('international') || lowerSnippets.includes('multinational') || lowerSnippets.includes('across africa') || lowerSnippets.includes('worldwide')) {
+        if (lowerSnippets.includes('global') || lowerSnippets.includes('international') || lowerSnippets.includes('multinational') || lowerSnippets.includes('across africa')) {
             globalRole = "Multinational Enterprise";
         }
 
-        // Address Extraction
         const hqRegex = /(?:Headquarters|Head Office|Based|Located)[:\s]+in\s+([A-Z][a-z]+(?:[\s,]+[A-Z][a-z]+)*)/i;
         const hqMatch = cleanSnippets.match(hqRegex);
 
         if (hqMatch) {
-            addressHint = `${hqMatch[1]} (Headquarters)`;
+            addressHint = `${hqMatch[1]} (Headquarters)`; // e.g. "Headquarters in Cape Town"
         } else {
-            const addressMatches = allItems.filter(i =>
+            // Look for street address pattern in Profile items first
+            const addressMatches = itemsProfile.filter(i =>
                 /\d+\s+[A-Za-z0-9]+\s+(Street|St|Road|Rd|Ave|Avenue|Box|Crescent|Way|Drive|Lane|Park)/i.test(i.snippet)
             );
-            // Prioritize address from a Title Match item if possible
             const bestAddr = addressMatches.find(i => i.title.toLowerCase().includes(input.toLowerCase())) || addressMatches[0];
             if (bestAddr) addressHint = bestAddr.snippet;
         }
@@ -196,7 +194,11 @@ export async function POST(request) {
         // G. Founded Date
         const foundedRegex = /(?:founded|established|started|formed) in (\d{4})/i;
         const foundedMatch = cleanSnippets.match(foundedRegex);
-        const foundedDate = foundedMatch ? foundedMatch[1] : (identifier !== "Not found in web index" ? identifier.substring(0, 4) : "Unknown");
+        // If we found a date in text, use it. Else use Reg Year.
+        let foundedDate = foundedMatch ? foundedMatch[1] : "Unknown";
+        if (foundedDate === "Unknown" && identifier !== "Not found in web index") {
+            foundedDate = identifier.substring(0, 4);
+        }
 
         // H. Status
         let status = "Active";
@@ -204,28 +206,27 @@ export async function POST(request) {
         if (lowerSnippets.includes('deregistered') || lowerSnippets.includes('final deregistration')) status = 'Deregistered';
         if (lowerSnippets.includes('business rescue')) status = 'Business Rescue';
 
-        // Best Source Link (Website)
-        // Prefer official site from Legal search, or Profile search
-        const sourceLink = itemsLegal[0]?.link || itemsProfile[0]?.link || "";
+        // Best Source Link (Prefer Official or Registry)
+        // If we used a Registry Match, point to that for verification.
+        const sourceLink = registryMatch ? (itemsRegistry.find(i => i.title.includes(registryMatch))?.link || itemsProfile[0]?.link) : (itemsProfile[0]?.link || "");
         const sourceHost = sourceLink.startsWith('http') ? new URL(sourceLink).hostname : "Google Search";
 
-        // Construct the profile
         const aiResponse = {
             name: input,
             identifier: identifier,
             industry: industry,
             status: status,
             address: addressHint,
-            registrationDate: foundedDate, // Use Founded date or Reg Year
+            registrationDate: foundedDate,
             directors: directors,
             employees: employees,
             operations: operations,
             globalRole: globalRole,
-            summary: `Automated web profile generated from verified sources.`,
+            summary: `Automated web profile generated from authoritative sources.`,
             source: `Web Index (${sourceHost})`,
             website: sourceLink,
             icon: status === 'Active' ? '🏢' : '⚠️',
-            details: `Synthesized from ${allItems.length} public web endpoints (Multi-Vector).`
+            details: `Synthesized from ${allItems.length} public web endpoints (Targeted Vectors).`
         };
 
         return NextResponse.json({
