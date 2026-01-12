@@ -95,6 +95,11 @@ export default function BusinessCheck() {
                                             <div style={{ fontSize: '1rem', color: 'var(--color-text-muted)' }}>
                                                 Registration Number: <span style={{ color: 'white', fontWeight: 600 }}>{result.identifier}</span>
                                             </div>
+                                            {result.industry && result.industry !== 'Unknown' && (
+                                                <div style={{ fontSize: '1rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
+                                                    Industry: <span style={{ color: 'white', fontWeight: 600 }}>{result.industry}</span>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>

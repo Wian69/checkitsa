@@ -63,6 +63,7 @@ export async function POST(request) {
         let businessData = {
             name: input,
             identifier: topMatch || 'Registry Found',
+            industry: 'Unknown',
             status: 'Verified',
             summary: 'This business is verified against official South African registries.',
             icon: '✅'
@@ -86,13 +87,15 @@ export async function POST(request) {
                 Tasks:
                 1. Identify the official Registered Company Name.
                 2. Extract the Registration Number (Format: YYYY/NNNNNN/NN). Use the Regex Hint if it looks correct.
-                3. Business is "Verified" if a registry record exists.
-                4. Business is "Deregistered" if explicitly stated in text.
+                3. Identify the Primary Industry (e.g. Retail, Mining, Finance, Tech).
+                4. Business is "Verified" if a registry record exists.
+                5. Business is "Deregistered" if explicitly stated in text.
 
                 Required JSON structure:
                 {
                     "name": "Official Registered Company Name",
                     "identifier": "Registration No (e.g. 2010/123456/07)",
+                    "industry": "Industry Type",
                     "status": "Verified" | "Deregistered",
                     "summary": "This business is verified."
                 }
@@ -111,6 +114,7 @@ export async function POST(request) {
                 if (aiResponse) {
                     businessData.name = aiResponse.name || businessData.name
                     businessData.identifier = aiResponse.identifier || businessData.identifier || topMatch
+                    businessData.industry = aiResponse.industry || businessData.industry
                     businessData.status = aiResponse.status || businessData.status
 
                     if (businessData.status === 'Verified') {
@@ -133,6 +137,7 @@ export async function POST(request) {
             data: {
                 name: businessData.name,
                 identifier: businessData.identifier,
+                industry: businessData.industry,
                 status: businessData.status,
                 message: `${businessData.icon} ${businessData.summary}`,
                 source: 'Official CIPC/BizPortal Index',
