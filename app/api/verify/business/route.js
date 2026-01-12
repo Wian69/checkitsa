@@ -85,9 +85,9 @@ export async function POST(request) {
 
         try {
             const genAI = new GoogleGenerativeAI(geminiApiKey.trim())
-            // Remove strict 'v1' versioning to allow SDK to find the correct model endpoint
+            // Fallback to the most stable production model: gemini-pro
             const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash",
+                model: "gemini-pro",
             })
 
             const prompt = `
