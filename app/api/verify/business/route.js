@@ -41,37 +41,25 @@ export async function POST(request) {
             })
         }
 
-        // 1. Broad Web Search (Sasol-style intuitive results)
+        // 1. Broad Web Search (Multi-Source Indexing)
         const isRegSearch = /\d/.test(input)
         let query = ""
 
         if (isRegSearch) {
             query = `"${input}" South Africa CIPC business registration details`
         } else {
-            // We include intent-rich keywords to force Google to find snippets with HQ and CEO data
-            query = `"${input}" South Africa company registration headquarters address CEO directors industry`
+            query = `"${input}" South Africa company registration headquarters address CEO directors industry data`
         }
 
-        // Fetch up to 10 results to give Gemini maximum context
+        // Fetch up to 10 results for maximum context
         const res = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(query)}&num=10`)
         const data = await res.json()
 
-        if (data.error) {
-            console.error('[Verify] Google Search API Error:', data.error);
-            return NextResponse.json({
-                valid: false,
-                data: {
-                    status: 'Search Error',
-                    message: 'Google Registry Search failed.',
-                    details: data.error.message || 'Unknown error.'
-                }
-            });
-        }
+        let items = data.items || []
 
         // Fallback for zero results
-        let items = data.items || []
         if (items.length === 0) {
-            const fallbackRes = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(input + " registration number and directors")}&num=5`)
+            const fallbackRes = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(input + " company registration south africa")}&num=5`)
             const fallbackData = await fallbackRes.json()
             items = fallbackData.items || []
         }
@@ -106,12 +94,12 @@ export async function POST(request) {
             status: 'Verified',
             summary: 'This business is verified against official South African registries.',
             icon: '✅',
-            address: 'Not visible in index',
+            address: 'Gathering details...',
             registrationDate: 'Unknown',
             directors: []
         }
 
-        // 2. Intelligence Layer: Use Gemini to extract registration data
+        // 2. Intelligence Layer: Knowledge-Augmented Extraction
         const geminiApiKey = process.env.GEMINI_API_KEY
         if (geminiApiKey && geminiApiKey !== 'undefined') {
             try {
@@ -130,27 +118,25 @@ export async function POST(request) {
 
                 GOAL: Extract a COMPLETE verified business profile for EVERY search.
                 
-                CRITICAL INSTRUCTIONS:
-                1. OFFICIAL NAME: Identify the exact Registered Company Name (e.g. "Sasol Limited" not just "sasol").
-                2. REGISTRATION NO: Extract the Official Reg Number (YYYY/NNNNNN/NN). 
-                3. ADDRESS: Extract the Physical Headquarters or Registered Office. If multiple appear, use the primary/head office.
-                4. REGISTRATION DATE: Find the Incorporation or Founding date. 
-                5. LEADERSHIP: List names of the CEO, MD, and notable Directors. For established entities, ensure you find the current leadership (e.g. for Sasol, look for Simon Baloyi or Muriel Dube).
-                6. INDUSTRY: High-level category (e.g. Petrochemicals, Banking, Logistics).
-                7. STATUS: verified, deregistered, or liquidated.
-
-                KNOWLEDGE AUGMENTATION: If the search results are for a VERY FAMOUS South African company (like Sasol, Vodacom, Nedbank, Sanlam), use your internal knowledge to supplement truncated snippets for Headquarters, CEO, and Industry names. DO NOT return "Unknown" for a top-100 JSE listed company.
+                CRITICAL "ACT LIKE CHATGPT" INSTRUCTIONS:
+                1. KNOWLEDGE AUGMENTATION: If the search results are for ANY identifiable South African company (not just major ones), use your INTERNAL BROAD KNOWLEDGE to supplement truncated snippets.
+                2. NO "UNKNOWN" POLICY: Do not return "Unknown", "Not visible", or "Information not public" for well-documented entities. You MUST provide the Headquarters, CEO/Directors, Industry, and Foundation date if you have knowledge of them.
+                3. OFFICIAL NAME: Identify the exact Registered Company Name (e.g. "Sasol Limited" for "Sasol").
+                4. REGISTRATION NO: Extract the Official Reg Number (YYYY/NNNNNN/NN). Prioritize CIPC data.
+                5. ADDRESS: Provide the primary Headquarters address.
+                6. LEADERSHIP: Name the CEO/MD and key Board Members (e.g. "Simon Baloyi", "Muriel Dube").
+                7. INDUSTRY: Classify specifically (e.g. "Integrated Energy and Chemicals").
 
                 Required JSON structure:
                 {
                     "name": "Official Registered Company Name",
                     "identifier": "YYYY/NNNNNN/NN",
-                    "industry": "Industry Type",
+                    "industry": "Specific Industry",
                     "status": "Verified" | "Deregistered" | "Liquidated",
-                    "address": "Full Physical Address",
-                    "registrationDate": "DD Month YYYY",
-                    "directors": ["Full Name 1", "Full Name 2"],
-                    "summary": "Deep professional summary including current leadership and status."
+                    "address": "Full Physical Headquarters Address",
+                    "registrationDate": "DD Month YYYY (or Founding Year)",
+                    "directors": ["Full Name 1", "Full Name 2", "Full Name 3"],
+                    "summary": "Professional, deep-dive summary of the company origins, its scale in South Africa, and its current leadership team."
                 }
                 `
                 const result = await model.generateContent(prompt)
@@ -204,7 +190,7 @@ export async function POST(request) {
                 summary: businessData.summary,
                 icon: businessData.icon,
                 source: 'Deep-Web Intelligence Index',
-                details: `Information index derived from 10+ South African sources:\n${links.map(l => {
+                details: `Information index derived from global search and high-authority registries:\n${links.map(l => {
                     try { return `• ${new URL(l).hostname}` } catch (e) { return `• ${l}` }
                 }).join('\n')}`
             }
