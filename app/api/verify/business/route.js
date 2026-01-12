@@ -42,15 +42,13 @@ export async function POST(request) {
         }
 
         // 1. Optimized Natural Language Search
-        // We use a query that mimics what a user would type to get a direct answer.
         const isRegSearch = /\d/.test(input)
         let query = ""
 
         if (isRegSearch) {
-            query = `"${input}" South Africa CIPC business registration`
+            query = `"${input}" South Africa CIPC business registration details`
         } else {
-            // Force "registration number" and "South Africa" to ensure we get registry hits
-            query = `"${input}" company registration number South Africa CIPC`
+            query = `"${input}" company registration number South Africa CIPC directors address`
         }
 
         const res = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(query)}`)
@@ -68,10 +66,9 @@ export async function POST(request) {
             });
         }
 
-        // If no results, try one more time even broader
         let items = data.items || []
         if (items.length === 0) {
-            const fallbackRes = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(input + " registration number")}`)
+            const fallbackRes = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(input + " registration number details")}`)
             const fallbackData = await fallbackRes.json()
             items = fallbackData.items || []
         }
@@ -105,7 +102,10 @@ export async function POST(request) {
             industry: 'Unknown',
             status: 'Verified',
             summary: 'This business is verified against official South African registries.',
-            icon: '✅'
+            icon: '✅',
+            address: 'Not visible in index',
+            registrationDate: 'Unknown',
+            directors: []
         }
 
         // 2. Intelligence Layer: Use Gemini to extract registration data
@@ -125,15 +125,16 @@ export async function POST(request) {
                 
                 Regex Candidate: ${topMatch || 'None'}
 
-                GOAL: Find the ACTUAL Registration Number and Registered Name.
+                GOAL: Extract deep metadata about this company.
                 
                 CRITICAL TASKS:
                 1. Identify the EXACT official Registered Company Name.
-                2. Extract the Official Registration Number (Format MUST BE: YYYY/NNNNNN/NN). 
-                   - Look for terms like "Registration No", "Reg No", "Enterprise Number".
-                   - Example: 1950/004733/06
-                3. Identify the Primary Industry.
-                4. Determine Status (Active, Verified, Deregistered, Liquidated).
+                2. Extract the Official Registration Number (Format MUST BE: YYYY/NNNNNN/NN).
+                3. Extract Registered Address (if visible).
+                4. Extract Incorporation/Registration Date (if visible).
+                5. List names of Directors/Officers (if visible).
+                6. Identify the Primary Industry.
+                7. Determine Status (Active/Verified, Deregistered, Liquidated).
 
                 Required JSON structure:
                 {
@@ -141,7 +142,10 @@ export async function POST(request) {
                     "identifier": "YYYY/NNNNNN/NN",
                     "industry": "Industry Type",
                     "status": "Verified" | "Deregistered" | "Liquidated",
-                    "summary": "Concise summary of status."
+                    "address": "Full Physical Address or 'Not visible'",
+                    "registrationDate": "DD Month YYYY or 'Unknown'",
+                    "directors": ["Name 1", "Name 2"],
+                    "summary": "Full summary including status and notable details."
                 }
                 `
                 const result = await model.generateContent(prompt)
@@ -164,6 +168,9 @@ export async function POST(request) {
                     businessData.industry = aiResponse.industry || businessData.industry
                     businessData.status = aiResponse.status || businessData.status
                     businessData.summary = aiResponse.summary || businessData.summary
+                    businessData.address = aiResponse.address || businessData.address
+                    businessData.registrationDate = aiResponse.registrationDate || businessData.registrationDate
+                    businessData.directors = aiResponse.directors || []
 
                     const statusLower = (businessData.status || '').toLowerCase();
                     if (statusLower.includes('deregistered') || statusLower.includes('liquidated') || statusLower.includes('dissolved')) {
@@ -186,7 +193,11 @@ export async function POST(request) {
                 identifier: businessData.identifier,
                 industry: businessData.industry,
                 status: businessData.status,
-                message: `${businessData.icon} ${businessData.summary}`,
+                address: businessData.address,
+                registrationDate: businessData.registrationDate,
+                directors: businessData.directors,
+                summary: businessData.summary,
+                icon: businessData.icon,
                 source: 'Official Web Registry Index',
                 details: `Information derived from high-authority South African indices:\n${links.map(l => {
                     try { return `• ${new URL(l).hostname}` } catch (e) { return `• ${l}` }
