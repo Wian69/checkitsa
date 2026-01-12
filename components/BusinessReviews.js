@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 export default function BusinessReviews() {
     const [reviews, setReviews] = useState([])
     const [showModal, setShowModal] = useState(false)
-    const [form, setForm] = useState({ businessName: '', rating: 5, title: '', content: '', reviewerName: '' })
+    const [form, setForm] = useState({ businessName: '', businessEmail: '', rating: 5, title: '', content: '', reviewerName: '' })
 
     useEffect(() => {
         fetch('/api/reviews').then(res => res.json()).then(data => setReviews(data.reviews || []))
@@ -15,7 +15,7 @@ export default function BusinessReviews() {
         e.preventDefault()
         await fetch('/api/reviews', { method: 'POST', body: JSON.stringify(form) })
         setShowModal(false)
-        setForm({ businessName: '', rating: 5, title: '', content: '', reviewerName: '' })
+        setForm({ businessName: '', businessEmail: '', rating: 5, title: '', content: '', reviewerName: '' })
         // Refresh
         fetch('/api/reviews').then(res => res.json()).then(data => setReviews(data.reviews || []))
     }
@@ -78,6 +78,18 @@ export default function BusinessReviews() {
                                 value={form.businessName}
                                 onChange={e => setForm({ ...form, businessName: e.target.value })}
                             />
+                            <div style={{ position: 'relative' }}>
+                                <input
+                                    placeholder="Business E-mail (for notifications)"
+                                    type="email"
+                                    style={{ width: '100%', padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.5rem', color: 'white' }}
+                                    value={form.businessEmail}
+                                    onChange={e => setForm({ ...form, businessEmail: e.target.value })}
+                                />
+                                <div style={{ fontSize: '0.7rem', color: 'var(--color-primary)', marginTop: '0.3rem', marginLeft: '0.5rem' }}>
+                                    💡 We'll notify the business so they can respond to your feedback.
+                                </div>
+                            </div>
                             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                                 <label>Rating:</label>
                                 {[1, 2, 3, 4, 5].map(star => (

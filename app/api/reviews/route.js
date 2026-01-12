@@ -16,7 +16,7 @@ export async function GET() {
 
 export async function POST(req) {
     try {
-        const { businessName, rating, title, content, reviewerName } = await req.json()
+        const { businessName, businessEmail, rating, title, content, reviewerName } = await req.json()
         const db = getRequestContext().env.DB
 
         if (!businessName || !rating || !content) {
@@ -24,9 +24,13 @@ export async function POST(req) {
         }
 
         const { success } = await db.prepare(
-            `INSERT INTO business_reviews (business_name, rating, title, content, reviewer_name, status) VALUES (?, ?, ?, ?, ?, 'verified')`
-            // Auto-verifying for demo/MVP speed, can add moderation later if needed
-        ).bind(businessName, rating, title, content, reviewerName || 'Anonymous').run()
+            `INSERT INTO business_reviews (business_name, business_email, rating, title, content, reviewer_name, status) VALUES (?, ?, ?, ?, ?, ?, 'verified')`
+        ).bind(businessName, businessEmail || null, rating, title, content, reviewerName || 'Anonymous').run()
+
+        if (success && businessEmail) {
+            // Mock notification logic
+            console.log(`[Notification] Would send email to ${businessEmail}: "You have a new review for ${businessName}. Please respond at https://checkitsa.co.za/reviews"`)
+        }
 
         if (!success) throw new Error('DB Insert Failed')
 
