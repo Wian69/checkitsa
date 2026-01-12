@@ -86,7 +86,16 @@ export default function BusinessVerificationPage() {
 
                 {error && (
                     <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', padding: '1.5rem', borderRadius: '1rem', color: '#fca5a5', marginBottom: '2rem' }}>
-                        <strong>Error:</strong> {error}
+                        <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>⚠️ Synthesis Error</h3>
+                        <p style={{ marginBottom: '1rem' }}>{error}</p>
+                        {result?.details && (
+                            <details style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '0.5rem' }}>
+                                <summary style={{ cursor: 'pointer', marginBottom: '0.5rem', opacity: 0.8 }}>View Debug Trace</summary>
+                                <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.8rem', fontFamily: 'monospace', color: '#e5e7eb' }}>
+                                    {typeof result.details === 'string' ? result.details : JSON.stringify(result.details, null, 2)}
+                                </pre>
+                            </details>
+                        )}
                     </div>
                 )}
 
