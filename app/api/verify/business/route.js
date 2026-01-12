@@ -43,7 +43,7 @@ export async function POST(request) {
         }
 
         // 1. Enriched Web Search Query
-        // RESTORED: Precise query removing 'CIPC' noise but keeping 'South Africa'
+        // Precise query removing 'CIPC' noise but keeping 'South Africa'
         const intelligenceQuery = `"${input}" ("Registration Number" OR "Reg No") South Africa`;
 
         console.log(`[Intelligence] Fetching web data for: ${input}`);
@@ -64,32 +64,40 @@ export async function POST(request) {
         }
 
         const items = data.items || []
-        // 2. Web-Only Intelligence Layer (Advanced Smart Parser v2)
+
+        // 2. Web-Only Intelligence Layer (Advanced Smart Parser v2.1)
 
         // FILTER 1: Anti-Noise (Remove CIPC Lists/Gazettes)
-        // If a snippet contains more than 1 registration number pattern, it's likely a list. Ignore it.
         const cleanItems = items.filter(i => {
             const count = (i.snippet.match(/\d{4}\/\d{6}\/\d{2}/g) || []).length;
             return count <= 1;
         });
         const cleanSnippets = cleanItems.map(i => `${i.title} ${i.snippet}`).join(' | ');
 
-        // A. Registration Number (Oldest Year Heuristic - Filtered)
-        // We capture ALL patterns like YYYY/NNNNNN/NN found in the search results.
-        const regNumRegexGlobal = /\b(\d{4})\/\d{6}\/\d{2}\b/g;
-        const allMatches = [...cleanSnippets.matchAll(regNumRegexGlobal)];
+        // A. Registration Number (Relevance-First & Consensus Heuristic)
+        // Instead of sorting by age (which picked obscure 1952 entities), we rely on Google's Ranking.
+        // We scan the results from top to bottom. The FIRST valid CIPC number found in a relevant snippet is likely the correct one.
 
-        let setOfYears = [];
-        allMatches.forEach(m => {
-            const y = parseInt(m[1], 10);
-            if (y > 1900 && y <= new Date().getFullYear()) {
-                setOfYears.push({ full: m[0], year: y });
+        const regNumRegex = /\b(\d{4})\/\d{6}\/\d{2}\b/;
+        let identifier = "Not found in web index";
+
+        for (const item of cleanItems) {
+            const match = item.snippet.match(regNumRegex);
+            if (match) {
+                // Validate Year to be reasonable
+                const year = parseInt(match[1], 10);
+                if (year > 1900 && year <= new Date().getFullYear()) {
+                    identifier = match[0]; // Capture e.g. 1996/008694/07
+                    break; // STOP here. Trust the top-ranked result.
+                }
             }
-        });
-        // Sort by Year Ascending (Oldest First)
-        setOfYears.sort((a, b) => a.year - b.year);
+        }
 
-        const identifier = setOfYears.length > 0 ? setOfYears[0].full : "Not found in web index";
+        // Fallback: If strict CIPC format not found, try looser regex but ONLY on the very first result
+        if (identifier === "Not found in web index" && cleanItems.length > 0) {
+            const altMatch = cleanItems[0].snippet.match(/(?:Reg(?:istration)?(?:\s+No)?\.?|Number)[\s:.-]*((?:\d{4}\/\d+|\d{9,}))/i);
+            if (altMatch) identifier = altMatch[1];
+        }
 
         // B. Industry Detection (Refined Dictionary)
         const industries = [
@@ -102,15 +110,12 @@ export async function POST(request) {
         const industry = foundIndustry ? `${foundIndustry} (Web Verified)` : "Multi-Sector (Web Index)";
 
         // C. Operations / Description (Semantic Match)
-        // Find the snippet that sounds most like a description ("is a", "provides", "solutions")
         const bestDescItem = cleanItems.find(i =>
             /is a|specializes|provides|manufacturer|supplier|distributor|solutions|services/i.test(i.snippet)
         );
         const operations = bestDescItem ? bestDescItem.snippet : (items[0]?.snippet || "Business listing found in global index.");
 
         // D. Address / Headquarters (Priority Search)
-        // 1. Look for "Headquarters" or "Randfontein" (User hint: major cities often appear)
-        // 2. Look for standard address pattern
         const cityRegex = /(?:Headquarters|HQ|Based) in ([A-Z][a-z]+(?: [A-Z][a-z]+)?)/;
         const hqMatch = cleanSnippets.match(cityRegex);
 
@@ -123,7 +128,6 @@ export async function POST(request) {
         }
 
         // E. Directors
-        // Strict "Director:" search
         const directorRegex = /(?:CEO|Director|Managing Director)[\s:-]+([A-Z][a-z]+ [A-Z][a-z]+)/g;
         const potentialDirectors = [...cleanSnippets.matchAll(directorRegex)].map(m => m[1]).slice(0, 3);
         const directors = potentialDirectors.length > 0 ? potentialDirectors : ["Listed in full report"];
