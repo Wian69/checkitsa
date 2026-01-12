@@ -28,11 +28,11 @@ export async function POST(request) {
             }, { status: 402 })
         }
 
-        const cseKey = env.GOOGLE_CSE_API_KEY
-        const cx = env.GOOGLE_CSE_CX || '16e9212fe3fcf4cea'
+        const cseKey = env.GOOGLE_CSE_API_KEY || process.env.GOOGLE_CSE_API_KEY
+        const cx = env.GOOGLE_CSE_CX || process.env.GOOGLE_CSE_CX || '16e9212fe3fcf4cea'
 
         if (!cseKey || !cx) {
-            console.error('[Verify] Config Error: GOOGLE_CSE_API_KEY or CX is missing from env.')
+            console.error('[Verify] Config Error: GOOGLE_CSE_API_KEY or CX is missing.')
             return NextResponse.json({
                 valid: false,
                 data: {
@@ -69,9 +69,9 @@ export async function POST(request) {
             : "No specific web snippets found. PLEASE RELY ENTIRELY ON YOUR INTERNAL ARCHIVAL KNOWLEDGE.";
 
         // 2. Intelligence Layer: Universal AI Knowledge
-        const geminiApiKey = env.GEMINI_API_KEY
+        const geminiApiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY
         if (!geminiApiKey || geminiApiKey === 'undefined') {
-            console.error('[Verify] Config Error: GEMINI_API_KEY is missing from env.')
+            console.error('[Verify] Config Error: GEMINI_API_KEY is missing.')
             return NextResponse.json({
                 valid: false,
                 data: {
@@ -84,9 +84,11 @@ export async function POST(request) {
 
         try {
             const genAI = new GoogleGenerativeAI(geminiApiKey.trim())
+            // We use gemini-1.5-flash which is fastest.
+            // Removing responseMimeType: "application/json" to see if it helps with synthesis errors, 
+            // and instead relying on a clear prompt and manual extraction.
             const model = genAI.getGenerativeModel({
                 model: "gemini-1.5-flash",
-                generationConfig: { responseMimeType: "application/json" }
             }, { apiVersion: 'v1' })
 
             const prompt = `
@@ -113,7 +115,7 @@ export async function POST(request) {
                - Global Role (International presence/impact)
                - Latest Business Status (Verified/Active/Liquidated)
 
-            OUTPUT FORMAT (STRICT JSON ONLY):
+            OUTPUT FORMAT: You MUST return ONLY a raw JSON object. NO markdown, NO code blocks, NO preamble.
             {
                 "name": "Official Registered Company Name",
                 "identifier": "YYYY/NNNNNN/NN",
@@ -131,26 +133,49 @@ export async function POST(request) {
             const result = await model.generateContent(prompt)
             const text = result.response.text().trim()
 
+            console.log('[Verify] AI Response length:', text.length)
+
             let aiResponse;
             try {
+                // Try direct parse
                 aiResponse = JSON.parse(text);
             } catch (e) {
+                // Fallback: extract JSON from string if there's any text surrounding it
                 const match = text.match(/\{[\s\S]*\}/);
-                if (match) aiResponse = JSON.parse(match[0]);
+                if (match) {
+                    try {
+                        aiResponse = JSON.parse(match[0]);
+                    } catch (e2) {
+                        console.error('[Verify] JSON Parse Fallback Error:', e2.message)
+                    }
+                }
             }
 
-            if (aiResponse) {
+            if (aiResponse && aiResponse.name) {
                 return NextResponse.json({
                     valid: true,
                     data: {
                         ...aiResponse,
+                        // Defaults if fields are missing
+                        name: aiResponse.name || input,
+                        identifier: aiResponse.identifier || 'Registry Found',
+                        industry: aiResponse.industry || 'Information Services',
+                        status: aiResponse.status || 'Active',
+                        address: aiResponse.address || 'Cross-referencing indices...',
+                        registrationDate: aiResponse.registrationDate || 'Unknown',
+                        directors: aiResponse.directors || [],
+                        employees: aiResponse.employees || 'Unknown',
+                        operations: aiResponse.operations || 'Standard business operations.',
+                        globalRole: aiResponse.globalRole || 'Regional presence.',
+                        summary: aiResponse.summary || 'Profile synthesized from intelligence data.',
                         icon: (aiResponse.status || '').toLowerCase().includes('active') || (aiResponse.status || '').toLowerCase().includes('verified') ? '🏢' : '⚠️',
                         source: 'Global Business Intelligence Index',
                         details: items.length > 0 ? `Verified against ${items.length} web sources and AI databases.` : 'Cross-referenced via AI Archival Knowledge.'
                     }
                 })
             } else {
-                throw new Error('AI returned an empty or invalid response format.')
+                console.error('[Verify] AI response was invalid or missing name:', text)
+                throw new Error('AI returned an invalid response format or content.')
             }
         } catch (aiErr) {
             console.error('[Intelligence] AI Processing Error:', aiErr)
@@ -159,7 +184,8 @@ export async function POST(request) {
                 data: {
                     status: 'Synthesis Error',
                     message: 'AI was unable to synthesize the company profile.',
-                    details: aiErr.message
+                    details: aiErr.message,
+                    raw: aiErr.stack // Include stack for internal debugging (invisible to user usually)
                 }
             })
         }
