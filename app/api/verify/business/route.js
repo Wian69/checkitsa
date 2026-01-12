@@ -65,39 +65,52 @@ export async function POST(request) {
 
         const items = data.items || []
 
-        // 2. Web-Only Intelligence Layer (Advanced Smart Parser v2.1)
+        // 2. Web-Only Intelligence Layer (Advanced Smart Parser v3)
+        // STRATEGY: 
+        // 1. NO Filtering (Accept all snippets to catch rich data)
+        // 2. Trust Google's top result IF it matches the company name context check.
 
-        // FILTER 1: Anti-Noise (Remove CIPC Lists/Gazettes)
-        const cleanItems = items.filter(i => {
-            const count = (i.snippet.match(/\d{4}\/\d{6}\/\d{2}/g) || []).length;
-            return count <= 1;
-        });
-        const cleanSnippets = cleanItems.map(i => `${i.title} ${i.snippet}`).join(' | ');
-
-        // A. Registration Number (Relevance-First & Consensus Heuristic)
-        // Instead of sorting by age (which picked obscure 1952 entities), we rely on Google's Ranking.
-        // We scan the results from top to bottom. The FIRST valid CIPC number found in a relevant snippet is likely the correct one.
-
-        const regNumRegex = /\b(\d{4})\/\d{6}\/\d{2}\b/;
         let identifier = "Not found in web index";
+        const regNumRegex = /\b(\d{4})\/\d{6}\/\d{2}\b/;
 
-        for (const item of cleanItems) {
-            const match = item.snippet.match(regNumRegex);
-            if (match) {
-                // Validate Year to be reasonable
-                const year = parseInt(match[1], 10);
-                if (year > 1900 && year <= new Date().getFullYear()) {
-                    identifier = match[0]; // Capture e.g. 1996/008694/07
-                    break; // STOP here. Trust the top-ranked result.
+        // Scan items. We look for a "High Confidence" match first.
+        // High Confidence = Snippet contains Reg No AND Title/Snippet contains exact Company Name.
+
+        for (const item of items) {
+            // 1. Check if snippet actually relates to the company (Context Match)
+            if (item.title.toLowerCase().includes(input.toLowerCase()) || item.snippet.toLowerCase().includes(input.toLowerCase())) {
+                const match = item.snippet.match(regNumRegex);
+                if (match) {
+                    const year = parseInt(match[1], 10);
+                    if (year > 1900 && year <= new Date().getFullYear()) {
+                        identifier = match[0];
+                        break; // Found matching entity in relevant snippet. Stop.
+                    }
                 }
             }
         }
 
-        // Fallback: If strict CIPC format not found, try looser regex but ONLY on the very first result
-        if (identifier === "Not found in web index" && cleanItems.length > 0) {
-            const altMatch = cleanItems[0].snippet.match(/(?:Reg(?:istration)?(?:\s+No)?\.?|Number)[\s:.-]*((?:\d{4}\/\d+|\d{9,}))/i);
+        // Fallback: If no "Context Match" found, just take the first Reg No from the top result (Relevance Fallback)
+        if (identifier === "Not found in web index") {
+            for (const item of items) {
+                const match = item.snippet.match(regNumRegex);
+                if (match) {
+                    const year = parseInt(match[1], 10);
+                    if (year > 1900 && year <= new Date().getFullYear()) {
+                        identifier = match[0];
+                        break; // Trust ranking.
+                    }
+                }
+            }
+        }
+
+        // Use loose regex fallback ONLY if strictly verified one failed
+        if (identifier === "Not found in web index" && items.length > 0) {
+            const altMatch = items[0].snippet.match(/(?:Reg(?:istration)?(?:\s+No)?\.?|Number)[\s:.-]*((?:\d{4}\/\d+|\d{9,}))/i);
             if (altMatch) identifier = altMatch[1];
         }
+
+        const cleanSnippets = items.map(i => `${i.title} ${i.snippet}`).join(' | ');
 
         // B. Industry Detection (Refined Dictionary)
         const industries = [
@@ -109,21 +122,28 @@ export async function POST(request) {
         const foundIndustry = industries.find(ind => cleanSnippets.toLowerCase().includes(ind.toLowerCase()));
         const industry = foundIndustry ? `${foundIndustry} (Web Verified)` : "Multi-Sector (Web Index)";
 
-        // C. Operations / Description (Semantic Match)
-        const bestDescItem = cleanItems.find(i =>
+        // C. Operations
+        const bestDescItem = items.find(i =>
             /is a|specializes|provides|manufacturer|supplier|distributor|solutions|services/i.test(i.snippet)
         );
         const operations = bestDescItem ? bestDescItem.snippet : (items[0]?.snippet || "Business listing found in global index.");
 
-        // D. Address / Headquarters (Priority Search)
-        const cityRegex = /(?:Headquarters|HQ|Based) in ([A-Z][a-z]+(?: [A-Z][a-z]+)?)/;
-        const hqMatch = cleanSnippets.match(cityRegex);
-
+        // D. Address / Headquarters (Improved Regex for 'Randfontein')
         let addressHint = "See web results below";
+
+        // 1. Explicit Headers
+        const hqRegex = /(?:Headquarters|Head Office|Based|Located)[:\s]+in\s+([A-Z][a-z]+(?:[\s,]+[A-Z][a-z]+)*)/i;
+        const hqMatch = cleanSnippets.match(hqRegex);
+
         if (hqMatch) {
             addressHint = `${hqMatch[1]} (Headquarters)`;
         } else {
-            const addressItem = cleanItems.find(i => /\d+\s+[A-Za-z]+\s+(Street|St|Road|Rd|Ave|Box)/i.test(i.snippet));
+            // 2. Standard Address Patterns (Street, Box, or explicit City/Area)
+            // We search item by item to find the best address snippet
+            const addressItem = items.find(i =>
+                /\d+\s+[A-Za-z]+\s+(Street|St|Road|Rd|Ave|Box|Crescent|Way)/i.test(i.snippet) ||
+                /(?:Randfontein|Johannesburg|Cape Town|Durban|Pretoria|Sandton|Polokwane|Bloemfontein)/.test(i.snippet)
+            );
             if (addressItem) addressHint = addressItem.snippet;
         }
 
@@ -151,10 +171,10 @@ export async function POST(request) {
             employees: "Unknown",
             operations: operations,
             globalRole: "National Entity",
-            summary: `Automated web profile generated from ${cleanItems.length} verified sources.`,
+            summary: `Automated web profile generated from verified sources.`,
             source: "Global Web Index (Filtered)",
             icon: status === 'Active' ? '🏢' : '⚠️',
-            details: `Synthesized from ${cleanItems.length} public web endpoints (Noise filtered).`
+            details: `Synthesized from ${items.length} public web endpoints.`
         };
 
         if (items.length > 0) {
