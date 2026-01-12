@@ -2,8 +2,9 @@
 import Navbar from '@/components/Navbar'
 
 import ReportButton from '@/components/ReportButton'
+import LoadingOverlay from '@/components/LoadingOverlay'
 import { useState } from 'react'
-import { trackSearch } from '@/utils/searchLimit'
+import { trackSearch, addToHistory, incrementSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
 
 export default function BusinessCheck() {
@@ -31,6 +32,12 @@ export default function BusinessCheck() {
             })
             const data = await res.json()
             setResult(data.data)
+
+            // Add to History & Consume Search Credit
+            if (data.valid) {
+                await addToHistory('Business Verify', input, data.data.status)
+                await incrementSearch()
+            }
         } catch (e) { console.error(e) }
         finally { setLoading(false) }
     }
@@ -38,6 +45,7 @@ export default function BusinessCheck() {
     return (
         <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
             <Navbar />
+            {loading && <LoadingOverlay message="Verifying Business Registry..." />}
 
             <div className="container" style={{ paddingTop: '10rem', maxWidth: '800px' }}>
                 <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>Business Verification</h1>
@@ -56,14 +64,19 @@ export default function BusinessCheck() {
                             style={{ flex: 1, padding: '1rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white' }}
                         />
                         <button disabled={loading} className="btn btn-primary" style={{ minWidth: '120px' }}>
-                            {loading ? 'Search' : 'Search'}
+                            {loading ? 'Verifying...' : 'Search'}
                         </button>
                     </form>
 
                     {result && (
                         <div style={{ animation: 'fadeIn 0.3s ease' }}>
                             <div style={{ padding: '1.5rem', border: `1px solid ${result.status.includes('Found') ? 'var(--color-success)' : 'var(--color-danger)'}`, borderRadius: '0.5rem', marginBottom: '1.5rem', background: 'rgba(255,255,255,0.03)' }}>
-                                <h2 style={{ fontSize: '1.5rem', color: result.status.includes('Found') ? 'var(--color-success)' : 'var(--color-danger)', marginBottom: '0.5rem' }}>
+                                <h2 style={{
+                                    fontSize: '1.5rem',
+                                    color: (result.status.includes('Found') || result.status.includes('Business')) ? 'var(--color-success)' :
+                                        result.status.includes('Processing') ? 'var(--color-primary)' : 'var(--color-danger)',
+                                    marginBottom: '0.5rem'
+                                }}>
                                     {result.status}
                                 </h2>
                                 <p style={{ marginBottom: '1rem' }}>{result.message}</p>
