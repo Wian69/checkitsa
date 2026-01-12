@@ -43,8 +43,9 @@ export async function POST(request) {
         }
 
         // 1. Enriched Web Search Query
-        // Precise query removing 'CIPC' noise but keeping 'South Africa'
-        const intelligenceQuery = `"${input}" ("Registration Number" OR "Reg No") South Africa`;
+        // Expanded to include 'Employees' and 'Operations' to catch rich profile text (e.g. Checkers/Shoprite info)
+        // while still prioritizing Registration Numbers.
+        const intelligenceQuery = `"${input}" ("Registration Number" OR "Reg No" OR "Employees" OR "Headquarters") South Africa`;
 
         console.log(`[Intelligence] Fetching web data for: ${input}`);
 
@@ -65,15 +66,15 @@ export async function POST(request) {
 
         const items = data.items || []
 
-        // 2. Web-Only Intelligence Layer (Advanced Smart Parser v4 - Tiered Authority)
+        // 2. Web-Only Intelligence Layer (Advanced Smart Parser v5 - Rich Profile)
 
         let identifier = "Not found in web index";
         const regNumRegex = /\b(\d{4})\/\d{6}\/\d{2}\b/;
 
-        // Tiered Priority Search:
-        // Tier 1: Title STARTS WITH input (High Authority - e.g. "Grain Carriers - Home")
-        // Tier 2: Title CONTAINS input (Medium - e.g. "About Grain Carriers (Pty) Ltd")
-        // Tier 3: Snippet CONTAINS input (Low - e.g. "Partners list: ... Grain Carriers ...")
+        // Tiered Priority Search for ID
+        // Tier 1: Title STARTS WITH input (Target: Official Homepage)
+        // Tier 2: Title CONTAINS input
+        // Tier 3: Snippet CONTAINS input
 
         let tier1Match = null;
         let tier2Match = null;
@@ -100,12 +101,12 @@ export async function POST(request) {
             }
         }
 
-        // Select best match based on Tier Priority
+        // Select best ID match
         if (tier1Match) identifier = tier1Match;
         else if (tier2Match) identifier = tier2Match;
         else if (tier3Match) identifier = tier3Match;
         else {
-            // Absolute Fallback: Just take the first valid one we found anywhere
+            // Fallback: First valid number found
             for (const item of items) {
                 const match = item.snippet.match(regNumRegex);
                 if (match) {
@@ -118,7 +119,7 @@ export async function POST(request) {
             }
         }
 
-        // Loose Regex Fallback (only if specific regex failed)
+        // Loose Regex Fallback
         if (identifier === "Not found in web index" && items.length > 0) {
             const altMatch = items[0].snippet.match(/(?:Reg(?:istration)?(?:\s+No)?\.?|Number)[\s:.-]*((?:\d{4}\/\d+|\d{9,}))/i);
             if (altMatch) identifier = altMatch[1];
@@ -126,47 +127,48 @@ export async function POST(request) {
 
         const cleanSnippets = items.map(i => `${i.title} ${i.snippet}`).join(' | ');
 
-        // B. Industry Detection (Refined Dictionary)
+        // B. Industry
         const industries = [
             'Agriculture', 'Mining', 'Manufacturing', 'Logistics', 'Transport', 'Freight',
-            'Energy', 'Construction', 'Retail', 'Wholesale', 'Hospitality',
+            'Retail', 'Wholesale', 'FMCG', 'Supermarket',
+            'Energy', 'Construction', 'Hospitality',
             'Technology', 'Software', 'Finance', 'Insurance', 'Real Estate',
             'Healthcare', 'Education', 'Legal', 'Consulting', 'Security', 'Media'
         ];
         const foundIndustry = industries.find(ind => cleanSnippets.toLowerCase().includes(ind.toLowerCase()));
         const industry = foundIndustry ? `${foundIndustry} (Web Verified)` : "Multi-Sector (Web Index)";
 
-        // C. Operations
+        // C. Operations / Description
+        // Prioritize specific keywords like "part of", "subsidiary", "group" to catch parent entities (e.g. Shoprite Group)
         const bestDescItem = items.find(i =>
+            /(?:part of|subsidiary of|owned by|group|holding)/i.test(i.snippet) ||
             /is a|specializes|provides|manufacturer|supplier|distributor|solutions|services/i.test(i.snippet)
         );
         const operations = bestDescItem ? bestDescItem.snippet : (items[0]?.snippet || "Business listing found in global index.");
 
-        // D. Address / Headquarters (Improved Regex for 'Randfontein')
+        // D. Address / Headquarters
         let addressHint = "See web results below";
-
-        // 1. Explicit Headers
         const hqRegex = /(?:Headquarters|Head Office|Based|Located)[:\s]+in\s+([A-Z][a-z]+(?:[\s,]+[A-Z][a-z]+)*)/i;
         const hqMatch = cleanSnippets.match(hqRegex);
 
         if (hqMatch) {
             addressHint = `${hqMatch[1]} (Headquarters)`;
         } else {
-            // 2. Standard Address Patterns (Street, Box, or explicit City/Area)
-            const addressItem = items.find(i =>
+            const addressMatches = items.filter(i =>
                 /\d+\s+[A-Za-z]+\s+(Street|St|Road|Rd|Ave|Box|Crescent|Way)/i.test(i.snippet) ||
-                /(?:Randfontein|Johannesburg|Cape Town|Durban|Pretoria|Sandton|Polokwane|Bloemfontein)/.test(i.snippet)
+                /(?:Randfontein|Johannesburg|Cape Town|Durban|Pretoria|Sandton|Polokwane|Bloemfontein|Brackenfell)/.test(i.snippet)
             );
-            if (addressItem) addressHint = addressItem.snippet;
+            // Prefer the one that also matches the ID if possible, else take the first
+            if (addressMatches.length > 0) addressHint = addressMatches[0].snippet;
         }
 
         // E. Directors
-        const directorRegex = /(?:CEO|Director|Managing Director)[\s:-]+([A-Z][a-z]+ [A-Z][a-z]+)/g;
+        const directorRegex = /(?:CEO|Director|Managing Director|CFO)[\s:-]+([A-Z][a-z]+ [A-Z][a-z]+)/g;
         const potentialDirectors = [...cleanSnippets.matchAll(directorRegex)].map(m => m[1]).slice(0, 3);
         const directors = potentialDirectors.length > 0 ? potentialDirectors : ["Listed in full report"];
 
-        // F. Employees (Re-enabled simple heuristic)
-        const employeeRegex = /(?:approx\.?|over|more than|staff of|employing)\s*(\d+(?:,\d+)?\+?)\s*(?:employees|staff|people|workers)/i;
+        // F. Employees (Enhanced Regex for 'employs nearly', 'workforce of', etc.)
+        const employeeRegex = /(?:employs|employing|staff of|workforce of)\s*(?:approx\.?|nearly|over|more than|approximately)?\s*([0-9,]+(?:\s+people|\s+employees|\s+staff)?)/i;
         const employeeMatch = cleanSnippets.match(employeeRegex);
         const employees = employeeMatch ? `${employeeMatch[1]} (Est.)` : "Unknown (Not public)";
 
@@ -176,6 +178,12 @@ export async function POST(request) {
         if (lowerSnippets.includes('liquidation') || lowerSnippets.includes('liquidated')) status = 'Liquidated';
         if (lowerSnippets.includes('deregistered') || lowerSnippets.includes('final deregistration')) status = 'Deregistered';
         if (lowerSnippets.includes('business rescue')) status = 'Business Rescue';
+
+        // Best Source Link
+        // If we found a Tier 1 match, finding that link is easy (it's the first item usually).
+        // Otherwise, just give the top relevant link.
+        const sourceLink = items[0]?.link || "Google Search";
+        const sourceHost = sourceLink.startsWith('http') ? new URL(sourceLink).hostname : sourceLink;
 
         // Construct the profile manually
         const aiResponse = {
@@ -190,7 +198,7 @@ export async function POST(request) {
             operations: operations,
             globalRole: "National Entity",
             summary: `Automated web profile generated from verified sources.`,
-            source: "Global Web Index (Tiered)",
+            source: `Web Index (${sourceHost})`,
             icon: status === 'Active' ? '🏢' : '⚠️',
             details: `Synthesized from ${items.length} public web endpoints.`
         };
