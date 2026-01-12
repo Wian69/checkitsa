@@ -84,11 +84,10 @@ export async function POST(request) {
         }
 
         try {
-            const genAI = new GoogleGenerativeAI(geminiApiKey.trim())
-            // Fallback to the most stable production model: gemini-pro
+            // Explicitly selecting gemini-1.5-flash and v1beta which is the current standard
             const model = genAI.getGenerativeModel({
-                model: "gemini-pro",
-            })
+                model: "gemini-1.5-flash",
+            }, { apiVersion: 'v1beta' })
 
             const prompt = `
             ACT AS A PROFESSIONAL BUSINESS INTELLIGENCE ANALYST.
