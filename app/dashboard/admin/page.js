@@ -22,9 +22,29 @@ export default function AdminDashboard() {
         }
     }, [])
 
-    const handleLogin = (e) => {
+    const [verifying, setVerifying] = useState(false)
+
+    const handleLogin = async (e) => {
         e.preventDefault()
-        if (secret.length > 0) setIsLoggedIn(true)
+        setVerifying(true)
+        setStatusMsg({ type: '', text: '' })
+        try {
+            // Test secret by searching for self
+            const res = await fetch('/api/admin/users', {
+                method: 'POST',
+                body: JSON.stringify({ email: 'wiandurandt69@gmail.com', adminEmail: 'wiandurandt69@gmail.com', secret })
+            })
+            const data = await res.json()
+            if (data.success) {
+                setIsLoggedIn(true)
+            } else {
+                setStatusMsg({ type: 'error', text: 'Invalid Secret Key' })
+            }
+        } catch (e) {
+            setStatusMsg({ type: 'error', text: 'Connection failed' })
+        } finally {
+            setVerifying(false)
+        }
     }
 
     const handleSearch = async (e) => {
@@ -93,6 +113,11 @@ export default function AdminDashboard() {
                 <div className="glass-panel" style={{ padding: '3rem', maxWidth: '400px', width: '100%', textAlign: 'center' }}>
                     <h1 style={{ marginBottom: '2rem' }}>Admin Access</h1>
                     <form onSubmit={handleLogin}>
+                        {statusMsg.text && !isLoggedIn && (
+                            <div style={{ padding: '0.75rem', borderRadius: '0.5rem', marginBottom: '1rem', background: 'rgba(239, 68, 68, 0.1)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.2)', fontSize: '0.9rem' }}>
+                                {statusMsg.text}
+                            </div>
+                        )}
                         <input
                             type="password"
                             placeholder="Enter Admin Secret"
@@ -101,7 +126,9 @@ export default function AdminDashboard() {
                             required
                             style={{ width: '100%', padding: '1rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white', marginBottom: '1.5rem' }}
                         />
-                        <button className="btn btn-primary" style={{ width: '100%' }}>Enter Dashboard</button>
+                        <button disabled={verifying} className="btn btn-primary" style={{ width: '100%' }}>
+                            {verifying ? 'Verifying...' : 'Enter Dashboard'}
+                        </button>
                     </form>
                 </div>
             </main>
