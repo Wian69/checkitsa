@@ -18,23 +18,25 @@ export default function GamblingCheck() {
         }
     }, [])
 
-    // Static List - Now with Affiliate Capability
+    // Static List - Now with Affiliate Capability & Official License Numbers
     const legalSites = [
-        { domain: 'lottostar.co.za', name: 'LottoStar', license: 'Mpumalanga Economic Regulator', affiliateUrl: 'https://lottostar.co.za/?ref=checkitsa' },
-        { domain: 'betway.co.za', name: 'Betway', license: 'Western Cape Gambling Board', affiliateUrl: 'https://betway.co.za/?ref=checkitsa' },
-        { domain: 'hollywoodbets.net', name: 'Hollywoodbets', license: 'Gauteng Gambling Board', affiliateUrl: 'https://hollywoodbets.net/?ref=checkitsa' },
-        { domain: 'supabets.co.za', name: 'Supabets', license: 'Mpumalanga Economic Regulator', affiliateUrl: 'https://supabets.co.za/?ref=checkitsa' },
-        { domain: 'sunbet.co.za', name: 'SunBet', license: 'Western Cape Gambling Board', affiliateUrl: 'https://sunbet.co.za/?ref=checkitsa' },
-        { domain: 'bet.co.za', name: 'BET.co.za', license: 'Western Cape Gambling Board', affiliateUrl: 'https://bet.co.za/?ref=checkitsa' },
-        { domain: 'sportingbet.co.za', name: 'Sportingbet', license: 'Western Cape Gambling Board', affiliateUrl: 'https://sportingbet.co.za/?ref=checkitsa' },
-        { domain: 'gbets.co.za', name: 'Gbets', license: 'Western Cape Gambling Board', affiliateUrl: 'https://gbets.co.za/?ref=checkitsa' },
-        { domain: '10bet.co.za', name: '10Bet', license: 'Mpumalanga Economic Regulator', affiliateUrl: 'https://10bet.co.za/?ref=checkitsa' },
-        { domain: 'palacebet.co.za', name: 'PalaceBet', license: 'Western Cape Gambling Board', affiliateUrl: 'https://palacebet.co.za/?ref=checkitsa' },
-        { domain: 'tic-tac.co.za', name: 'Tic Tac Bets', license: 'Northern Cape Gambling Board', affiliateUrl: 'https://tic-tac.co.za/?ref=checkitsa' },
-        { domain: 'playabets.co.za', name: 'Playa Bets', license: 'KZN Gaming & Betting Board', affiliateUrl: 'https://playabets.co.za/?ref=checkitsa' },
-        { domain: 'wsb.co.za', name: 'World Sports Betting', license: 'Gauteng Gambling Board', affiliateUrl: 'https://wsb.co.za/?ref=checkitsa' },
-        { domain: 'yesplay.bet', name: 'YesPlay', license: 'Western Cape Gambling Board', affiliateUrl: 'https://yesplay.bet/?ref=checkitsa' },
-        { domain: 'betfred.co.za', name: 'Betfred', license: 'Mpumalanga Economic Regulator', affiliateUrl: 'https://betfred.co.za/?ref=checkitsa' }
+        { domain: 'lottostar.co.za', name: 'LottoStar', license: 'Mpumalanga Economic Regulator', licenseNumber: '9-2-1-09467', affiliateUrl: 'https://lottostar.co.za/?ref=checkitsa' },
+        { domain: 'betway.co.za', name: 'Betway', license: 'Western Cape Gambling Board', licenseNumber: '10181496-012', affiliateUrl: 'https://betway.co.za/?ref=checkitsa' },
+        { domain: 'hollywoodbets.net', name: 'Hollywoodbets', license: 'Western Cape Gambling Board', licenseNumber: '10110547-015', affiliateUrl: 'https://hollywoodbets.net/?ref=checkitsa' },
+        { domain: 'supabets.co.za', name: 'Supabets', license: 'Mpumalanga Gambling Board', licenseNumber: '9-2-1-00055', affiliateUrl: 'https://supabets.co.za/?ref=checkitsa' },
+        { domain: 'sunbet.co.za', name: 'SunBet', license: 'Western Cape Gambling Board', licenseNumber: '10138713-016', affiliateUrl: 'https://sunbet.co.za/?ref=checkitsa' },
+        { domain: 'bet.co.za', name: 'Bet.co.za', license: 'Western Cape Gambling Board', licenseNumber: '10145732-016', affiliateUrl: 'https://bet.co.za/?ref=checkitsa' },
+        { domain: 'sportingbet.co.za', name: 'Sportingbet', license: 'Western Cape Gambling Board', licenseNumber: '10125193-018', affiliateUrl: 'https://sportingbet.co.za/?ref=checkitsa' },
+        { domain: 'gbets.co.za', name: 'Gbets', license: 'Western Cape Gambling Board', licenseNumber: '10179096-012', affiliateUrl: 'https://gbets.co.za/?ref=checkitsa' },
+        { domain: '10bet.co.za', name: '10Bet', license: 'Mpumalanga Economic Regulator', licenseNumber: '9-2-1-09661', affiliateUrl: 'https://10bet.co.za/?ref=checkitsa' },
+        { domain: 'palacebet.co.za', name: 'PalaceBet', license: 'Western Cape Gambling Board', licenseNumber: '10189453-001', affiliateUrl: 'https://palacebet.co.za/?ref=checkitsa' },
+        { domain: 'tic-tac.co.za', name: 'Tic Tac Bets', license: 'Northern Cape Gambling Board', licenseNumber: 'NCGLB-BM.2025/01', affiliateUrl: 'https://tic-tac.co.za/?ref=checkitsa' },
+        { domain: 'playabets.co.za', name: 'Playa Bets', license: 'KZN Gambling & Betting Board', licenseNumber: '10141335-012', affiliateUrl: 'https://playabets.co.za/?ref=checkitsa' },
+        { domain: 'wsb.co.za', name: 'World Sports Betting', license: 'Western Cape Gambling Board', licenseNumber: '10181495-013', affiliateUrl: 'https://wsb.co.za/?ref=checkitsa' },
+        { domain: 'yesplay.bet', name: 'YesPlay', license: 'Western Cape Gambling Board', licenseNumber: '10180204-012', affiliateUrl: 'https://yesplay.bet/?ref=checkitsa' },
+        { domain: 'betfred.co.za', name: 'Betfred', license: 'Mpumalanga Economic Regulator', licenseNumber: '9-2-1-00039', affiliateUrl: 'https://betfred.co.za/?ref=checkitsa' },
+        { domain: 'interbet.co.za', name: 'Interbet', license: 'Western Cape Gambling Board', licenseNumber: '10083472-023', affiliateUrl: 'https://interbet.co.za/?ref=checkitsa' },
+        { domain: 'playtsogo.co.za', name: 'playTSOGO', license: 'Western Cape Gambling Board', licenseNumber: '10190075-04', affiliateUrl: 'https://playtsogo.co.za/?ref=checkitsa' }
     ]
 
     const filteredSites = legalSites.filter(site =>
@@ -90,7 +92,10 @@ export default function GamblingCheck() {
                             <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{site.name}</h3>
                             <div style={{ color: 'var(--color-primary)', marginBottom: '1rem', fontSize: '0.9rem' }}>{site.domain}</div>
                             <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                                <strong>License:</strong> {site.license}
+                                <strong>Regulator:</strong> {site.license}
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--color-primary)', marginTop: '0.25rem' }}>
+                                <strong>License No:</strong> {site.licenseNumber}
                             </div>
                             <button onClick={() => handleVisit(site)} className="btn btn-outline" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center', fontSize: '0.875rem' }}>
                                 Visit Safe Site ↗
