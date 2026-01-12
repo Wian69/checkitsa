@@ -68,12 +68,38 @@ export async function POST(request) {
 
         // 2. Web-Only Intelligence Layer (Advanced Smart Parser)
 
-        // A. Registration Number (Prioritize CIPC format YYYY/NNNNNN/NN)
-        const regNumRegex = /\b\d{4}\/\d{6}\/\d{2}\b/;
-        const regMatch = snippets.match(regNumRegex);
-        // Fallback: Look for "Reg No:" patterns if strict match fails
-        const altRegMatch = snippets.match(/(?:Reg(?:istration)?(?:\s+No)?\.?|Number)[\s:.-]*((?:\d{4}\/\d+|\d{9,}))/i);
-        const identifier = regMatch ? regMatch[0] : (altRegMatch ? altRegMatch[1] : "Not found in web index");
+        // A. Registration Number (Oldest Year Heuristic)
+        // We capture ALL patterns like YYYY/NNNNNN/NN found in the search results.
+        // We then sort them by Year. The OLDEST year (e.g. 1996) is likely the original founding company,
+        // whereas newer years (e.g. 2014) are likely subsidiaries or fleet vehicles.
+        const regNumRegexGlobal = /\b(\d{4})\/\d{6}\/\d{2}\b/g;
+        const allMatches = [...snippets.matchAll(regNumRegexGlobal)];
+
+        // Also look for looser formats like 1996/008694/07 if the strict word boundary failed
+        const altRegRegexGlobal = /(?:Reg(?:istration)?(?:\s+No)?\.?|Number)[\s:.-]*((?:\d{4}\/\d+|\d{9,}))/gi;
+        const allAltMatches = [...snippets.matchAll(altRegRegexGlobal)];
+
+        let setOfYears = [];
+
+        // Helper to push valid matches
+        const addMatch = (fullStr, yearStr) => {
+            const y = parseInt(yearStr, 10);
+            if (y > 1900 && y <= new Date().getFullYear()) {
+                setOfYears.push({ full: fullStr, year: y });
+            }
+        };
+
+        allMatches.forEach(m => addMatch(m[0], m[1]));
+        // For alt matches, we need to extract the year again manually from the captured group
+        allAltMatches.forEach(m => {
+            const yMatch = m[1].match(/^(\d{4})/);
+            if (yMatch) addMatch(m[1], yMatch[1]);
+        });
+
+        // Sort by Year Ascending (Oldest First) to find the "Main" company
+        setOfYears.sort((a, b) => a.year - b.year);
+
+        const identifier = setOfYears.length > 0 ? setOfYears[0].full : "Not found in web index";
 
         // B. Industry Detection (Keyword Dictionary)
         const industries = [
