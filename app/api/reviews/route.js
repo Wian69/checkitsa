@@ -74,7 +74,7 @@ export async function POST(req) {
                             'accept': 'application/json'
                         },
                         body: JSON.stringify({
-                            sender: { name: 'CheckItSA Reviews', email: 'notifications@checkitsa.co.za' },
+                            sender: { name: 'CheckItSA Reviews', email: 'info@checkitsa.co.za' },
                             to: [{ email: businessEmail }],
                             subject: emailSubject,
                             htmlContent: emailHtml
