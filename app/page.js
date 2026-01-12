@@ -17,10 +17,7 @@ export default function Home() {
   }, [])
 
   // Use mock data for RSS only
-  const rssItems = [
-    { title: 'Security Alert: Verify Now', link: '#' },
-    { title: 'Global Cyber Watch', link: '#' }
-  ]
+  const rssItems = []
 
   return (
     <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
@@ -198,7 +195,7 @@ export default function Home() {
                 transition: 'transform 0.3s'
               }}>
                 <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', lineHeight: 1.4, flex: 1 }}>{item.title}</h3>
-                <div style={{ fontSize: '0.8rem', color: 'var(--color-primary)', fontWeight: 600 }}>Read Article →</div>
+
               </a>
             ))
           )}
