@@ -1,17 +1,27 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 
 export default function BusinessVerificationPage() {
-    const { data: session } = useSession();
+    const [user, setUser] = useState(null)
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
 
+    useEffect(() => {
+        const u = localStorage.getItem('checkitsa_user')
+        if (u) setUser(JSON.parse(u))
+    }, [])
+
     const handleVerify = async (e) => {
         e.preventDefault();
+
+        if (!user) {
+            setError('Please sign in to access business intelligence.')
+            return
+        }
+
         setLoading(true);
         setError(null);
         setResult(null);
@@ -20,7 +30,7 @@ export default function BusinessVerificationPage() {
             const res = await fetch('/api/verify/business', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ input, email: session?.user?.email }),
+                body: JSON.stringify({ input, email: user.email }),
             });
 
             const data = await res.json();
