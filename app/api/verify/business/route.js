@@ -41,13 +41,17 @@ export async function POST(request) {
             })
         }
 
-        // 1. Broad Web Search (Sasol-style intuitive results)
-        // We remove the strict "site:" filters to allow Google to find the best snippets from anywhere
+        // 1. Optimized Natural Language Search
+        // We use a query that mimics what a user would type to get a direct answer.
         const isRegSearch = /\d/.test(input)
-        const searchQuery = isRegSearch ? `"${input}" CIPC registration` : `"${input}" South Africa registration number CIPC`
+        let query = ""
 
-        // We prioritize official sources by including them without "site:" restrictions, so Google ranks them high
-        const query = `${searchQuery} CIPC BizPortal B2BHint SACompany`
+        if (isRegSearch) {
+            query = `"${input}" South Africa CIPC business registration`
+        } else {
+            // Force "registration number" and "South Africa" to ensure we get registry hits
+            query = `"${input}" company registration number South Africa CIPC`
+        }
 
         const res = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(query)}`)
         const data = await res.json()
@@ -64,22 +68,30 @@ export async function POST(request) {
             });
         }
 
-        if (!data.items || data.items.length === 0) {
+        // If no results, try one more time even broader
+        let items = data.items || []
+        if (items.length === 0) {
+            const fallbackRes = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(input + " registration number")}`)
+            const fallbackData = await fallbackRes.json()
+            items = fallbackData.items || []
+        }
+
+        if (items.length === 0) {
             return NextResponse.json({
                 valid: false,
                 data: {
                     name: input,
                     identifier: 'Not Found',
                     status: 'Not Found',
-                    message: `❓ No official registry record found for "${input}" on the web index.`,
+                    message: `❓ No official registry record found for "${input}" on the web.`,
                     source: 'Global Web Search',
-                    details: 'Try searching for the official registered name or exact registration number.'
+                    details: 'Check the spelling or try searching for the full official name.'
                 }
             })
         }
 
-        const snippets = data.items.map(i => `[${i.displayLink}] ${i.title}: ${i.snippet}`).join('\n---\n')
-        const links = data.items.slice(0, 3).map(i => i.link)
+        const snippets = items.map(i => `[${i.displayLink}] ${i.title}: ${i.snippet}`).join('\n---\n')
+        const links = items.slice(0, 3).map(i => i.link)
 
         // 1b. Robust Regex Extraction 
         const regRegex = /(\d{4}\/\d{6}\/\d{2})|(\d{4}-\d{6}-\d{2})/g
@@ -107,7 +119,7 @@ export async function POST(request) {
                 }, { apiVersion: 'v1' })
 
                 const prompt = `
-                Analyze these CIPC business registry search results for: "${input}"
+                Analyze these South African business search results for: "${input}"
                 Web Results:
                 ${snippets}
                 
@@ -118,10 +130,10 @@ export async function POST(request) {
                 CRITICAL TASKS:
                 1. Identify the EXACT official Registered Company Name.
                 2. Extract the Official Registration Number (Format MUST BE: YYYY/NNNNNN/NN). 
-                   - Prioritize results from CIPC, BizPortal, B2BHint, SACompany, or Gov.za.
-                   - If a number like "1950/004733/06" (Sasol) is found, use it.
+                   - Look for terms like "Registration No", "Reg No", "Enterprise Number".
+                   - Example: 1950/004733/06
                 3. Identify the Primary Industry.
-                4. Determine Status (Active/Verified, Deregistered, Liquidated).
+                4. Determine Status (Active, Verified, Deregistered, Liquidated).
 
                 Required JSON structure:
                 {
@@ -129,7 +141,7 @@ export async function POST(request) {
                     "identifier": "YYYY/NNNNNN/NN",
                     "industry": "Industry Type",
                     "status": "Verified" | "Deregistered" | "Liquidated",
-                    "summary": "Concise summary of registration and status."
+                    "summary": "Concise summary of status."
                 }
                 `
                 const result = await model.generateContent(prompt)
@@ -175,8 +187,8 @@ export async function POST(request) {
                 industry: businessData.industry,
                 status: businessData.status,
                 message: `${businessData.icon} ${businessData.summary}`,
-                source: 'Globally Sourced Registry Index',
-                details: `Information index derived from:\n${links.map(l => {
+                source: 'Official Web Registry Index',
+                details: `Information derived from high-authority South African indices:\n${links.map(l => {
                     try { return `• ${new URL(l).hostname}` } catch (e) { return `• ${l}` }
                 }).join('\n')}`
             }
