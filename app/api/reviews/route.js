@@ -28,8 +28,80 @@ export async function POST(req) {
         ).bind(businessName, businessEmail || null, rating, title, content, reviewerName || 'Anonymous').run()
 
         if (success && businessEmail) {
-            // Mock notification logic
-            console.log(`[Notification] Would send email to ${businessEmail}: "You have a new review for ${businessName}. Please respond at https://checkitsa.co.za/reviews"`)
+            const brevoApiKey = process.env.BREVO_API_KEY
+            const resendApiKey = process.env.RESEND_API_KEY
+            const baseUrl = 'https://checkitsa.co.za'
+
+            const emailSubject = `⭐ New Business Review: ${businessName}`
+            const emailHtml = `
+                <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+                    <img src="${baseUrl}/email-banner.png" alt="CheckItSA" style="width: 100%; display: block;" />
+                    <div style="padding: 30px;">
+                        <h2 style="color: #333;">You've received a new review!</h2>
+                        <p style="color: #666; font-size: 16px;">Someone has just left feedback for <strong>${businessName}</strong> on CheckItSA.</p>
+                        
+                        <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #6366f1;">
+                            <div style="color: #fbbf24; font-size: 20px; margin-bottom: 10px;">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</div>
+                            <strong style="display: block; font-size: 18px; margin-bottom: 5px;">${title}</strong>
+                            <p style="color: #444; font-style: italic; margin: 0;">"${content}"</p>
+                        </div>
+
+                        <p style="color: #666;">Sharing transparent feedback helps build a safer community. Would you like to view this review and leave a response?</p>
+                        
+                        <a href="${baseUrl}/reviews" style="display: inline-block; background: #6366f1; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 10px;">
+                            Respond to Review →
+                        </a>
+
+                        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; color: #888; font-size: 14px; line-height: 1.6;">
+                            <strong>CheckItSA</strong><br/>
+                            🌐 Website: <a href="https://checkitsa.co.za" style="color: #6366f1; text-decoration: none;">checkitsa.co.za</a><br/>
+                            🛡️ Security Alert: Verify before you trust.
+                        </div>
+                    </div>
+                </div>
+            `
+
+            let sentEmail = false
+
+            // TRY BREVO
+            if (brevoApiKey) {
+                try {
+                    await fetch('https://api.brevo.com/v3/smtp/email', {
+                        method: 'POST',
+                        headers: {
+                            'api-key': brevoApiKey,
+                            'Content-Type': 'application/json',
+                            'accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            sender: { name: 'CheckItSA Reviews', email: 'notifications@checkitsa.co.za' },
+                            to: [{ email: businessEmail }],
+                            subject: emailSubject,
+                            htmlContent: emailHtml
+                        })
+                    })
+                    sentEmail = true
+                } catch (e) { console.error('Brevo Error:', e) }
+            }
+
+            // FALLBACK TO RESEND
+            if (!sentEmail && resendApiKey) {
+                try {
+                    await fetch('https://api.resend.com/emails', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${resendApiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            from: 'CheckItSA Reviews <onboarding@resend.dev>',
+                            to: businessEmail,
+                            subject: emailSubject,
+                            html: emailHtml
+                        })
+                    })
+                } catch (e) { console.error('Resend Error:', e) }
+            }
         }
 
         if (!success) throw new Error('DB Insert Failed')
