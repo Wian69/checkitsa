@@ -33,16 +33,31 @@ async function ensureSchema(db) {
         if (!columns.includes('responded_at')) {
             await db.prepare("ALTER TABLE business_reviews ADD COLUMN responded_at DATETIME").run()
         }
+        if (!columns.includes('reviewer_email')) {
+            await db.prepare("ALTER TABLE business_reviews ADD COLUMN reviewer_email TEXT").run()
+        }
     } catch (e) {
         console.error('Schema Sync Error:', e)
     }
 }
 
-export async function GET() {
+export async function GET(req) {
     try {
+        const { searchParams } = new URL(req.url)
+        const email = searchParams.get('email')
         const db = getRequestContext().env.DB
         await ensureSchema(db)
-        const { results } = await db.prepare("SELECT * FROM business_reviews ORDER BY created_at DESC LIMIT 10").all()
+
+        let query = "SELECT * FROM business_reviews"
+        let params = []
+
+        if (email) {
+            query += " WHERE reviewer_email = ?"
+            params.push(email)
+        }
+
+        query += " ORDER BY created_at DESC LIMIT 50"
+        const { results } = await db.prepare(query).bind(...params).all()
         return NextResponse.json({ reviews: results || [] })
     } catch (e) {
         return NextResponse.json({ reviews: [] }, { status: 500 })
@@ -51,7 +66,7 @@ export async function GET() {
 
 export async function POST(req) {
     try {
-        const { businessName, businessEmail, rating, title, content, reviewerName } = await req.json()
+        const { businessName, businessEmail, rating, title, content, reviewerName, reviewerEmail } = await req.json()
         const db = getRequestContext().env.DB
         await ensureSchema(db)
 
@@ -60,8 +75,8 @@ export async function POST(req) {
         }
 
         const { success } = await db.prepare(
-            `INSERT INTO business_reviews (business_name, business_email, rating, title, content, reviewer_name, status) VALUES (?, ?, ?, ?, ?, ?, 'verified')`
-        ).bind(businessName, businessEmail || null, rating, title, content, reviewerName || 'Anonymous').run()
+            `INSERT INTO business_reviews (business_name, business_email, rating, title, content, reviewer_name, reviewer_email, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'verified')`
+        ).bind(businessName, businessEmail || null, rating, title, content, reviewerName || 'Anonymous', reviewerEmail || null).run()
 
         if (success && businessEmail) {
             const brevoApiKey = process.env.BREVO_API_KEY
@@ -77,7 +92,7 @@ export async function POST(req) {
                         <p style="color: #666; font-size: 16px;">Someone has just left feedback for <strong>${businessName}</strong> on CheckItSA.</p>
                         
                         <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #6366f1;">
-                            <div style="color: #fbbf24; font-size: 20px; margin-bottom: 10px;">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</div>
+                            <div style={{ color: '#fbbf24', font-size: '20px', marginBottom: '10px' }}>${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</div>
                             <strong style="display: block; font-size: 18px; margin-bottom: 5px;">${title}</strong>
                             <p style="color: #444; font-style: italic; margin: 0;">"${content}"</p>
                         </div>
@@ -143,6 +158,27 @@ export async function POST(req) {
         if (!success) throw new Error('DB Insert Failed')
 
         return NextResponse.json({ message: 'Review submitted' })
+    } catch (e) {
+        return NextResponse.json({ message: e.message }, { status: 500 })
+    }
+}
+
+export async function DELETE(req) {
+    try {
+        const { id, email } = await req.json()
+        const db = getRequestContext().env.DB
+
+        if (!id || !email) {
+            return NextResponse.json({ message: 'Missing fields' }, { status: 400 })
+        }
+
+        const { success } = await db.prepare(
+            "DELETE FROM business_reviews WHERE id = ? AND reviewer_email = ?"
+        ).bind(id, email).run()
+
+        if (!success) throw new Error('Deletion failed or unauthorized')
+
+        return NextResponse.json({ message: 'Review deleted' })
     } catch (e) {
         return NextResponse.json({ message: e.message }, { status: 500 })
     }

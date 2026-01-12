@@ -32,8 +32,19 @@ export default function BusinessReviews() {
     const handleSubmit = async (e) => {
         e.preventDefault()
         setSubmitting(true)
+
+        // Get logged in user email if available
+        let reviewerEmail = null
         try {
-            const res = await fetch('/api/reviews', { method: 'POST', body: JSON.stringify(form) })
+            const u = localStorage.getItem('checkitsa_user')
+            if (u) reviewerEmail = JSON.parse(u).email
+        } catch (e) { }
+
+        try {
+            const res = await fetch('/api/reviews', {
+                method: 'POST',
+                body: JSON.stringify({ ...form, reviewerEmail })
+            })
             if (!res.ok) {
                 const errData = await res.json()
                 throw new Error(errData.message || 'Failed to submit review')

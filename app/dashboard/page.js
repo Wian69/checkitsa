@@ -7,7 +7,14 @@ import Link from 'next/link'
 export default function Dashboard() {
     const [stats, setStats] = useState({ count: 0, limit: 5, tier: 'free', resetType: 'lifetime' })
     const [history, setHistory] = useState({ searches: [], reports: [] })
+    const [myReviews, setMyReviews] = useState([])
     const [user, setUser] = useState(null)
+
+    const fetchMyReviews = (email) => {
+        fetch(`/api/reviews?email=${encodeURIComponent(email)}`)
+            .then(res => res.json())
+            .then(data => setMyReviews(data.reviews || []))
+    }
 
     useEffect(() => {
         // Load user first
@@ -15,6 +22,9 @@ export default function Dashboard() {
         if (u) {
             const userData = JSON.parse(u)
             setUser(userData)
+
+            // Fetch reviews
+            fetchMyReviews(userData.email)
 
             // Perform Cloud Sync
             syncFromCloud(userData.email).then(() => {
@@ -36,6 +46,25 @@ export default function Dashboard() {
             setHistory(getHistory())
         }
     }, [])
+
+    const handleDeleteReview = async (reviewId) => {
+        if (!confirm('Are you sure you want to delete this review?')) return
+        try {
+            const res = await fetch('/api/reviews', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: reviewId, email: user.email })
+            })
+            if (res.ok) {
+                setMyReviews(prev => prev.filter(r => r.id !== reviewId))
+                alert('Review deleted.')
+            } else {
+                alert('Failed to delete review.')
+            }
+        } catch (e) {
+            alert('Error deleting review.')
+        }
+    }
 
     const searchPercentage = Math.min((stats.count / stats.limit) * 100, 100)
     const isCrisis = searchPercentage >= 80
@@ -289,6 +318,60 @@ export default function Dashboard() {
                                                         color: '#fca5a5',
                                                         border: '1px solid var(--color-danger)',
                                                         cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    🗑️ Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                </div>
+                {/* Business Review History */}
+                <div style={{ marginTop: '3rem' }}>
+                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>My Business Reviews</h2>
+                    <div className="glass-panel" style={{ overflow: 'hidden' }}>
+                        {myReviews.length === 0 ? (
+                            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                                You haven't submitted any business reviews yet.
+                            </div>
+                        ) : (
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
+                                        <th style={{ padding: '1rem' }}>Business</th>
+                                        <th style={{ padding: '1rem' }}>Rating</th>
+                                        <th style={{ padding: '1rem' }}>Title</th>
+                                        <th style={{ padding: '1rem' }}>Date</th>
+                                        <th style={{ padding: '1rem' }}>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {myReviews.map(r => (
+                                        <tr key={r.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <td style={{ padding: '1rem', fontWeight: 'bold' }}>{r.business_name}</td>
+                                            <td style={{ padding: '1rem' }}>
+                                                <span style={{ color: '#fbbf24' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
+                                            </td>
+                                            <td style={{ padding: '1rem' }}>{r.title}</td>
+                                            <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
+                                                {new Date(r.created_at).toLocaleDateString()}
+                                            </td>
+                                            <td style={{ padding: '1rem' }}>
+                                                <button
+                                                    onClick={() => handleDeleteReview(r.id)}
+                                                    className="btn"
+                                                    style={{
+                                                        padding: '0.25rem 0.75rem',
+                                                        fontSize: '0.8rem',
+                                                        background: 'rgba(220, 38, 38, 0.1)',
+                                                        color: '#fca5a5',
+                                                        border: '1px solid var(--color-danger)',
+                                                        cursor: 'pointer',
+                                                        borderRadius: '0.5rem'
                                                     }}
                                                 >
                                                     🗑️ Delete
