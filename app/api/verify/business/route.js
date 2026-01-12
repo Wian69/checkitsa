@@ -43,8 +43,8 @@ export async function POST(request) {
         }
 
         // 1. Enriched Web Search Query
-        // We append specific keywords to help the smart parser find the right data in snippets
-        const intelligenceQuery = `"${input}" South Africa company registration number address directors status info`;
+        // We Use Boolean OR operators to FORCE Google to return snippets containing the ID
+        const intelligenceQuery = `"${input}" ("Registration Number" OR "Reg No" OR "CIPC") South Africa`;
 
         console.log(`[Intelligence] Fetching web data for: ${input} `);
 
