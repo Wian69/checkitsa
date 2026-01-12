@@ -41,39 +41,23 @@ export async function POST(request) {
             })
         }
 
-        // 1. Optimized Natural Language Search
-        const isRegSearch = /\d/.test(input)
-        let query = ""
+        // 1. Multi-Stage Intelligent Search
+        // Search 1: Broad "Knowledge Search" (Best for CEO/Directors/History)
+        const q1 = `"${input}" South Africa company details CEO directors registration number`
+        const res1 = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(q1)}`)
+        const data1 = await res1.json()
 
-        if (isRegSearch) {
-            query = `"${input}" South Africa CIPC business registration details`
-        } else {
-            query = `"${input}" company registration number South Africa CIPC directors address`
+        let allItems = data1.items || []
+
+        // Search 2: Specific "Registry Search" (If we don't have much)
+        if (allItems.length < 3) {
+            const q2 = `"${input}" site:cipc.co.za OR site:bizportal.gov.za OR site:b2bhint.com`
+            const res2 = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(q2)}`)
+            const data2 = await res2.json()
+            if (data2.items) allItems = [...allItems, ...data2.items]
         }
 
-        const res = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(query)}`)
-        const data = await res.json()
-
-        if (data.error) {
-            console.error('[Verify] Google Search API Error:', data.error);
-            return NextResponse.json({
-                valid: false,
-                data: {
-                    status: 'Search Error',
-                    message: 'Google Registry Search failed.',
-                    details: data.error.message || 'Unknown error.'
-                }
-            });
-        }
-
-        let items = data.items || []
-        if (items.length === 0) {
-            const fallbackRes = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(input + " registration number details")}`)
-            const fallbackData = await fallbackRes.json()
-            items = fallbackData.items || []
-        }
-
-        if (items.length === 0) {
+        if (allItems.length === 0) {
             return NextResponse.json({
                 valid: false,
                 data: {
@@ -87,8 +71,8 @@ export async function POST(request) {
             })
         }
 
-        const snippets = items.map(i => `[${i.displayLink}] ${i.title}: ${i.snippet}`).join('\n---\n')
-        const links = items.slice(0, 3).map(i => i.link)
+        const snippets = allItems.map(i => `[${i.displayLink}] ${i.title}: ${i.snippet}`).join('\n---\n')
+        const links = allItems.slice(0, 3).map(i => i.link)
 
         // 1b. Robust Regex Extraction 
         const regRegex = /(\d{4}\/\d{6}\/\d{2})|(\d{4}-\d{6}-\d{2})/g
@@ -120,21 +104,22 @@ export async function POST(request) {
 
                 const prompt = `
                 Analyze these South African business search results for: "${input}"
-                Web Results:
+                Web Results Index:
                 ${snippets}
                 
                 Regex Candidate: ${topMatch || 'None'}
 
-                GOAL: Extract deep metadata about this company.
-                
+                GOAL: Extract DEEP metadata about this company. 
+                Even if information is partially visible (e.g. "CEO: Simon..."), try to complete/clean it up.
+
                 CRITICAL TASKS:
-                1. Identify the EXACT official Registered Company Name.
-                2. Extract the Official Registration Number (Format MUST BE: YYYY/NNNNNN/NN).
-                3. Extract Registered Address (if visible).
-                4. Extract Incorporation/Registration Date (if visible).
-                5. List names of Directors/Officers (if visible).
-                6. Identify the Primary Industry.
-                7. Determine Status (Active/Verified, Deregistered, Liquidated).
+                1. OFFICIAL NAME: Identify the EXACT official Registered Company Name.
+                2. REGISTRATION NO: Extract the Official Reg Number (YYYY/NNNNNN/NN). Prioritize CIPC/BizPortal sources.
+                3. ADDRESS: Extract the Physical Headquarters or Registered Address. 
+                4. DATE: Extract the Incorporation or Foundation Date.
+                5. LEADERSHIP: List names of CEO, Directors, or Officers. (e.g. "Fleetwood Grobler", "Simon Baloyi").
+                6. INDUSTRY: High-level category (e.g. Chemicals, Retail, Banking).
+                7. STATUS: verified, deregistered, or liquidated.
 
                 Required JSON structure:
                 {
@@ -142,10 +127,10 @@ export async function POST(request) {
                     "identifier": "YYYY/NNNNNN/NN",
                     "industry": "Industry Type",
                     "status": "Verified" | "Deregistered" | "Liquidated",
-                    "address": "Full Physical Address or 'Not visible'",
-                    "registrationDate": "DD Month YYYY or 'Unknown'",
+                    "address": "Full Physical Address",
+                    "registrationDate": "DD Month YYYY",
                     "directors": ["Name 1", "Name 2"],
-                    "summary": "Full summary including status and notable details."
+                    "summary": "Deep summary of the company, its origins, and current status."
                 }
                 `
                 const result = await model.generateContent(prompt)
@@ -198,7 +183,7 @@ export async function POST(request) {
                 directors: businessData.directors,
                 summary: businessData.summary,
                 icon: businessData.icon,
-                source: 'Official Web Registry Index',
+                source: 'Deep-Web Intelligence Index',
                 details: `Information derived from high-authority South African indices:\n${links.map(l => {
                     try { return `• ${new URL(l).hostname}` } catch (e) { return `• ${l}` }
                 }).join('\n')}`
