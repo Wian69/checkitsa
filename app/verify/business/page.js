@@ -39,9 +39,13 @@ export default function BusinessVerificationPage() {
                 setResult(data.data);
             } else {
                 setError(data.data?.message || 'Verification failed.');
+                if (data.data?.details) {
+                    setResult({ details: data.data.details }); // Temporarily store details in result for the error view
+                }
             }
         } catch (err) {
             setError('An error occurred during search.');
+            setResult({ details: err.message });
         } finally {
             setLoading(false);
         }
