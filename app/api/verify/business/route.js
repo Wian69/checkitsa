@@ -85,12 +85,10 @@ export async function POST(request) {
 
         try {
             const genAI = new GoogleGenerativeAI(geminiApiKey.trim())
-            // We use gemini-1.5-flash which is fastest.
-            // Removing responseMimeType: "application/json" to see if it helps with synthesis errors, 
-            // and instead relying on a clear prompt and manual extraction.
+            // Remove strict 'v1' versioning to allow SDK to find the correct model endpoint
             const model = genAI.getGenerativeModel({
                 model: "gemini-1.5-flash",
-            }, { apiVersion: 'v1' })
+            })
 
             const prompt = `
             ACT AS A PROFESSIONAL BUSINESS INTELLIGENCE ANALYST.
