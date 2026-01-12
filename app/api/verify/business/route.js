@@ -85,7 +85,6 @@ export async function POST(request) {
 
         try {
             const genAI = new GoogleGenerativeAI(geminiApiKey.trim())
-            const genAI = new GoogleGenerativeAI(geminiApiKey.trim())
 
             let result;
             try {
