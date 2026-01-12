@@ -1,6 +1,7 @@
 
 "use client"
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 export default function BusinessReviews() {
     const [reviews, setReviews] = useState([])
@@ -52,6 +53,20 @@ export default function BusinessReviews() {
                                 <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{r.title}</div>
                                 <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', lineHeight: '1.6' }}>"{r.content}"</p>
                             </div>
+
+                            {r.response_content && (
+                                <div style={{
+                                    padding: '1rem',
+                                    background: 'rgba(255,255,255,0.03)',
+                                    borderRadius: '0.5rem',
+                                    fontSize: '0.85rem',
+                                    border: '1px solid rgba(255,255,255,0.05)'
+                                }}>
+                                    <div style={{ color: 'var(--color-primary)', fontWeight: 'bold', marginBottom: '0.25rem' }}>Business Response:</div>
+                                    <p style={{ margin: 0, fontStyle: 'italic', color: 'var(--color-text-muted)' }}>"{r.response_content}"</p>
+                                </div>
+                            )}
+
                             <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: '0.8rem', color: 'var(--color-text-muted)', display: 'flex', justifyContent: 'space-between' }}>
                                 <span>👤 {r.reviewer_name || 'Anonymous'}</span>
                                 <span>{new Date(r.created_at).toLocaleDateString()}</span>
@@ -60,6 +75,12 @@ export default function BusinessReviews() {
                     ))}
                 </div>
             )}
+
+            <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+                <Link href="/reviews" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600 }}>
+                    View All Public Reviews →
+                </Link>
+            </div>
 
             {/* Modal */}
             {showModal && (
