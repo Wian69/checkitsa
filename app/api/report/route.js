@@ -72,22 +72,38 @@ export async function POST(req) {
 
         const emailSubject = `🚨 New Scam Report: ${type}`
         const emailHtml = `
-            <h2>New Report Received</h2>
-            <p><strong>Reporter:</strong> ${name} (${email})</p>
-            <p><strong>Scammer:</strong> ${scammer_details}</p>
-            <p><strong>Description:</strong> ${description}</p>
-            <br/>
-            <div style="display: flex; gap: 10px;">
-                <a href="${baseUrl}/api/admin/moderate?id=${reportId}&action=verify&token=${adminSecret}" 
-                   style="background: #22c55e; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-                   ✅ VERIFY (Public)
-                </a>
-                <a href="${baseUrl}/api/admin/moderate?id=${reportId}&action=reject&token=${adminSecret}" 
-                   style="background: #ef4444; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-                   ❌ REJECT
-                </a>
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; color: #1e293b;">
+                <div style="background-color: #ef4444; padding: 20px; text-align: center;">
+                    <h1 style="color: white; margin: 0; font-size: 24px;">CheckItSA Admin Alert</h1>
+                </div>
+                <div style="padding: 30px; line-height: 1.6;">
+                    <h2 style="color: #0f172a; margin-top: 0;">New Scam Report Submitted</h2>
+                    <p>A new ${type} report has been received and requires moderation.</p>
+                    
+                    <div style="background: #fef2f2; padding: 25px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #ef4444;">
+                        <p style="margin: 0 0 10px 0;"><strong>Reporter:</strong> ${name} (${email})</p>
+                        <p style="margin: 0 0 10px 0;"><strong>Scammer:</strong> ${scammer_details}</p>
+                        <p style="margin: 0;"><strong>Description:</strong> ${description}</p>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 30px; display: flex; justify-content: center; gap: 15px;">
+                        <a href="${baseUrl}/api/admin/moderate?id=${reportId}&action=verify&token=${adminSecret}" 
+                           style="display: inline-block; background: #22c55e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                           ✅ VERIFY (Public)
+                        </a>
+                        <a href="${baseUrl}/api/admin/moderate?id=${reportId}&action=reject&token=${adminSecret}" 
+                           style="display: inline-block; background: #64748b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                           ❌ REJECT
+                        </a>
+                    </div>
+
+                    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 13px; text-align: center;">
+                        <p>Standardized Admin Notification | checkitsa.co.za</p>
+                    </div>
+                </div>
             </div>
         `
+        const emailText = `New Scam Report: ${type}\n\nReporter: ${name} (${email})\nScammer: ${scammer_details}\nDescription: ${description}\n\nVerify: ${baseUrl}/api/admin/moderate?id=${reportId}&action=verify&token=${adminSecret}\nReject: ${baseUrl}/api/admin/moderate?id=${reportId}&action=reject&token=${adminSecret}`
 
         if (reportId) {
             // TRY BREVO (Available in SA)
@@ -101,10 +117,12 @@ export async function POST(req) {
                             'accept': 'application/json'
                         },
                         body: JSON.stringify({
-                            sender: { name: 'CheckItSA Reports', email: 'info@checkitsa.co.za' }, // Brevo allows any verified sender
-                            to: [{ email: 'wiandurandt69@gmail.com', name: 'Admin arg' }],
+                            sender: { name: 'CheckItSA Reports', email: 'info@checkitsa.co.za' },
+                            to: [{ email: 'wiandurandt69@gmail.com', name: 'Admin Account' }],
+                            replyTo: { email: 'info@checkitsa.co.za' },
                             subject: emailSubject,
-                            htmlContent: emailHtml
+                            htmlContent: emailHtml,
+                            textContent: emailText
                         })
                     })
                     sentEmail = true
@@ -121,10 +139,12 @@ export async function POST(req) {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            from: 'CheckItSA Reports <onboarding@resend.dev>',
+                            from: 'CheckItSA Reports <info@checkitsa.co.za>',
                             to: 'wiandurandt69@gmail.com',
+                            reply_to: 'info@checkitsa.co.za',
                             subject: emailSubject,
-                            html: emailHtml
+                            html: emailHtml,
+                            text: emailText
                         })
                     })
                 } catch (e) { console.error('Resend Error:', e) }
