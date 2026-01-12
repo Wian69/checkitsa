@@ -43,8 +43,8 @@ export async function POST(request) {
         }
 
         // 1. Enriched Web Search Query
-        // Expanded to include 'Employees' and 'Operations' to catch rich profile text (e.g. Checkers/Shoprite info)
-        // while still prioritizing Registration Numbers.
+        // UNIVERSAL QUERY: Works for ANY company name provided in 'input'
+        // We ask for Registration Numbers OR Employees OR Headquarters to build a full profile.
         const intelligenceQuery = `"${input}" ("Registration Number" OR "Reg No" OR "Employees" OR "Headquarters") South Africa`;
 
         console.log(`[Intelligence] Fetching web data for: ${input}`);
@@ -66,13 +66,14 @@ export async function POST(request) {
 
         const items = data.items || []
 
-        // 2. Web-Only Intelligence Layer (Advanced Smart Parser v5 - Rich Profile)
+        // 2. Web-Only Intelligence Layer (Universal Smart Parser v6)
+        // Designed to be agnostic of company name/location.
 
         let identifier = "Not found in web index";
         const regNumRegex = /\b(\d{4})\/\d{6}\/\d{2}\b/;
 
         // Tiered Priority Search for ID
-        // Tier 1: Title STARTS WITH input (Target: Official Homepage)
+        // Tier 1: Title STARTS WITH input (Target: Official Homepage for THIS company)
         // Tier 2: Title CONTAINS input
         // Tier 3: Snippet CONTAINS input
 
@@ -127,7 +128,7 @@ export async function POST(request) {
 
         const cleanSnippets = items.map(i => `${i.title} ${i.snippet}`).join(' | ');
 
-        // B. Industry
+        // B. Industry (Universal Dictionary)
         const industries = [
             'Agriculture', 'Mining', 'Manufacturing', 'Logistics', 'Transport', 'Freight',
             'Retail', 'Wholesale', 'FMCG', 'Supermarket',
@@ -139,35 +140,40 @@ export async function POST(request) {
         const industry = foundIndustry ? `${foundIndustry} (Web Verified)` : "Multi-Sector (Web Index)";
 
         // C. Operations / Description
-        // Prioritize specific keywords like "part of", "subsidiary", "group" to catch parent entities (e.g. Shoprite Group)
+        // Look for structural description indicators
         const bestDescItem = items.find(i =>
             /(?:part of|subsidiary of|owned by|group|holding)/i.test(i.snippet) ||
             /is a|specializes|provides|manufacturer|supplier|distributor|solutions|services/i.test(i.snippet)
         );
         const operations = bestDescItem ? bestDescItem.snippet : (items[0]?.snippet || "Business listing found in global index.");
 
-        // D. Address / Headquarters
+        // D. Address / Headquarters (Universal Pattern Match)
         let addressHint = "See web results below";
+
+        // 1. Explicit Semantic Location (Headquarters in X, Based in Y)
         const hqRegex = /(?:Headquarters|Head Office|Based|Located)[:\s]+in\s+([A-Z][a-z]+(?:[\s,]+[A-Z][a-z]+)*)/i;
         const hqMatch = cleanSnippets.match(hqRegex);
 
         if (hqMatch) {
             addressHint = `${hqMatch[1]} (Headquarters)`;
         } else {
+            // 2. Structural Address Patterns (Street Addresses)
+            // Finds "123 Main Street" or "PO Box 123" patterns anywhere in text
             const addressMatches = items.filter(i =>
-                /\d+\s+[A-Za-z]+\s+(Street|St|Road|Rd|Ave|Box|Crescent|Way)/i.test(i.snippet) ||
-                /(?:Randfontein|Johannesburg|Cape Town|Durban|Pretoria|Sandton|Polokwane|Bloemfontein|Brackenfell)/.test(i.snippet)
+                /\d+\s+[A-Za-z0-9]+\s+(Street|St|Road|Rd|Ave|Avenue|Box|Crescent|Way|Drive|Lane|Park)/i.test(i.snippet)
             );
-            // Prefer the one that also matches the ID if possible, else take the first
-            if (addressMatches.length > 0) addressHint = addressMatches[0].snippet;
+            // Prefer the one that matches title if possible
+            const bestAddr = addressMatches.find(i => i.title.toLowerCase().includes(input.toLowerCase())) || addressMatches[0];
+
+            if (bestAddr) addressHint = bestAddr.snippet;
         }
 
-        // E. Directors
-        const directorRegex = /(?:CEO|Director|Managing Director|CFO)[\s:-]+([A-Z][a-z]+ [A-Z][a-z]+)/g;
+        // E. Directors (Universal Title Search)
+        const directorRegex = /(?:CEO|Director|Managing Director|CFO|Founder|Owner)[\s:-]+([A-Z][a-z]+ [A-Z][a-z]+)/g;
         const potentialDirectors = [...cleanSnippets.matchAll(directorRegex)].map(m => m[1]).slice(0, 3);
         const directors = potentialDirectors.length > 0 ? potentialDirectors : ["Listed in full report"];
 
-        // F. Employees (Enhanced Regex for 'employs nearly', 'workforce of', etc.)
+        // F. Employees (Natural Language Regex)
         const employeeRegex = /(?:employs|employing|staff of|workforce of)\s*(?:approx\.?|nearly|over|more than|approximately)?\s*([0-9,]+(?:\s+people|\s+employees|\s+staff)?)/i;
         const employeeMatch = cleanSnippets.match(employeeRegex);
         const employees = employeeMatch ? `${employeeMatch[1]} (Est.)` : "Unknown (Not public)";
@@ -179,11 +185,9 @@ export async function POST(request) {
         if (lowerSnippets.includes('deregistered') || lowerSnippets.includes('final deregistration')) status = 'Deregistered';
         if (lowerSnippets.includes('business rescue')) status = 'Business Rescue';
 
-        // Best Source Link
-        // If we found a Tier 1 match, finding that link is easy (it's the first item usually).
-        // Otherwise, just give the top relevant link.
-        const sourceLink = items[0]?.link || "Google Search";
-        const sourceHost = sourceLink.startsWith('http') ? new URL(sourceLink).hostname : sourceLink;
+        // Best Source Link (The "Link regards to the business")
+        const sourceLink = items[0]?.link || "";
+        const sourceHost = sourceLink.startsWith('http') ? new URL(sourceLink).hostname : "Google Search";
 
         // Construct the profile manually
         const aiResponse = {
@@ -199,6 +203,7 @@ export async function POST(request) {
             globalRole: "National Entity",
             summary: `Automated web profile generated from verified sources.`,
             source: `Web Index (${sourceHost})`,
+            website: sourceLink, // Passed to frontend
             icon: status === 'Active' ? '🏢' : '⚠️',
             details: `Synthesized from ${items.length} public web endpoints.`
         };
