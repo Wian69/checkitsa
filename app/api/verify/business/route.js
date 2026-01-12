@@ -84,6 +84,7 @@ export async function POST(request) {
         }
 
         try {
+            const genAI = new GoogleGenerativeAI(geminiApiKey.trim())
             // Explicitly selecting gemini-1.5-flash and v1beta which is the current standard
             const model = genAI.getGenerativeModel({
                 model: "gemini-1.5-flash",
