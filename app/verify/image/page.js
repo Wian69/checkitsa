@@ -28,6 +28,13 @@ export default function ImageScanner() {
         e.preventDefault()
         if (!file) return
 
+        const { tier } = trackSearch()
+        if (tier === 'free') {
+            alert("Screenshot Analysis is only available for Pro, Elite, and Enterprise members. Please upgrade to access this feature.")
+            router.push('/subscription')
+            return
+        }
+
         setLoading(true)
         setResult(null)
 
@@ -48,11 +55,15 @@ export default function ImageScanner() {
                 return
             }
 
-            // 2. Send TEXT to backend for analysis (Mocking the formData structure but as JSON)
+            // 2. Send TEXT to backend for analysis
+            const userStr = localStorage.getItem('checkitsa_user')
+            const user = userStr ? JSON.parse(userStr) : null
+            const email = user ? user.email : null
+
             const res = await fetch('/api/verify/image', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: extractedText })
+                body: JSON.stringify({ text: extractedText, email })
             })
             const data = await res.json()
             setResult(data)

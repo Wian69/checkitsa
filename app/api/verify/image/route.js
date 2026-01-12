@@ -1,37 +1,32 @@
 import { NextResponse } from 'next/server'
-// import { createWorker } from 'tesseract.js'
+import { getRequestContext } from '@cloudflare/next-on-pages'
 
 export const runtime = 'edge'
 
 export async function POST(request) {
     try {
-        const formData = await request.formData()
-        const file = formData.get('image')
+        const { text, email } = await request.json()
+        const db = getRequestContext().env.DB
 
-        if (!file) {
-            return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
+        // 0. Permission Check
+        if (!email) {
+            return NextResponse.json({ error: 'Unauthorized', message: 'Please sign in to analyze screenshots.' }, { status: 401 })
         }
 
-        // Convert file to buffer
-        const arrayBuffer = await file.arrayBuffer()
-        const buffer = Buffer.from(arrayBuffer)
+        const userMeta = await db.prepare("SELECT tier FROM user_meta WHERE email = ?").bind(email).first()
+        const tier = userMeta ? userMeta.tier : 'free'
 
-        // Perform OCR (Wrapped to prevent crashing if incompatible with Edge)
-        let text = ''
-        try {
-            // Dynamic import to prevent global Edge Runtime crash on startup
-            const { createWorker } = await import('tesseract.js')
-            const worker = await createWorker('eng')
-            const ret = await worker.recognize(buffer)
-            text = ret.data.text
-            await worker.terminate()
-        } catch (ocrError) {
-            console.error('OCR Error:', ocrError)
+        if (tier === 'free') {
             return NextResponse.json({
-                error: 'OCR Service Unavailable in this region',
-                message: 'Image analysis is currently limited. Please try text search.',
-                debug_error: ocrError.message
-            }, { status: 200 }) // Return 200 with error message to UI handles it gracefully
+                error: 'Upgrade Required',
+                message: 'Screenshot Analysis is a Pro feature.',
+                risk_score: 0,
+                flags: ['Please upgrade to analyze images.']
+            }, { status: 402 })
+        }
+
+        if (!text) {
+            return NextResponse.json({ error: 'No text extracted' }, { status: 400 })
         }
 
         // --- ANALYZE TEXT ---

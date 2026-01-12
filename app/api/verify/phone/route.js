@@ -1,11 +1,33 @@
 import { NextResponse } from 'next/server'
+import { getRequestContext } from '@cloudflare/next-on-pages'
 
 export const runtime = 'edge'
 
-
 export async function POST(request) {
     const body = await request.json()
-    let { phone } = body
+    let { phone, email } = body
+    const db = getRequestContext().env.DB
+
+    // 0. Permission Check
+    if (!email) {
+        return NextResponse.json({ valid: false, data: { status: 'Unauthorized', risk_analysis: 'Please sign in.' } }, { status: 401 })
+    }
+
+    const userMeta = await db.prepare("SELECT tier FROM user_meta WHERE email = ?").bind(email).first()
+    const tier = userMeta ? userMeta.tier : 'free'
+
+    if (tier === 'free') {
+        return NextResponse.json({
+            valid: false,
+            data: {
+                status: 'Upgrade Required',
+                carrier: 'Restricted',
+                location: 'Restricted',
+                rica_status: 'Restricted',
+                risk_analysis: 'Upgrade to Pro to view phone risk data.'
+            }
+        }, { status: 402 })
+    }
 
     if (!phone) return NextResponse.json({ valid: false })
 
