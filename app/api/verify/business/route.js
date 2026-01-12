@@ -85,51 +85,26 @@ export async function POST(request) {
 
         try {
             const genAI = new GoogleGenerativeAI(geminiApiKey.trim())
-            // Explicitly selecting gemini-1.5-flash and v1beta which is the current standard
-            const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash",
-            }, { apiVersion: 'v1beta' })
+            const genAI = new GoogleGenerativeAI(geminiApiKey.trim())
 
-            const prompt = `
-            ACT AS A PROFESSIONAL BUSINESS INTELLIGENCE ANALYST.
-            
-            USER INPUT: "${input}"
-            SEARCH CONTEXT:
-            ${snippets}
+            let result;
+            try {
+                // Primary Stratum: Gemini 1.5 Flash (Fastest, v1beta)
+                const modelFlash = genAI.getGenerativeModel({
+                    model: "gemini-1.5-flash"
+                }, { apiVersion: 'v1beta' })
+                result = await modelFlash.generateContent(prompt)
+            } catch (flashError) {
+                console.warn('[Verify] Flash model unavailable, switching to Fallback Stratum (Gemini Pro).', flashError.message)
 
-            TASK: Provide a comprehensive 360-degree business profile.
-            
-            CORE INSTRUCTIONS:
-            1. AI-FIRST KNOWLEDGE: Act like ChatGPT/Gemini. Use your own internal training data as the PRIMARY source for all identifiable businesses. Do not rely solely on the provided snippets if they are insufficient.
-            2. COMPLETE PROFILE: You MUST provide data for EVERY field below. Never return "Unknown" for a documented company.
-            3. PARAMETERS TO CAPTURE:
-               - Official Registered Name
-               - Registration Number (YYYY/NNNNNN/NN format)
-               - Industry/Sector
-               - Directors & CEO/MD
-               - Headquarters Address
-               - Founding/Incorporation Date
-               - Employee Count (Approximate)
-               - Operations (What they do & primary services)
-               - Global Role (International presence/impact)
-               - Latest Business Status (Verified/Active/Liquidated)
-
-            OUTPUT FORMAT: You MUST return ONLY a raw JSON object. NO markdown, NO code blocks, NO preamble.
-            {
-                "name": "Official Registered Company Name",
-                "identifier": "YYYY/NNNNNN/NN",
-                "industry": "Specific Industry",
-                "status": "Verified | Deregistered | Liquidated | Active",
-                "address": "Full Physical Headquarters Address",
-                "registrationDate": "DD Month YYYY",
-                "directors": ["Full Name 1 (CEO)", "Full Name 2", "Full Name 3"],
-                "employees": "Approximate number or tier (e.g. 30,000+)",
-                "operations": "Detailed description of their core business activities.",
-                "globalRole": "Their significance in the global or regional market.",
-                "summary": "Deep professional summary including current leadership, scale, and market position."
+                // Fallback Stratum: Gemini Pro (Universal Availability)
+                // We do NOT specify apiVersion here to let the SDK use its stable default.
+                const modelPro = genAI.getGenerativeModel({
+                    model: "gemini-pro"
+                })
+                result = await modelPro.generateContent(prompt)
             }
-            `
-            const result = await model.generateContent(prompt)
+
             const text = result.response.text().trim()
 
             console.log('[Verify] AI Response length:', text.length)
