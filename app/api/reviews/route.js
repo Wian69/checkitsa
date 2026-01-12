@@ -4,9 +4,44 @@ import { getRequestContext } from '@cloudflare/next-on-pages'
 
 export const runtime = 'edge'
 
+async function ensureSchema(db) {
+    try {
+        // Create table if not exists
+        await db.prepare(`
+            CREATE TABLE IF NOT EXISTS business_reviews (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                business_name TEXT NOT NULL,
+                rating INTEGER NOT NULL,
+                title TEXT,
+                content TEXT NOT NULL,
+                reviewer_name TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                status TEXT DEFAULT 'verified'
+            )
+        `).run()
+
+        // Check columns
+        const tableInfo = await db.prepare("PRAGMA table_info(business_reviews)").all()
+        const columns = tableInfo.results.map(r => r.name)
+
+        if (!columns.includes('business_email')) {
+            await db.prepare("ALTER TABLE business_reviews ADD COLUMN business_email TEXT").run()
+        }
+        if (!columns.includes('response_content')) {
+            await db.prepare("ALTER TABLE business_reviews ADD COLUMN response_content TEXT").run()
+        }
+        if (!columns.includes('responded_at')) {
+            await db.prepare("ALTER TABLE business_reviews ADD COLUMN responded_at DATETIME").run()
+        }
+    } catch (e) {
+        console.error('Schema Sync Error:', e)
+    }
+}
+
 export async function GET() {
     try {
         const db = getRequestContext().env.DB
+        await ensureSchema(db)
         const { results } = await db.prepare("SELECT * FROM business_reviews ORDER BY created_at DESC LIMIT 10").all()
         return NextResponse.json({ reviews: results || [] })
     } catch (e) {
@@ -18,6 +53,7 @@ export async function POST(req) {
     try {
         const { businessName, businessEmail, rating, title, content, reviewerName } = await req.json()
         const db = getRequestContext().env.DB
+        await ensureSchema(db)
 
         if (!businessName || !rating || !content) {
             return NextResponse.json({ message: 'Missing fields' }, { status: 400 })
