@@ -7,7 +7,7 @@ export async function POST(req) {
     try {
         const { email, tier, adminEmail, secret } = await req.json()
         const env = getRequestContext()?.env || {}
-        const adminSecret = env.ADMIN_SECRET || process.env.ADMIN_SECRET || 'secret'
+        const adminSecret = env.ADMIN_SECRET || process.env.ADMIN_SECRET || 'wiandurandt69@gmail.com'
 
         if (!secret || secret !== adminSecret || adminEmail !== 'wiandurandt69@gmail.com') {
             console.error(`[Admin Auth Fail] Email: ${adminEmail}, Secret Match: ${secret === adminSecret}`)
