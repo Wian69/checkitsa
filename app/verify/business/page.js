@@ -1,168 +1,166 @@
-"use client"
-import Navbar from '@/components/Navbar'
+'use client';
 
-import ReportButton from '@/components/ReportButton'
-import LoadingOverlay from '@/components/LoadingOverlay'
-import { useState } from 'react'
-import { trackSearch, addToHistory, incrementSearch } from '@/utils/searchLimit'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 
-export default function BusinessCheck() {
-    const [input, setInput] = useState('')
-    const [result, setResult] = useState(null)
-    const [loading, setLoading] = useState(false)
-    const router = useRouter()
+export default function BusinessVerificationPage() {
+    const { data: session } = useSession();
+    const [input, setInput] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [result, setResult] = useState(null);
+    const [error, setError] = useState(null);
 
-    const handleCheck = async (e) => {
-        e.preventDefault()
+    const handleVerify = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+        setResult(null);
 
-        const { tier, canSearch } = trackSearch()
-
-        // 1. Subscription Tier Check
-        if (tier === 'free') {
-            alert("Business Verification is only available for Pro, Elite, and Enterprise members. Please upgrade to access this feature.")
-            router.push('/subscription')
-            return
-        }
-
-        // 2. Search Limit Check
-        if (!canSearch) {
-            alert("You've reached your limit. Please upgrade for more searches.")
-            router.push('/subscription')
-            return
-        }
-
-        setLoading(true)
-        setResult(null)
         try {
-            const userStr = localStorage.getItem('checkitsa_user')
-            const user = userStr ? JSON.parse(userStr) : null
-            const email = user ? user.email : null
-
             const res = await fetch('/api/verify/business', {
                 method: 'POST',
-                body: JSON.stringify({ input, email })
-            })
-            const data = await res.json()
-            setResult(data.data)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ input, email: session?.user?.email }),
+            });
 
-            // Add to History & Consume Search Credit
+            const data = await res.json();
             if (data.valid) {
-                await addToHistory('Business Verify', input, data.data.status)
-                await incrementSearch()
+                setResult(data.data);
+            } else {
+                setError(data.data?.message || 'Verification failed.');
             }
-        } catch (e) { console.error(e) }
-        finally { setLoading(false) }
-    }
+        } catch (err) {
+            setError('An error occurred during search.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
-        <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
-            <Navbar />
-            {loading && <LoadingOverlay message="Deep Searching Registry Index..." />}
-
-            <div className="container" style={{ paddingTop: '10rem', maxWidth: '900px' }}>
-                <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>Business Verification</h1>
-                <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', marginBottom: '4rem' }}>
-                    Verify businesses against South African registries with deep intelligence.
+        <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '4rem 2rem' }}>
+            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+                <h1 style={{ fontSize: '3rem', fontWeight: '800', marginBottom: '1rem', background: 'linear-gradient(to right, #fff, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    Business Intelligence
+                </h1>
+                <p style={{ color: 'var(--color-text-dim)', fontSize: '1.2rem' }}>
+                    Access high-depth company data, leadership profiles, and global market status.
                 </p>
+            </div>
 
-                <div className="glass-panel" style={{ padding: '2.5rem' }}>
-                    <form onSubmit={handleCheck} style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-                        <input
-                            type="text"
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            placeholder="Search by Company Name or Reg Number..."
-                            required
-                            style={{ flex: 1, padding: '1rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white' }}
-                        />
-                        <button disabled={loading} className="btn btn-primary" style={{ minWidth: '140px' }}>
-                            {loading ? 'Analyzing...' : 'Deep Search'}
-                        </button>
-                    </form>
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '2rem', borderRadius: '1.5rem', border: '1px solid var(--color-border)', marginBottom: '3rem' }}>
+                <form onSubmit={handleVerify} style={{ display: 'flex', gap: '1rem' }}>
+                    <input
+                        type="text"
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        placeholder="Search by Company Name or Registration Number..."
+                        required
+                        style={{ flex: 1, padding: '1rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white' }}
+                    />
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        style={{ padding: '1rem 2rem', borderRadius: '0.5rem', background: 'var(--color-primary)', color: 'white', fontWeight: '600', border: 'none', cursor: 'pointer', opacity: loading ? 0.7 : 1 }}
+                    >
+                        {loading ? 'Synthesizing...' : 'Search Intelligence'}
+                    </button>
+                </form>
+            </div>
 
-                    {result && (
-                        <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
-                            <div style={{
-                                padding: '2rem',
-                                border: `1px solid ${(result.status === 'Verified' || result.status.includes('Found')) ? 'var(--color-success)' : 'var(--color-danger)'}`,
-                                borderRadius: '1rem',
-                                marginBottom: '1.5rem',
-                                background: 'rgba(255,255,255,0.02)',
-                            }}>
-                                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                                    <h2 style={{
-                                        fontSize: '2rem',
-                                        color: (result.status === 'Verified' || result.status.includes('Found')) ? 'var(--color-success)' : 'var(--color-danger)',
-                                        marginBottom: '0.5rem'
-                                    }}>
-                                        {result.status || 'Found'}
-                                    </h2>
-                                    <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>{result.summary}</p>
+            {error && (
+                <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', padding: '1.5rem', borderRadius: '1rem', color: '#fca5a5', marginBottom: '2rem' }}>
+                    <strong>Error:</strong> {error}
+                </div>
+            )}
+
+            {result && (
+                <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+                        {/* Company Identity */}
+                        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '2rem', borderRadius: '1.5rem', border: '1px solid var(--color-border)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                                <span style={{ fontSize: '2.5rem' }}>{result.icon}</span>
+                                <div>
+                                    <h2 style={{ fontSize: '1.5rem', fontWeight: '700' }}>{result.name}</h2>
+                                    <p style={{ color: 'var(--color-primary)', fontWeight: '600' }}>Reg No: {result.identifier}</p>
                                 </div>
+                            </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                                    {/* Primary Info */}
-                                    <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '0.8rem', border: '1px solid var(--color-border)' }}>
-                                        <h3 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '1rem', letterSpacing: '1px' }}>Company Identity</h3>
-                                        <div style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '0.75rem', color: 'white' }}>
-                                            {result.name}
-                                        </div>
-                                        <div style={{ fontSize: '1rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>
-                                            Reg No: <span style={{ color: 'white', fontWeight: 600 }}>{result.identifier}</span>
-                                        </div>
-                                        <div style={{ fontSize: '1rem', color: 'var(--color-text-muted)' }}>
-                                            Industry: <span style={{ color: 'white', fontWeight: 600 }}>{result.industry}</span>
-                                        </div>
-                                        <div style={{ fontSize: '1rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
-                                            Registration Date: <span style={{ color: 'white', fontWeight: 600 }}>{result.registrationDate || 'Unknown'}</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Logistics & People */}
-                                    <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '0.8rem', border: '1px solid var(--color-border)' }}>
-                                        <h3 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '1rem', letterSpacing: '1px' }}>Logistics & Leadership</h3>
-                                        <div style={{ marginBottom: '1rem' }}>
-                                            <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem' }}>Registered Address</div>
-                                            <div style={{ color: 'white', lineHeight: '1.4' }}>{result.address || 'Not visible in search index'}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '0.4rem' }}>Directors / Officers</div>
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                                                {result.directors && result.directors.length > 0 ? (
-                                                    result.directors.map((d, i) => (
-                                                        <span key={i} style={{ background: 'rgba(255,255,255,0.1)', padding: '0.25rem 0.6rem', borderRadius: '0.4rem', fontSize: '0.9rem', color: 'white' }}>
-                                                            {d}
-                                                        </span>
-                                                    ))
-                                                ) : (
-                                                    <span style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>Information not public in results</span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.2rem' }}>Industry</label>
+                                    <p style={{ fontWeight: '500' }}>{result.industry}</p>
                                 </div>
-
-                                <div style={{ mt: '2rem', pt: '2rem', borderTop: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-                                    <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', textAlign: 'center' }}>
-                                        <strong>Attestation:</strong> This data is aggregated from high-authority South African indices including CIPC, BizPortal, and official company filings.
-                                        <br />
-                                        <span style={{ opacity: 0.7 }}>Indices used: {result.source}</span>
-                                    </div>
-                                    <ReportButton url={result.name} type="Business" reason="Fraudulent Business" />
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.2rem' }}>Registration Date</label>
+                                    <p style={{ fontWeight: '500' }}>{result.registrationDate}</p>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.2rem' }}>Employees</label>
+                                    <p style={{ fontWeight: '500' }}>{result.employees}</p>
                                 </div>
                             </div>
                         </div>
-                    )}
-                </div>
 
-                <div style={{ marginTop: '3rem', textAlign: 'center', background: 'rgba(255,255,255,0.03)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--color-border)' }}>
-                    <h4 style={{ marginBottom: '0.5rem' }}>💡 Note on Search Limits</h4>
-                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', maxWidth: '600px', margin: '0 auto' }}>
-                        Your daily limit is based on the **number of searches**, not the amount of detail. Deep extraction for addresses and directors is included in every search for Pro & Elite members at no extra credit cost.
-                    </p>
+                        {/* Operations & Global Role */}
+                        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '2rem', borderRadius: '1.5rem', border: '1px solid var(--color-border)' }}>
+                            <h3 style={{ fontSize: '1.2rem', fontWeight: '700', marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>Logistics & Global Scale</h3>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.5rem' }}>Registered Headquarters</label>
+                                    <p style={{ fontWeight: '500', fontSize: '0.95rem' }}>{result.address}</p>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.5rem' }}>Global Footprint</label>
+                                    <p style={{ fontWeight: '500', fontSize: '0.95rem' }}>{result.globalRole}</p>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.5rem' }}>Core Operations</label>
+                                    <p style={{ fontWeight: '500', fontSize: '0.95rem' }}>{result.operations}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Leadership & Status */}
+                        <div style={{ background: 'rgba(99, 102, 241, 0.05)', padding: '2rem', borderRadius: '1.5rem', border: '1px solid var(--color-primary)' }}>
+                            <h3 style={{ fontSize: '1.2rem', fontWeight: '700', marginBottom: '1.5rem', color: '#818cf8' }}>Executive Leadership</h3>
+                            <div style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                                {result.directors && result.directors.length > 0 ? (
+                                    result.directors.map((name, i) => (
+                                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', background: 'rgba(255,255,255,0.03)', padding: '0.8rem', borderRadius: '0.5rem' }}>
+                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-primary)' }}></div>
+                                            <span style={{ fontWeight: '500' }}>{name}</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p style={{ color: 'var(--color-text-dim)' }}>Leadership details being processed...</p>
+                                )}
+                            </div>
+                            <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                                <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.2rem' }}>Current Status</label>
+                                <span style={{ padding: '0.3rem 0.8rem', borderRadius: '2rem', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontSize: '0.85rem', fontWeight: '700' }}>
+                                    {result.status}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={{ marginTop: '2rem', background: 'rgba(255,255,255,0.03)', padding: '2rem', borderRadius: '1.5rem', border: '1px solid var(--color-border)' }}>
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '1rem' }}>Executive Intelligence Summary</h3>
+                        <p style={{ color: 'var(--color-text-dim)', lineHeight: '1.6', fontSize: '1rem' }}>{result.summary}</p>
+                        <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--color-border)', fontSize: '0.85rem', color: 'var(--color-text-dim)' }}>
+                            <p><strong>Intelligence Source:</strong> {result.source}</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </main>
-    )
+            )}
+
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+            `}</style>
+        </div>
+    );
 }
