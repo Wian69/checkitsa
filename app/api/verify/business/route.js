@@ -42,7 +42,11 @@ export async function POST(request) {
         }
 
         // 1. Highly Targeted Google Search (Official Registries)
-        const query = `site:bizportal.gov.za OR site:cipc.co.za OR site:b2bhint.com OR site:searchworks.co.za "${input}"`
+        // We add "registration number" or "CIPC" to the query to force relevant snippets
+        const isRegSearch = /\d/.test(input)
+        const searchQuery = isRegSearch ? `"${input}" CIPC registration` : `"${input}" South Africa registration number CIPC`
+        const query = `site:bizportal.gov.za OR site:cipc.co.za OR site:b2bhint.com OR site:searchworks.co.za OR site:sacompany.co.za ${searchQuery}`
+
         const res = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(query)}`)
         const data = await res.json()
 
@@ -72,13 +76,14 @@ export async function POST(request) {
             })
         }
 
-        const snippets = data.items.map(i => i.snippet).join('\n')
+        const snippets = data.items.map(i => `${i.title}: ${i.snippet}`).join('\n---\n')
         const links = data.items.slice(0, 3).map(i => i.link)
 
-        // 1b. Fast Regex Extraction (SA Registration Format: YYYY/NNNNNN/NN)
-        const regRegex = /\d{4}\/\d{6}\/\d{2}/g
+        // 1b. Robust Regex Extraction (SA Registration Format: YYYY/NNNNNN/NN or YYYY-NNNNNN-NN)
+        const regRegex = /(\d{4}\/\d{6}\/\d{2})|(\d{4}-\d{6}-\d{2})/g
         const regMatches = snippets.match(regRegex)
-        const topMatch = regMatches ? regMatches[0] : null
+        // Prioritize the slashed version
+        const topMatch = regMatches ? regMatches.find(m => m.includes('/')) || regMatches[0] : null
 
         // DEFAULT STATE
         let businessData = {
@@ -102,23 +107,27 @@ export async function POST(request) {
 
                 const prompt = `
                 Analyze these South African business registry search results for: "${input}"
-                Context: ${snippets}
-                Regex Hint: ${topMatch || 'None'}
+                Context from Google:
+                ${snippets}
+                
+                Regex Candidate: ${topMatch || 'None'}
 
-                Tasks:
-                1. Identify the official Registered Company Name.
-                2. Extract the Registration Number (Format: YYYY/NNNNNN/NN). Use the Regex Hint if it looks correct.
+                CRITICAL TASKS:
+                1. Identify the EXACT official Registered Company Name. Avoid generic placeholders.
+                2. Extract the Official Registration Number (Format MUST BE: YYYY/NNNNNN/NN). 
+                   - Look for terms like "Registration No", "Reg No", "Enterprise Number".
+                   - If multiple numbers exist, pick the one from an official-looking source (CIPC, BizPortal, B2BHint).
+                   - Use the Regex Candidate if it fits the YYYY/NNNNNN/NN format exactly.
                 3. Identify the Primary Industry (e.g. Retail, Mining, Finance, Tech).
-                4. Business is "Verified" if a registry record exists.
-                5. Business is "Deregistered" if explicitly stated in text.
+                4. Determine Status: "Verified" (Active), "Deregistered", or "Liquidated".
 
                 Required JSON structure:
                 {
                     "name": "Official Registered Company Name",
-                    "identifier": "Registration No (e.g. 2010/123456/07)",
+                    "identifier": "YYYY/NNNNNN/NN",
                     "industry": "Industry Type",
-                    "status": "Verified" | "Deregistered",
-                    "summary": "This business is verified."
+                    "status": "Verified" | "Deregistered" | "Liquidated",
+                    "summary": "Full summary including when it was registered if visible."
                 }
                 `
                 const result = await model.generateContent(prompt)
@@ -134,22 +143,27 @@ export async function POST(request) {
 
                 if (aiResponse) {
                     businessData.name = aiResponse.name || businessData.name
-                    businessData.identifier = aiResponse.identifier || businessData.identifier || topMatch
+                    // Ensure the identifier is cleaned up
+                    let finalId = aiResponse.identifier || businessData.identifier || topMatch
+                    if (finalId) finalId = finalId.replace(/-/g, '/') // Standardize to slashes
+
+                    businessData.identifier = finalId
                     businessData.industry = aiResponse.industry || businessData.industry
                     businessData.status = aiResponse.status || businessData.status
-
-                    if (businessData.status === 'Verified') {
-                        businessData.summary = 'This business is verified.'
-                    }
+                    businessData.summary = aiResponse.summary || businessData.summary
 
                     const statusLower = businessData.status.toLowerCase();
-                    if (statusLower.includes('deregistered') || statusLower.includes('liquidated')) businessData.icon = '❌'
-                    else businessData.icon = '✅'
+                    if (statusLower.includes('deregistered') || statusLower.includes('liquidated') || statusLower.includes('dissolved')) {
+                        businessData.icon = '❌'
+                        businessData.status = 'Deregistered'
+                    } else {
+                        businessData.icon = '✅'
+                        businessData.status = 'Verified'
+                    }
                 }
             } catch (aiErr) {
                 console.error('[Verify] Gemini Extraction failed:', aiErr.message)
-                businessData.status = 'Verified' // Fallback to verified since registry found
-                businessData.summary = 'This business is verified.'
+                businessData.status = 'Verified'
             }
         }
 
