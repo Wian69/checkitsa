@@ -176,7 +176,16 @@ export async function POST(request) {
                 }
             }
 
-            // Result processing handled inside try/catch blocks now
+            // If we successfully got a result from Flash (primary), process it here
+            if (!aiResponse && result) {
+                const text = result.response.text().trim()
+                try {
+                    aiResponse = JSON.parse(text);
+                } catch (e) {
+                    const match = text.match(/\{[\s\S]*\}/);
+                    if (match) aiResponse = JSON.parse(match[0]);
+                }
+            }
 
 
 
