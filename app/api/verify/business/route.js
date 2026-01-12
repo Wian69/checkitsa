@@ -179,13 +179,22 @@ export async function POST(request) {
             }
         } catch (aiErr) {
             console.error('[Intelligence] AI Processing Error:', aiErr)
+
+            let status = 'Synthesis Error'
+            let message = 'AI was unable to synthesize the company profile.'
+
+            if (aiErr.message?.includes('API key expired') || aiErr.message?.includes('API_KEY_INVALID')) {
+                status = 'Configuration Alert'
+                message = 'The AI Intelligence Key has expired. Please update system credentials.'
+            }
+
             return NextResponse.json({
                 valid: false,
                 data: {
-                    status: 'Synthesis Error',
-                    message: 'AI was unable to synthesize the company profile.',
+                    status: status,
+                    message: message,
                     details: aiErr.message,
-                    raw: aiErr.stack // Include stack for internal debugging (invisible to user usually)
+                    raw: aiErr.stack
                 }
             })
         }
