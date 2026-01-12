@@ -70,33 +70,45 @@ export default function BusinessCheck() {
 
                     {result && (
                         <div style={{ animation: 'fadeIn 0.3s ease' }}>
-                            <div style={{ padding: '1.5rem', border: `1px solid ${result.status.includes('Found') ? 'var(--color-success)' : 'var(--color-danger)'}`, borderRadius: '0.5rem', marginBottom: '1.5rem', background: 'rgba(255,255,255,0.03)' }}>
+                            <div style={{
+                                padding: '2rem',
+                                border: `1px solid ${(result.status === 'Verified' || result.status.includes('Found')) ? 'var(--color-success)' : 'var(--color-danger)'}`,
+                                borderRadius: '0.8rem',
+                                marginBottom: '1.5rem',
+                                background: 'rgba(255,255,255,0.03)',
+                                textAlign: 'center'
+                            }}>
                                 <h2 style={{
-                                    fontSize: '1.5rem',
-                                    color: (result.status.includes('Found') || result.status.includes('Business')) ? 'var(--color-success)' :
-                                        result.status.includes('Processing') ? 'var(--color-primary)' : 'var(--color-danger)',
-                                    marginBottom: '0.5rem'
+                                    fontSize: '1.75rem',
+                                    color: (result.status === 'Verified' || result.status.includes('Found')) ? 'var(--color-success)' : 'var(--color-danger)',
+                                    marginBottom: '1rem'
                                 }}>
-                                    {result.status}
+                                    {result.message}
                                 </h2>
-                                <p style={{ marginBottom: '1rem' }}>{result.message}</p>
 
-                                {result.status.includes('Found') && (
-                                    <div style={{ display: 'grid', gap: '0.5rem' }}>
-                                        <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '0.5rem' }}>
-                                            <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Found Entity</span>
-                                            <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>{result.name}</div>
-                                            {result.identifier && result.identifier !== 'Unknown' && (
-                                                <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
-                                                    Registration: {result.identifier}
-                                                </div>
-                                            )}
+                                {(result.status === 'Verified' || result.status.includes('Found')) && (
+                                    <div style={{ display: 'grid', gap: '1rem' }}>
+                                        <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: '0.5rem' }}>
+                                            <div style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.5rem', color: 'white' }}>
+                                                {result.name}
+                                            </div>
+                                            <div style={{ fontSize: '1rem', color: 'var(--color-text-muted)' }}>
+                                                Registration Number: <span style={{ color: 'white', fontWeight: 600 }}>{result.identifier}</span>
+                                            </div>
                                         </div>
-                                        {result.details && <div style={{ fontSize: '0.9rem', opacity: 0.8, marginTop: '0.5rem', whiteSpace: 'pre-line' }}>{result.details}</div>}
-                                        <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
+
+                                        <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                                            Source: {result.source}
+                                        </div>
+
+                                        <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'center' }}>
                                             <ReportButton url={result.name} type="Business" reason="Fraudulent Business" />
                                         </div>
                                     </div>
+                                )}
+
+                                {!result.status.includes('Found') && result.status !== 'Verified' && (
+                                    <p style={{ color: 'var(--color-danger)' }}>{result.message}</p>
                                 )}
                             </div>
                         </div>
