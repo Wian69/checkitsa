@@ -1,0 +1,18 @@
+/*
+  CheckItSA - Professional Security Toolkit
+  -----------------------------------------
+  Mission: To provide South Africans with a free, ethical toolkit to verify businesses and report online scams.
+
+  TEAM
+  Organization: CheckItSA
+  Location: South Africa
+  Website: https://checkitsa.co.za
+
+  THANKS
+  - Google Gemini (AI Engine)
+  - Cloudflare (Infrastructure)
+  - CIPC / BizPortal (Data Sources)
+  - South African Community (Report Contributors)
+
+  SOFTWARE
+  Built with: Next.js, React, Tailwind (minimal), D1.

@@ -100,7 +100,6 @@ export default function Home() {
             desc="Cross-reference CIPC and external data for legitimacy."
             href="/verify/business"
             color="#FBBF24"
-            badge="Coming Soon"
           />
           <Tile
             title="Phone Lookup"

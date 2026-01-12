@@ -93,7 +93,7 @@ export default function ScamCheck() {
                                         {result.verdict} (Risk: {result.riskScore}/100)
                                     </h2>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                        <a href={result.details.url} target="_blank" style={{ fontWeight: 600, textDecoration: 'underline' }}>
+                                        <a href={result.details.url} target="_blank" rel="nofollow noopener noreferrer" style={{ fontWeight: 600, textDecoration: 'underline' }}>
                                             {result.details.domain} {result.details.is_shortened && <span style={{ fontSize: '0.8rem', opacity: 0.7, fontWeight: 400 }}>(Alias)</span>}
                                         </a>
                                         {result.details.original_url && (

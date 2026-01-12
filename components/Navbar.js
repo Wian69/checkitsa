@@ -71,6 +71,7 @@ export default function Navbar() {
                         <Link href="/#tools" style={{ fontSize: '0.9375rem', opacity: 0.8 }}>Services</Link>
                         <Link href="/subscription" style={{ fontSize: '0.9375rem', opacity: 0.8 }}>Pricing</Link>
                         <Link href="/about" style={{ fontSize: '0.9375rem', opacity: 0.8 }}>About</Link>
+                        <Link href="/trust" style={{ fontSize: '0.9375rem', opacity: 0.8 }}>Trust</Link>
                     </div>
 
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '2rem' }}>
@@ -123,6 +124,7 @@ export default function Navbar() {
                 <Link href="/#tools" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600 }}>Services</Link>
                 <Link href="/subscription" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600 }}>Pricing</Link>
                 <Link href="/about" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600 }}>About</Link>
+                <Link href="/trust" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600 }}>Trust</Link>
                 <Link href="/report" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-primary-light)' }}>Report Incident</Link>
 
                 <div style={{ height: '1px', background: 'var(--color-border)', margin: '1rem 0' }}></div>

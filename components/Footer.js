@@ -54,6 +54,7 @@ export default function Footer() {
                             <li><Link href="/privacy" style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }} className="hover:text-white">Privacy Policy (POPIA)</Link></li>
                             <li><Link href="/terms" style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }} className="hover:text-white">Terms of Service</Link></li>
                             <li><Link href="/privacy#cookies" style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }} className="hover:text-white">Cookie Policy</Link></li>
+                            <li><Link href="/trust" style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }} className="hover:text-white">Security Transparency</Link></li>
                         </ul>
                     </div>
                 </div>
