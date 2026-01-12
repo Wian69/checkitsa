@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+// v2.1 Intelligence Engine
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { getRequestContext } from '@cloudflare/next-on-pages'
 
