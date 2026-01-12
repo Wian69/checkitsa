@@ -6,7 +6,7 @@ export const runtime = 'edge'
 export async function POST(req) {
     try {
         const { email, tier, adminEmail, secret } = await req.json()
-        const adminSecret = process.env.ADMIN_SECRET
+        const adminSecret = process.env.ADMIN_SECRET || 'secret'
 
         if (!secret || secret !== adminSecret || adminEmail !== 'wiandurandt69@gmail.com') {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
