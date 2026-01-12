@@ -1,6 +1,7 @@
 "use client"
 import Navbar from '@/components/Navbar'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 export default function AdminDashboard() {
     const [secret, setSecret] = useState('')
