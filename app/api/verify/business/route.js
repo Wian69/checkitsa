@@ -188,25 +188,7 @@ export async function POST(request) {
             }
 
 
-            const text = result.response.text().trim()
 
-            console.log('[Verify] AI Response length:', text.length)
-
-            let aiResponse;
-            try {
-                // Try direct parse
-                aiResponse = JSON.parse(text);
-            } catch (e) {
-                // Fallback: extract JSON from string if there's any text surrounding it
-                const match = text.match(/\{[\s\S]*\}/);
-                if (match) {
-                    try {
-                        aiResponse = JSON.parse(match[0]);
-                    } catch (e2) {
-                        console.error('[Verify] JSON Parse Fallback Error:', e2.message)
-                    }
-                }
-            }
 
             if (aiResponse && aiResponse.name) {
                 return NextResponse.json({
