@@ -42,7 +42,7 @@ export default function BusinessCheck() {
             <div className="container" style={{ paddingTop: '10rem', maxWidth: '800px' }}>
                 <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>Business Verification</h1>
                 <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', marginBottom: '4rem' }}>
-                    Cross-reference CIPC and external data for legitimacy.
+                    Verify businesses via the OpenCorporates Global Registry (South Africa).
                 </p>
 
                 <div className="glass-panel" style={{ padding: '2rem' }}>
