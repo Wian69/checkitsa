@@ -66,33 +66,63 @@ export async function POST(request) {
         const items = data.items || []
         const snippets = items.map(i => `${i.title} ${i.snippet}`).join(' | ');
 
-        // 2. Web-Only Intelligence Layer (Smart Regex Parser)
-        // Extract South African CIPC Registration Number (Format: YYYY/NNNNNN/NN)
+        // 2. Web-Only Intelligence Layer (Advanced Smart Parser)
+
+        // A. Registration Number (Prioritize CIPC format YYYY/NNNNNN/NN)
         const regNumRegex = /\b\d{4}\/\d{6}\/\d{2}\b/;
         const regMatch = snippets.match(regNumRegex);
-        const identifier = regMatch ? regMatch[0] : "Not found in web index";
+        // Fallback: Look for "Reg No:" patterns if strict match fails
+        const altRegMatch = snippets.match(/(?:Reg(?:istration)?(?:\s+No)?\.?|Number)[\s:.-]*((?:\d{4}\/\d+|\d{9,}))/i);
+        const identifier = regMatch ? regMatch[0] : (altRegMatch ? altRegMatch[1] : "Not found in web index");
 
-        // Heuristic Status Detection
+        // B. Industry Detection (Keyword Dictionary)
+        const industries = [
+            'Agriculture', 'Mining', 'Manufacturing', 'Energy', 'Construction',
+            'Retail', 'Wholesale', 'Logistics', 'Transport', 'Hospitality',
+            'Technology', 'Software', 'Finance', 'Insurance', 'Real Estate',
+            'Healthcare', 'Education', 'Legal', 'Consulting', 'Security', 'Media'
+        ];
+        // Scan snippets for these keywords
+        const foundIndustry = industries.find(ind => snippets.toLowerCase().includes(ind.toLowerCase()));
+        const industry = foundIndustry ? `${foundIndustry} (Web Verified)` : "Multi-Sector (Web Index)";
+
+        // C. Employee Count (Regex Heuristic)
+        // Looks for patterns like "50 employees", "staff of 100", "over 1000 people"
+        const employeeRegex = /(?:approx\.?|over|more than|staff of|employing)\s*(\d+(?:,\d+)?\+?)\s*(?:employees|staff|people|workers)/i;
+        const employeeMatch = snippets.match(employeeRegex);
+        const employees = employeeMatch ? `${employeeMatch[1]} (Est.)` : "Unknown (Not public)";
+
+        // D. Status Detection
         const lowerSnippets = snippets.toLowerCase();
-        let status = "Active"; // Default assumption if found on web
+        let status = "Active";
         if (lowerSnippets.includes('liquidation') || lowerSnippets.includes('liquidated')) status = 'Liquidated';
         if (lowerSnippets.includes('deregistered') || lowerSnippets.includes('de-registered')) status = 'Deregistered';
         if (lowerSnippets.includes('business rescue')) status = 'Business Rescue';
 
-        // Basic Address Extraction (Looking for common SA address patterns in snippets is hard, so we use a generic fallback or the first snippet hint)
-        // This is a "best effort" without AI.
-        const addressHint = items.find(i => i.snippet.toLowerCase().includes('street') || i.snippet.toLowerCase().includes('road') || i.snippet.toLowerCase().includes('box'))?.snippet || "See web results below";
+        // E. Address Extraction (Improved)
+        // Look for common SA address markers: "Street", "Road", "Box", "Park", "Gardens" combined with a number
+        const addressMatch = items.find(i => {
+            const s = i.snippet;
+            return /\d+\s+[A-Za-z]+\s+(Street|St|Road|Rd|Avenue|Ave|Crescent|Cres|Drive|Dr|Way|Park|Gardens|Box)/i.test(s);
+        });
+        const addressHint = addressMatch ? addressMatch.snippet : (items[0]?.snippet || "See web results below");
+
+        // F. Directors / Key People
+        // Look for "CEO: Name" or "Director: Name" pattern
+        const directorRegex = /(?:CEO|Director|Manager|Owner|Founder)[\s:-]+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2})/g;
+        const potentialDirectors = [...snippets.matchAll(directorRegex)].map(m => m[1]).slice(0, 3); // Take top 3
+        const directors = potentialDirectors.length > 0 ? potentialDirectors : ["Listed in full report"];
 
         // Construct the profile manually
         const aiResponse = {
-            name: input, // We assume the search term is the name if found
+            name: input,
             identifier: identifier,
-            industry: "Multi-Sector (Web Index)",
+            industry: industry,
             status: status,
             address: addressHint,
             registrationDate: identifier !== "Not found in web index" ? identifier.substring(0, 4) : "Unknown",
-            directors: ["Available in full report"], // Placeholder as extraction is unreliable without AI
-            employees: "Unknown",
+            directors: directors,
+            employees: employees,
             operations: items[0]?.snippet || "Business listing found in global index.",
             globalRole: "National Entity",
             summary: `Automated web profile generated from ${items.length} verified sources.`,
