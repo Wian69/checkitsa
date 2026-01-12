@@ -72,7 +72,7 @@ export default function BusinessCheck() {
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="e.g. 'Sasol Limited' or '2020/123456/07'"
+                            placeholder="Search by Company Name or Reg Number..."
                             required
                             style={{ flex: 1, padding: '1rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white' }}
                         />
