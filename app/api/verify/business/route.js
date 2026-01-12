@@ -1,11 +1,32 @@
 import { NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { getRequestContext } from '@cloudflare/next-on-pages'
 
 export const runtime = 'edge'
 
 export async function POST(request) {
     try {
-        const { input } = await request.json()
+        const { input, email } = await request.json()
+        const db = getRequestContext().env.DB
+
+        // 0. Permission Check (Pro/Elite/Enterprise Only)
+        if (!email) {
+            return NextResponse.json({
+                valid: false,
+                data: { status: 'Unauthorized', message: 'Please sign in to verify businesses.', details: 'Guest users do not have access to CIPC verification.' }
+            }, { status: 401 })
+        }
+
+        const userMeta = await db.prepare("SELECT tier FROM user_meta WHERE email = ?").bind(email).first()
+        const tier = userMeta ? userMeta.tier : 'free'
+
+        if (tier === 'free') {
+            return NextResponse.json({
+                valid: false,
+                data: { status: 'Upgrade Required', message: 'CIPC Business Verification is a Pro feature.', details: 'Please upgrade your plan to access official registry searches.' }
+            }, { status: 402 })
+        }
+
         const cseKey = process.env.GOOGLE_CSE_API_KEY
         const cx = process.env.GOOGLE_CSE_CX || '16e9212fe3fcf4cea'
 

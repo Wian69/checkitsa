@@ -16,9 +16,18 @@ export default function BusinessCheck() {
     const handleCheck = async (e) => {
         e.preventDefault()
 
-        const { canSearch } = trackSearch()
+        const { tier, canSearch } = trackSearch()
+
+        // 1. Subscription Tier Check
+        if (tier === 'free') {
+            alert("Business Verification is only available for Pro, Elite, and Enterprise members. Please upgrade to access this feature.")
+            router.push('/subscription')
+            return
+        }
+
+        // 2. Search Limit Check
         if (!canSearch) {
-            alert("You've reached your limit of 5 free searches. Please upgrade to Pro for unlimited access.")
+            alert("You've reached your limit. Please upgrade for more searches.")
             router.push('/subscription')
             return
         }
@@ -26,9 +35,13 @@ export default function BusinessCheck() {
         setLoading(true)
         setResult(null)
         try {
+            const userStr = localStorage.getItem('checkitsa_user')
+            const user = userStr ? JSON.parse(userStr) : null
+            const email = user ? user.email : null
+
             const res = await fetch('/api/verify/business', {
                 method: 'POST',
-                body: JSON.stringify({ input })
+                body: JSON.stringify({ input, email })
             })
             const data = await res.json()
             setResult(data.data)
