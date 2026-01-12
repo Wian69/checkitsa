@@ -134,15 +134,59 @@ export async function POST(request) {
                 }, { apiVersion: 'v1beta' })
                 result = await modelFlash.generateContent(prompt)
             } catch (flashError) {
-                console.warn('[Verify] Flash model unavailable, switching to Fallback Stratum (Gemini Pro).', flashError.message)
+                console.warn('[Verify] Flash model unavailable, attempting Pro (v1)...', flashError.message)
 
-                // Fallback Stratum: Gemini Pro (Universal Availability)
-                // We do NOT specify apiVersion here to let the SDK use its stable default.
-                const modelPro = genAI.getGenerativeModel({
-                    model: "gemini-pro"
-                })
-                result = await modelPro.generateContent(prompt)
+                try {
+                    // Fallback Stratum 1: Gemini Pro (Standard v1)
+                    // Explicitly use v1 to avoid v1beta SDK defaults
+                    const modelPro = genAI.getGenerativeModel({
+                        model: "gemini-pro"
+                    }, { apiVersion: 'v1' })
+
+                    result = await modelPro.generateContent(prompt)
+                    const text = result.response.text().trim()
+
+                    // QUICK FIX: If Pro works, use it.
+                    // We need to parse here to exit the try/catch cascade successfully
+                    try {
+                        aiResponse = JSON.parse(text);
+                    } catch (e) {
+                        const match = text.match(/\{[\s\S]*\}/);
+                        if (match) aiResponse = JSON.parse(match[0]);
+                    }
+
+                } catch (proError) {
+                    console.error('[Verify] All AI models failed. Engaging Web-Only Protocol.', proError.message)
+                    // Fallback Stratum 2: Web-Only (No AI)
+                    // We manually construct a response from the snippets to ensure the user gets A result.
+                    aiResponse = {
+                        name: input,
+                        identifier: "Web Search Result",
+                        industry: "Unclassified",
+                        status: "Active (Assumed)",
+                        address: "See search results below",
+                        registrationDate: "Unknown",
+                        directors: ["Not synthesized"],
+                        employees: "Unknown",
+                        operations: "See attached web snippets.",
+                        globalRole: "Unknown",
+                        summary: "AI Synthesizer is offline. Displaying raw data from web index.",
+                        source: "Deep Web Index (Raw)"
+                    }
+                }
             }
+
+            // If we successfully got a result from Flash (primary), process it here
+            if (!aiResponse && result) {
+                const text = result.response.text().trim()
+                try {
+                    aiResponse = JSON.parse(text);
+                } catch (e) {
+                    const match = text.match(/\{[\s\S]*\}/);
+                    if (match) aiResponse = JSON.parse(match[0]);
+                }
+            }
+
 
             const text = result.response.text().trim()
 
