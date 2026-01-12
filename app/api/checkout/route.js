@@ -5,7 +5,7 @@ export const runtime = 'edge'
 
 export async function POST(req) {
     try {
-        const { token, email, amount } = await req.json()
+        const { token, email, amount, customLimit } = await req.json()
         const db = getRequestContext().env.DB
 
         if (!token || !email || !amount) {

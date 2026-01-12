@@ -52,15 +52,20 @@ export default function Subscription() {
         let desc = ''
         let limit = 0
 
+        let planName = 'CheckItSA Premium'
+
         if (plan === 'pro') {
             amount = 7900 // R79.00
             desc = 'Pro Subscription (100 Scans)'
+            planName = 'CheckItSA Pro'
         } else if (plan === 'elite') {
             amount = 11900 // R119.00
             desc = 'Elite Subscription (1k Scans)'
+            planName = 'CheckItSA Elite'
         } else if (plan === 'custom') {
             amount = customPrice * 100 // Convert to cents
             desc = `Custom Subscription (${customScans.toLocaleString()} Scans)`
+            planName = 'CheckItSA Enterprise'
             limit = customScans
         }
 
@@ -71,7 +76,7 @@ export default function Subscription() {
         yoco.showPopup({
             amountInCents: amount,
             currency: 'ZAR',
-            name: 'CheckItSA Premium',
+            name: planName,
             description: desc,
             callback: async (result) => {
                 if (result.error) {
