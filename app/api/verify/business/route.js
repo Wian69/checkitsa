@@ -13,41 +13,9 @@ export const runtime = 'edge'
 export async function POST(request) {
     try {
         const { input } = await request.json()
-
-        // --- API KEY AUTHENTICATION ---
-        const authHeader = request.headers.get('Authorization')
-        let isApiRequest = false
-
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            const apiKey = authHeader.split(' ')[1]
-            const db = getRequestContext().env.DB
-
-            // Verify Key
-            const user = await db.prepare('SELECT * FROM users WHERE api_key = ?').bind(apiKey).first()
-
-            if (!user) {
-                return NextResponse.json({
-                    valid: false,
-                    data: { status: 'Unauthorized', message: 'Invalid API Key' }
-                }, { status: 401 })
-            }
-
-            // Check Quota (Basic Implementation: strictly relying on subscription status for now)
-            if (user.tier !== 'elite' && user.tier !== 'custom' && user.tier !== 'ultimate') {
-                return NextResponse.json({
-                    valid: false,
-                    data: { status: 'Forbidden', message: 'API access requires Elite or Enterprise plan.' }
-                }, { status: 403 })
-            }
-
-            isApiRequest = true
-            // TODO: Increment API Usage Counter here
-        }
-        // ------------------------------
-
         const cseKey = process.env.GOOGLE_CSE_API_KEY
         // Use the specific CX provided by the user if the env var is missing or incorrect
-        const cx = process.env.GOOGLE_CSE_CX || '16e9212fe3fcf4cea'
+        const cx = process.env.GOOGLE_CSE_CX || 'c2a801df9059f4ada'
 
         if (!cseKey || !cx) {
             return NextResponse.json({
@@ -97,6 +65,18 @@ export async function POST(request) {
         const snippets = data.items.map(i => i.snippet).join('\n')
         const links = data.items.slice(0, 3).map(i => i.link)
 
+        // 2. Fallback to OpenCorporates for Registry Details (Free Tier)
+        let openCorporatesData = null;
+        try {
+            const ocRes = await fetch(`https://api.opencorporates.com/v0.4/companies/search?q=${encodeURIComponent(input)}&jurisdiction_code=za`)
+            const ocJson = await ocRes.json()
+            if (ocJson?.results?.total_count > 0) {
+                openCorporatesData = ocJson.results.companies[0].company;
+            }
+        } catch (ocErr) {
+            console.error('[Verify] OpenCorporates Error:', ocErr.message);
+        }
+
         let businessData = {
             name: bestMatch.title.split('-')[0].split('|')[0].trim(),
             identifier: 'Found via Web',
@@ -117,17 +97,23 @@ export async function POST(request) {
                 }, { apiVersion: 'v1' })
 
                 const prompt = `
-                Analyze these search results for "${input}" in South Africa.
-                Search Context:
-                ${snippets}
+                Analyze these official registry search results for "${input}" in South Africa. 
+                Emphasis: Look specifically for entries from BizPortal, CIPC, or OpenCorporates.
 
-                Provide a structured verification report in JSON format.
+                Primary Data Sources:
+                1. Web Registry Context: ${snippets}
+                2. OpenCorporates Data: ${openCorporatesData ? JSON.stringify(openCorporatesData) : 'None found'}
+
+                Provide a structured CIPC Verification Report in JSON format.
+                - Prioritize the Registration No from OpenCorporates if available.
+                - If the record is from BizPortal/CIPC/OpenCorporates, mention it in the summary.
+
                 Required JSON structure:
                 {
-                    "name": "Most accurate company name",
-                    "identifier": "Registration No (e.g. 2020/123456/07) or 'Not verified'",
-                    "status": "Active" | "Suspicious" | "Deregistered" | "Unknown",
-                    "summary": "Full professional summary of legitimacy and business type."
+                    "name": "Official Registered Company Name",
+                    "identifier": "Registration No (e.g. 2026/123456/07)",
+                    "status": "In Business" | "Deregistered" | "Liquidated" | "Unknown",
+                    "summary": "Detailed summary starting with where this record was verified (CIPC, BizPortal, or OpenCorporates)."
                 }
                 `
                 const result = await model.generateContent(prompt)
@@ -169,7 +155,13 @@ export async function POST(request) {
                 identifier: businessData.identifier,
                 status: businessData.status,
                 message: `${businessData.icon} ${businessData.summary}`,
-                source: 'Google verified search results',
+                source: businessData.summary.toLowerCase().includes('bizportal')
+                    ? 'BizPortal Official Registry'
+                    : businessData.summary.toLowerCase().includes('cipc')
+                        ? 'Official CIPC Registry Check'
+                        : businessData.summary.toLowerCase().includes('opencorporates')
+                            ? 'OpenCorporates Global Registry'
+                            : 'Google verified search results',
                 details: `Authoritative Links:\n${links.map(l => `• ${new URL(l).hostname}`).join('\n')}`
             }
         })

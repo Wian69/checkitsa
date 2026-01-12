@@ -1,11 +1,10 @@
 "use client"
 import Navbar from '@/components/Navbar'
 
-
+import ReportButton from '@/components/ReportButton'
 import { useState } from 'react'
-import { trackSearch, addToHistory, incrementSearch } from '@/utils/searchLimit'
+import { trackSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
-import LoadingOverlay from '@/components/LoadingOverlay'
 
 export default function BusinessCheck() {
     const [input, setInput] = useState('')
@@ -32,10 +31,6 @@ export default function BusinessCheck() {
             })
             const data = await res.json()
             setResult(data.data)
-
-            // Log to history and usage
-            await addToHistory('Business Verify', input, data.data.status)
-            await incrementSearch()
         } catch (e) { console.error(e) }
         finally { setLoading(false) }
     }
@@ -43,8 +38,6 @@ export default function BusinessCheck() {
     return (
         <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
             <Navbar />
-
-            {loading && <LoadingOverlay message="Cross-referencing CIPC Data..." />}
 
             <div className="container" style={{ paddingTop: '10rem', maxWidth: '800px' }}>
                 <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>Business Verification</h1>
@@ -88,9 +81,7 @@ export default function BusinessCheck() {
                                         </div>
                                         {result.details && <div style={{ fontSize: '0.9rem', opacity: 0.8, marginTop: '0.5rem', whiteSpace: 'pre-line' }}>{result.details}</div>}
                                         <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
-                                            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', textAlign: 'center' }}>
-                                                To report this business, please use the <a href="/report" style={{ textDecoration: 'underline', fontWeight: 'bold' }}>Report Incident</a> feature.
-                                            </p>
+                                            <ReportButton url={result.name} type="Business" reason="Fraudulent Business" />
                                         </div>
                                     </div>
                                 )}
@@ -99,31 +90,6 @@ export default function BusinessCheck() {
                     )}
                 </div>
             </div>
-
-            {/* Blocking Overlay */}
-            <div style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                background: 'rgba(0, 0, 0, 0.85)',
-                backdropFilter: 'blur(5px)',
-                zIndex: 9999,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '2rem'
-            }}>
-                <div className="glass-panel" style={{ padding: '3rem', maxWidth: '500px', textAlign: 'center', border: '1px solid var(--color-primary)' }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>🚧</div>
-                    <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: 'white' }}>Coming Soon</h2>
-                    <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem', marginBottom: '2rem' }}>
-                        This feature is still in development and will be available soon.
-                    </p>
-                    <a href="/" className="btn btn-primary">Return Home</a>
-                </div>
-            </div>
-        </main >
+        </main>
     )
 }
