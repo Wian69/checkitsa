@@ -18,9 +18,7 @@ export default function Home() {
 
   // Featured Intelligence Articles
   const rssItems = [
-    { title: 'The Ultimate Guide to Preventing Scams (2026 Edition)', link: '/intel/scam-prevention-guide' },
-    { title: 'New Banking Scams: Protecting Your EFTs and OTPs in 2026', link: '/intel/scam-prevention-guide#banking' },
-    { title: 'Facebook Marketplace Safety: A 2026 Checklist', link: '/intel/scam-prevention-guide#facebook' }
+    { title: 'The Ultimate Guide to Preventing Scams (2026 Edition)', link: '/intel/scam-prevention-guide' }
   ]
 
   return (
