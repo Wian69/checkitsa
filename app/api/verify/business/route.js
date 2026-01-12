@@ -13,41 +13,64 @@ export const runtime = 'edge'
 export async function POST(request) {
     try {
         const { input } = await request.json()
-        // 1. Fetch from OpenCorporates Global Registry (ZA Jurisdiction)
-        let openCorporatesData = null;
-        try {
-            const ocRes = await fetch(`https://api.opencorporates.com/v0.4/companies/search?q=${encodeURIComponent(input)}&jurisdiction_code=za`)
-            const ocJson = await ocRes.json()
-            if (ocJson?.results?.total_count > 0) {
-                openCorporatesData = ocJson.results.companies[0].company;
-            }
-        } catch (ocErr) {
-            console.error('[Verify] OpenCorporates Error:', ocErr.message);
+        const cseKey = process.env.GOOGLE_CSE_API_KEY
+        // Use the specific CX provided by the user if the env var is missing or incorrect
+        const cx = process.env.GOOGLE_CSE_CX || '16e9212fe3fcf4cea'
+
+        if (!cseKey || !cx) {
+            return NextResponse.json({
+                valid: false,
+                data: {
+                    status: 'Config Error',
+                    message: 'Search services are not configured.',
+                    details: 'GOOGLE_CSE_API_KEY or CX is missing in Cloudflare dashboard.'
+                }
+            })
         }
 
-        if (!openCorporatesData) {
+        // 1. Highly Targeted Google Search (Official Registries)
+        const query = `site:bizportal.gov.za OR site:cipc.co.za OR site:b2bhint.com OR site:searchworks.co.za "${input}"`
+        const res = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(query)}`)
+        const data = await res.json()
+
+        if (data.error) {
+            console.error('[Verify] Google Search API Error:', data.error);
+            return NextResponse.json({
+                valid: false,
+                data: {
+                    status: 'Search Error',
+                    message: 'Google Registry Search failed.',
+                    details: data.error.message || 'Unknown error from Google.'
+                }
+            });
+        }
+
+        if (!data.items || data.items.length === 0) {
             return NextResponse.json({
                 valid: false,
                 data: {
                     name: input,
                     identifier: 'Not Found',
                     status: 'Unknown',
-                    message: `❓ No record for "${input}" found in the OpenCorporates South African Registry.`,
-                    source: 'OpenCorporates Global Registry (za)',
+                    message: `❓ No official registry record found for "${input}" on CIPC or BizPortal index.`,
+                    source: 'Official Registry Search',
                     details: 'Try searching for the official registered name or exact registration number.'
                 }
             })
         }
 
+        const snippets = data.items.map(i => i.snippet).join('\n')
+        const links = data.items.slice(0, 3).map(i => i.link)
+
         let businessData = {
-            name: openCorporatesData.name,
-            identifier: openCorporatesData.company_number,
-            status: openCorporatesData.current_status || 'Active',
-            summary: `Verified via OpenCorporates South African Registry.`,
-            icon: '✅'
+            name: input,
+            identifier: 'Analyzing...',
+            status: 'Processing',
+            summary: 'Verifying data against CIPC/BizPortal records...',
+            icon: '🔍'
         }
 
-        // 2. Intelligence Layer: Use Gemini to refine data from OpenCorporates
+        // 2. Intelligence Layer: Use Gemini to extract registration data from indexed results
         const geminiApiKey = process.env.GEMINI_API_KEY
         if (geminiApiKey && geminiApiKey !== 'undefined') {
             try {
@@ -59,16 +82,23 @@ export async function POST(request) {
                 }, { apiVersion: 'v1' })
 
                 const prompt = `
-                Analyze this OpenCorporates registry data for a company in South Africa:
-                ${JSON.stringify(openCorporatesData)}
+                Analyze these search results from official South African business registries for: "${input}"
+                
+                Search Context:
+                ${snippets}
 
-                Provide a professional structured verification report in JSON format.
+                Tasks:
+                1. Identify the most accurate Registered Company Name.
+                2. Extract the Registration Number (Format: YYYY/NNNNNN/NN).
+                3. Determine the Status (e.g. In Business, Deregistered, Liquidated).
+                4. Write a concise summary confirming if this was found in the official CIPC/BizPortal records.
+
                 Required JSON structure:
                 {
                     "name": "Official Registered Company Name",
                     "identifier": "Registration No",
-                    "status": "In Business" | "Deregistered" | "Liquidated" | "Unknown",
-                    "summary": "Full professional summary of legitimacy and data found in the registry."
+                    "status": "In Business" | "Deregistered" | "Suspicious" | "Unknown",
+                    "summary": "Full professional summary of legitimacy based on the registry findings."
                 }
                 `
                 const result = await model.generateContent(prompt)
@@ -90,12 +120,13 @@ export async function POST(request) {
                 }
 
                 const statusLower = businessData.status.toLowerCase();
-                if (statusLower.includes('suspicious') || statusLower.includes('caution')) businessData.icon = '⚠️'
-                else if (statusLower.includes('deregistered') || statusLower.includes('liquidated')) businessData.icon = '❌'
-                else if (statusLower.includes('active') || statusLower.includes('business')) businessData.icon = '✅'
+                if (statusLower.includes('deregistered') || statusLower.includes('liquidated') || statusLower.includes('removed')) businessData.icon = '❌'
+                else if (statusLower.includes('suspicious') || statusLower.includes('caution')) businessData.icon = '⚠️'
+                else if (statusLower.includes('business') || statusLower.includes('active')) businessData.icon = '✅'
+                else businessData.icon = '❓'
 
             } catch (aiErr) {
-                console.error('[Verify] Gemini Summarization failed:', aiErr.message)
+                console.error('[Verify] Gemini Extraction failed:', aiErr.message)
             }
         }
 
@@ -106,8 +137,8 @@ export async function POST(request) {
                 identifier: businessData.identifier,
                 status: businessData.status,
                 message: `${businessData.icon} ${businessData.summary}`,
-                source: 'OpenCorporates Global Registry (za)',
-                details: `Authoritative Link: https://opencorporates.com/companies/za/${businessData.identifier}`
+                source: 'Official South African Registry Search',
+                details: `Source Context:\n${links.map(l => `• ${new URL(l).hostname}`).join('\n')}`
             }
         })
 
