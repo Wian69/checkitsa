@@ -6,9 +6,25 @@ import Link from 'next/link'
 
 export default function ReviewsPage() {
     const [reviews, setReviews] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+
+    const fetchReviews = async () => {
+        try {
+            const res = await fetch('/api/reviews')
+            const data = await res.json()
+            setReviews(data.reviews || [])
+            setError(null)
+        } catch (e) {
+            console.error('Fetch Reviews Error:', e)
+            setError('Failed to load public reviews.')
+        } finally {
+            setLoading(false)
+        }
+    }
 
     useEffect(() => {
-        fetch('/api/reviews').then(res => res.json()).then(data => setReviews(data.reviews || []))
+        fetchReviews()
     }, [])
 
     return (
@@ -25,7 +41,20 @@ export default function ReviewsPage() {
                     </p>
                 </div>
 
-                <div className="grid-responsive">
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '4rem' }}>
+                        <div className="pulse" style={{ color: 'var(--color-text-muted)' }}>Loading public reviews...</div>
+                    </div>
+                ) : error ? (
+                    <div style={{ textAlign: 'center', padding: '4rem', color: '#ef4444' }}>
+                        {error}
+                    </div>
+                ) : reviews.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '4rem', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '1rem' }}>
+                        <p style={{ color: 'var(--color-text-muted)' }}>No reviews yet. Be the first to share an experience!</p>
+                    </div>
+                ) : (
+                    <div className="grid-responsive">
                     {reviews.map((r, i) => (
                         <div key={i} className="glass-panel" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

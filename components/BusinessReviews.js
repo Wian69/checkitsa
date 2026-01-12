@@ -5,20 +5,47 @@ import Link from 'next/link'
 
 export default function BusinessReviews() {
     const [reviews, setReviews] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
     const [showModal, setShowModal] = useState(false)
+    const [submitting, setSubmitting] = useState(false)
     const [form, setForm] = useState({ businessName: '', businessEmail: '', rating: 5, title: '', content: '', reviewerName: '' })
 
+    const fetchReviews = async () => {
+        try {
+            const res = await fetch('/api/reviews')
+            const data = await res.json()
+            setReviews(data.reviews || [])
+            setError(null)
+        } catch (e) {
+            console.error('Fetch Reviews Error:', e)
+            setError('Failed to load reviews.')
+        } finally {
+            setLoading(false)
+        }
+    }
+
     useEffect(() => {
-        fetch('/api/reviews').then(res => res.json()).then(data => setReviews(data.reviews || []))
+        fetchReviews()
     }, [])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        await fetch('/api/reviews', { method: 'POST', body: JSON.stringify(form) })
-        setShowModal(false)
-        setForm({ businessName: '', businessEmail: '', rating: 5, title: '', content: '', reviewerName: '' })
-        // Refresh
-        fetch('/api/reviews').then(res => res.json()).then(data => setReviews(data.reviews || []))
+        setSubmitting(true)
+        try {
+            const res = await fetch('/api/reviews', { method: 'POST', body: JSON.stringify(form) })
+            if (!res.ok) {
+                const errData = await res.json()
+                throw new Error(errData.message || 'Failed to submit review')
+            }
+            setShowModal(false)
+            setForm({ businessName: '', businessEmail: '', rating: 5, title: '', content: '', reviewerName: '' })
+            await fetchReviews()
+        } catch (e) {
+            alert('Error: ' + e.message)
+        } finally {
+            setSubmitting(false)
+        }
     }
 
     return (
@@ -37,14 +64,22 @@ export default function BusinessReviews() {
                 </button>
             </div>
 
-            {reviews.length === 0 ? (
+            {loading ? (
+                <div style={{ textAlign: 'center', padding: '4rem' }}>
+                    <div className="pulse" style={{ color: 'var(--color-text-muted)' }}>Loading verified reviews...</div>
+                </div>
+            ) : error ? (
+                <div style={{ textAlign: 'center', padding: '4rem', color: '#ef4444' }}>
+                    {error}
+                </div>
+            ) : reviews.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '4rem', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '1rem' }}>
                     <p style={{ color: 'var(--color-text-muted)' }}>No reviews yet. Be the first!</p>
                 </div>
             ) : (
                 <div className="grid-responsive">
                     {reviews.map((r, i) => (
-                        <div key={i} className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div key={i} className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', animation: 'fadeIn 0.5s' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>{r.business_name}</div>
                                 <div style={{ color: '#fbbf24', letterSpacing: '0.1em' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</div>
@@ -144,7 +179,9 @@ export default function BusinessReviews() {
                                 onChange={e => setForm({ ...form, reviewerName: e.target.value })}
                             />
                             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Submit Review</button>
+                                <button type="submit" disabled={submitting} className="btn btn-primary" style={{ flex: 1 }}>
+                                    {submitting ? 'Submitting...' : 'Submit Review'}
+                                </button>
                                 <button type="button" onClick={() => setShowModal(false)} className="btn btn-outline" style={{ flex: 1 }}>Cancel</button>
                             </div>
                         </form>

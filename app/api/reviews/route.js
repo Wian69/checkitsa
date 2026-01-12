@@ -7,7 +7,7 @@ export const runtime = 'edge'
 export async function GET() {
     try {
         const db = getRequestContext().env.DB
-        const { results } = await db.prepare("SELECT * FROM business_reviews WHERE status = 'verified' ORDER BY created_at DESC LIMIT 10").all()
+        const { results } = await db.prepare("SELECT * FROM business_reviews ORDER BY created_at DESC LIMIT 10").all()
         return NextResponse.json({ reviews: results || [] })
     } catch (e) {
         return NextResponse.json({ reviews: [] }, { status: 500 })
