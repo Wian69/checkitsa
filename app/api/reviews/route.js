@@ -85,32 +85,40 @@ export async function POST(req) {
 
             const emailSubject = `⭐ New Business Review: ${businessName}`
             const emailHtml = `
-                <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
-                    <img src="${baseUrl}/email-banner.png" alt="CheckItSA" style="width: 100%; display: block;" />
-                    <div style="padding: 30px;">
-                        <h2 style="color: #333;">You've received a new review!</h2>
-                        <p style="color: #666; font-size: 16px;">Someone has just left feedback for <strong>${businessName}</strong> on CheckItSA.</p>
+                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; color: #1e293b;">
+                    <div style="background-color: #6366f1; padding: 20px; text-align: center;">
+                        <h1 style="color: white; margin: 0; font-size: 24px;">CheckItSA Business Alert</h1>
+                    </div>
+                    <div style="padding: 30px; line-height: 1.6;">
+                        <h2 style="color: #0f172a; margin-top: 0;">You've received a new review!</h2>
+                        <p style="font-size: 16px;">Someone has just left feedback for <strong>${businessName}</strong> on CheckItSA.</p>
                         
-                        <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #6366f1;">
-                            <div style={{ color: '#fbbf24', font-size: '20px', marginBottom: '10px' }}>${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</div>
-                            <strong style="display: block; font-size: 18px; margin-bottom: 5px;">${title}</strong>
-                            <p style="color: #444; font-style: italic; margin: 0;">"${content}"</p>
+                        <div style="background: #f8fafc; padding: 25px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #6366f1;">
+                            <div style="color: #fbbf24; font-size: 20px; margin-bottom: 12px;">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</div>
+                            <strong style="display: block; font-size: 18px; margin-bottom: 8px; color: #0f172a;">${title}</strong>
+                            <p style="color: #475569; font-style: italic; margin: 0;">"${content}"</p>
                         </div>
 
-                        <p style="color: #666;">Sharing transparent feedback helps build a safer community. Would you like to view this review and leave a response?</p>
+                        <p>Transparent feedback helps build a safer community in South Africa. You can view this review and respond to the customer using the button below:</p>
                         
-                        <a href="${baseUrl}/reviews" style="display: inline-block; background: #6366f1; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 10px;">
-                            Respond to Review →
-                        </a>
+                        <div style="text-align: center; margin-top: 30px;">
+                            <a href="${baseUrl}/reviews" style="display: inline-block; background: #6366f1; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                                Respond to Review →
+                            </a>
+                        </div>
 
-                        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; color: #888; font-size: 14px; line-height: 1.6;">
-                            <strong>CheckItSA</strong><br/>
-                            🌐 Website: <a href="https://checkitsa.co.za" style="color: #6366f1; text-decoration: none;">checkitsa.co.za</a><br/>
-                            🛡️ Security Alert: Verify before you trust.
+                        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 13px; text-align: center;">
+                            <p style="margin-bottom: 4px;"><strong>CheckItSA</strong> - Verified South African Business Intelligence</p>
+                            <p style="margin-top: 0;">This is a transactional notification sent to ${businessEmail}.</p>
+                            <div style="margin-top: 15px;">
+                                <a href="https://checkitsa.co.za" style="color: #6366f1; text-decoration: none; margin: 0 10px;">Website</a>
+                                <a href="mailto:info@checkitsa.co.za" style="color: #6366f1; text-decoration: none; margin: 0 10px;">Support</a>
+                            </div>
                         </div>
                     </div>
                 </div>
             `
+            const emailText = `New Business Review: ${businessName}\n\nYou've received a ${rating}-star review on CheckItSA.\n\nTitle: ${title}\n"${content}"\n\nRespond to this review here: ${baseUrl}/reviews\n\nCheckItSA - Verified South African Business Intelligence`
 
             let sentEmail = false
 
@@ -127,8 +135,10 @@ export async function POST(req) {
                         body: JSON.stringify({
                             sender: { name: 'CheckItSA Reviews', email: 'info@checkitsa.co.za' },
                             to: [{ email: businessEmail }],
+                            replyTo: { email: 'info@checkitsa.co.za' },
                             subject: emailSubject,
-                            htmlContent: emailHtml
+                            htmlContent: emailHtml,
+                            textContent: emailText
                         })
                     })
                     sentEmail = true
@@ -145,10 +155,12 @@ export async function POST(req) {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            from: 'CheckItSA Reviews <onboarding@resend.dev>',
+                            from: 'CheckItSA Reviews <info@checkitsa.co.za>',
                             to: businessEmail,
+                            reply_to: 'info@checkitsa.co.za',
                             subject: emailSubject,
-                            html: emailHtml
+                            html: emailHtml,
+                            text: emailText
                         })
                     })
                 } catch (e) { console.error('Resend Error:', e) }
