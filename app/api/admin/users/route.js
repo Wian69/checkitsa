@@ -6,9 +6,11 @@ export const runtime = 'edge'
 export async function POST(req) {
     try {
         const { email, adminEmail, secret } = await req.json()
-        const adminSecret = process.env.ADMIN_SECRET || 'secret'
+        const env = getRequestContext()?.env || {}
+        const adminSecret = env.ADMIN_SECRET || process.env.ADMIN_SECRET || 'secret'
 
         if (!secret || secret !== adminSecret || adminEmail !== 'wiandurandt69@gmail.com') {
+            console.error(`[Admin Auth Fail] Email: ${adminEmail}, Secret Match: ${secret === adminSecret}`)
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
         }
 
@@ -16,7 +18,7 @@ export async function POST(req) {
             return NextResponse.json({ message: 'Email required' }, { status: 400 })
         }
 
-        const db = getRequestContext().env.DB
+        const db = env.DB
 
         // Fetch user basic info and meta (Usage/Tier)
         const user = await db.prepare(`
@@ -33,6 +35,7 @@ export async function POST(req) {
         return NextResponse.json({ success: true, user })
 
     } catch (e) {
+        console.error('[Admin API Error]', e)
         return NextResponse.json({ message: e.message }, { status: 500 })
     }
 }

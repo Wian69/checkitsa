@@ -6,9 +6,11 @@ export const runtime = 'edge'
 export async function POST(req) {
     try {
         const { email, tier, adminEmail, secret } = await req.json()
-        const adminSecret = process.env.ADMIN_SECRET || 'secret'
+        const env = getRequestContext()?.env || {}
+        const adminSecret = env.ADMIN_SECRET || process.env.ADMIN_SECRET || 'secret'
 
         if (!secret || secret !== adminSecret || adminEmail !== 'wiandurandt69@gmail.com') {
+            console.error(`[Admin Auth Fail] Email: ${adminEmail}, Secret Match: ${secret === adminSecret}`)
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
         }
 
@@ -21,7 +23,7 @@ export async function POST(req) {
             return NextResponse.json({ message: 'Invalid tier. Must be free, pro, elite, or custom' }, { status: 400 })
         }
 
-        const db = getRequestContext().env.DB
+        const db = env.DB
 
         // Update main users table
         const userUpdate = await db.prepare("UPDATE users SET tier = ? WHERE email = ?").bind(tier, email).run()
@@ -39,6 +41,7 @@ export async function POST(req) {
         })
 
     } catch (e) {
+        console.error('[Admin API Error]', e)
         return NextResponse.json({ message: e.message }, { status: 500 })
     }
 }
