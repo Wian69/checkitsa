@@ -5,6 +5,7 @@ import Link from 'next/link'
 export default function ScamPreventionGuide() {
     const sections = [
         {
+            id: "banking",
             title: "1. Banking & EFT Scams",
             icon: "🏦",
             content: `The most common banking scam in South Africa involves social engineering. Scammers often pose as bank officials claiming there is a "fraudulent transaction" on your account.
@@ -15,6 +16,7 @@ export default function ScamPreventionGuide() {
             • Urgency: Telling you that you must act "right now" to save your money.`
         },
         {
+            id: "facebook",
             title: "2. Facebook & Social Media Fraud",
             icon: "👥",
             content: `Facebook Marketplace is a hotspot for localized fraud. Sellers often request "deposits" for items that don't exist, or buyers send fake "Proof of Payment" documents.
@@ -25,6 +27,7 @@ export default function ScamPreventionGuide() {
             • Profiles that were created very recently (check the "Joined Facebook" date).`
         },
         {
+            id: "email",
             title: "3. Email Phishing & BEC",
             icon: "📧",
             content: `Business Email Compromise (BEC) targets both companies and individuals. Scammers spoof the email addresses of lawyers, contractors, or even SARS.
@@ -35,6 +38,7 @@ export default function ScamPreventionGuide() {
             • Generic greetings like "Dear Valued Customer" instead of your name.`
         },
         {
+            id: "website",
             title: "4. Website & Online Store Clones",
             icon: "🌐",
             content: `Scammers often clone popular South African retail websites. They look identical but are designed to steal your credit card information.
@@ -61,12 +65,12 @@ export default function ScamPreventionGuide() {
 
                 <p style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)', marginBottom: '4rem', lineHeight: 1.6 }}>
                     As digital fraud becomes more sophisticated, staying informed is your first line of defense.
-                    This guide covers the most prevalent threats moving through South Africa today and how you can protect yourself.
+                    This guide covers the most prevalent threats moving through South Africa today and how you can protect yourself in 2026.
                 </p>
 
                 <div style={{ display: 'grid', gap: '3rem' }}>
                     {sections.map((section, index) => (
-                        <div key={index} className="glass-panel" style={{ padding: '2.5rem' }}>
+                        <div key={index} id={section.id} className="glass-panel" style={{ padding: '2.5rem', scrollMarginTop: '10rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                                 <span style={{ fontSize: '2.5rem' }}>{section.icon}</span>
                                 <h2 style={{ fontSize: '1.8rem' }}>{section.title}</h2>
