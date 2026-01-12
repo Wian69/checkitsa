@@ -9,6 +9,17 @@ export default function AdminDashboard() {
     const [foundUser, setFoundUser] = useState(null)
     const [loading, setLoading] = useState(false)
     const [statusMsg, setStatusMsg] = useState({ type: '', text: '' })
+    const [isAuthorized, setIsAuthorized] = useState(false)
+
+    useEffect(() => {
+        const u = localStorage.getItem('checkitsa_user')
+        if (u) {
+            const userData = JSON.parse(u)
+            if (userData.email === 'wiandurandt69@gmail.com') {
+                setIsAuthorized(true)
+            }
+        }
+    }, [])
 
     const handleLogin = (e) => {
         e.preventDefault()
@@ -22,7 +33,7 @@ export default function AdminDashboard() {
         try {
             const res = await fetch('/api/admin/users', {
                 method: 'POST',
-                body: JSON.stringify({ email: emailSearch, secret })
+                body: JSON.stringify({ email: emailSearch, adminEmail: 'wiandurandt69@gmail.com', secret })
             })
             const data = await res.json()
             if (data.success) {
@@ -44,7 +55,7 @@ export default function AdminDashboard() {
         try {
             const res = await fetch('/api/admin/set-tier', {
                 method: 'POST',
-                body: JSON.stringify({ email: foundUser.email, tier: newTier, secret })
+                body: JSON.stringify({ email: foundUser.email, tier: newTier, adminEmail: 'wiandurandt69@gmail.com', secret })
             })
             const data = await res.json()
             if (data.success) {
@@ -58,6 +69,21 @@ export default function AdminDashboard() {
         } finally {
             setLoading(false)
         }
+    }
+
+    if (!isAuthorized) {
+        return (
+            <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg)' }}>
+                <div className="glass-panel" style={{ padding: '3rem', maxWidth: '400px', width: '100%', textAlign: 'center' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>🚫</div>
+                    <h1 style={{ marginBottom: '1rem' }}>Access Denied</h1>
+                    <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>
+                        This area is restricted to site owners only.
+                    </p>
+                    <Link href="/" className="btn btn-primary" style={{ width: '100%' }}>Return Home</Link>
+                </div>
+            </main>
+        )
     }
 
     if (!isLoggedIn) {
