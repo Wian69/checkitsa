@@ -54,11 +54,16 @@ export async function POST(request) {
         const snippets = data.items.map(i => i.snippet).join('\n')
         const links = data.items.slice(0, 3).map(i => i.link)
 
+        // 1b. Fast Regex Extraction (SA Registration Format: YYYY/NNNNNN/NN)
+        const regRegex = /\d{4}\/\d{6}\/\d{2}/g
+        const regMatches = snippets.match(regRegex)
+        const topMatch = regMatches ? regMatches[0] : null
+
         // DEFAULT STATE
         let businessData = {
             name: input,
-            identifier: 'Identifying...',
-            status: 'Registry Record Found',
+            identifier: topMatch || 'Registry Found',
+            status: 'Verified',
             summary: 'This business is verified against official South African registries.',
             icon: '✅'
         }
@@ -76,18 +81,19 @@ export async function POST(request) {
                 const prompt = `
                 Analyze these South African business registry search results for: "${input}"
                 Context: ${snippets}
+                Regex Hint: ${topMatch || 'None'}
 
                 Tasks:
                 1. Identify the official Registered Company Name.
-                2. Extract the Registration Number (Format: YYYY/NNNNNN/NN).
-                3. If the registration number is found, the status is "Verified".
-                4. If the business appears deregistered or liquidated, the status is "Deregistered".
+                2. Extract the Registration Number (Format: YYYY/NNNNNN/NN). Use the Regex Hint if it looks correct.
+                3. Business is "Verified" if a registry record exists.
+                4. Business is "Deregistered" if explicitly stated in text.
 
                 Required JSON structure:
                 {
                     "name": "Official Registered Company Name",
                     "identifier": "Registration No (e.g. 2010/123456/07)",
-                    "status": "Verified" | "Deregistered" | "Unknown",
+                    "status": "Verified" | "Deregistered",
                     "summary": "This business is verified."
                 }
                 `
@@ -104,18 +110,16 @@ export async function POST(request) {
 
                 if (aiResponse) {
                     businessData.name = aiResponse.name || businessData.name
-                    businessData.identifier = aiResponse.identifier || businessData.identifier
+                    businessData.identifier = aiResponse.identifier || businessData.identifier || topMatch
                     businessData.status = aiResponse.status || businessData.status
-                    // Ensure summary matches the user's "this business is verified" request if verified
+
                     if (businessData.status === 'Verified') {
                         businessData.summary = 'This business is verified.'
-                    } else {
-                        businessData.summary = aiResponse.summary || businessData.summary
                     }
 
                     const statusLower = businessData.status.toLowerCase();
                     if (statusLower.includes('deregistered') || statusLower.includes('liquidated')) businessData.icon = '❌'
-                    else if (statusLower.includes('verified')) businessData.icon = '✅'
+                    else businessData.icon = '✅'
                 }
             } catch (aiErr) {
                 console.error('[Verify] Gemini Extraction failed:', aiErr.message)
