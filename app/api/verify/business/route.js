@@ -41,11 +41,13 @@ export async function POST(request) {
             })
         }
 
-        // 1. Highly Targeted Google Search (Official Registries)
-        // We add "registration number" or "CIPC" to the query to force relevant snippets
+        // 1. Broad Web Search (Sasol-style intuitive results)
+        // We remove the strict "site:" filters to allow Google to find the best snippets from anywhere
         const isRegSearch = /\d/.test(input)
         const searchQuery = isRegSearch ? `"${input}" CIPC registration` : `"${input}" South Africa registration number CIPC`
-        const query = `site:bizportal.gov.za OR site:cipc.co.za OR site:b2bhint.com OR site:searchworks.co.za OR site:sacompany.co.za ${searchQuery}`
+
+        // We prioritize official sources by including them without "site:" restrictions, so Google ranks them high
+        const query = `${searchQuery} CIPC BizPortal B2BHint SACompany`
 
         const res = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(query)}`)
         const data = await res.json()
@@ -69,20 +71,19 @@ export async function POST(request) {
                     name: input,
                     identifier: 'Not Found',
                     status: 'Not Found',
-                    message: `❓ No official registry record found for "${input}" on CIPC or BizPortal index.`,
-                    source: 'Official Registry Search',
+                    message: `❓ No official registry record found for "${input}" on the web index.`,
+                    source: 'Global Web Search',
                     details: 'Try searching for the official registered name or exact registration number.'
                 }
             })
         }
 
-        const snippets = data.items.map(i => `${i.title}: ${i.snippet}`).join('\n---\n')
+        const snippets = data.items.map(i => `[${i.displayLink}] ${i.title}: ${i.snippet}`).join('\n---\n')
         const links = data.items.slice(0, 3).map(i => i.link)
 
-        // 1b. Robust Regex Extraction (SA Registration Format: YYYY/NNNNNN/NN or YYYY-NNNNNN-NN)
+        // 1b. Robust Regex Extraction 
         const regRegex = /(\d{4}\/\d{6}\/\d{2})|(\d{4}-\d{6}-\d{2})/g
         const regMatches = snippets.match(regRegex)
-        // Prioritize the slashed version
         const topMatch = regMatches ? regMatches.find(m => m.includes('/')) || regMatches[0] : null
 
         // DEFAULT STATE
@@ -106,20 +107,21 @@ export async function POST(request) {
                 }, { apiVersion: 'v1' })
 
                 const prompt = `
-                Analyze these South African business registry search results for: "${input}"
-                Context from Google:
+                Analyze these CIPC business registry search results for: "${input}"
+                Web Results:
                 ${snippets}
                 
                 Regex Candidate: ${topMatch || 'None'}
 
+                GOAL: Find the ACTUAL Registration Number and Registered Name.
+                
                 CRITICAL TASKS:
-                1. Identify the EXACT official Registered Company Name. Avoid generic placeholders.
+                1. Identify the EXACT official Registered Company Name.
                 2. Extract the Official Registration Number (Format MUST BE: YYYY/NNNNNN/NN). 
-                   - Look for terms like "Registration No", "Reg No", "Enterprise Number".
-                   - If multiple numbers exist, pick the one from an official-looking source (CIPC, BizPortal, B2BHint).
-                   - Use the Regex Candidate if it fits the YYYY/NNNNNN/NN format exactly.
-                3. Identify the Primary Industry (e.g. Retail, Mining, Finance, Tech).
-                4. Determine Status: "Verified" (Active), "Deregistered", or "Liquidated".
+                   - Prioritize results from CIPC, BizPortal, B2BHint, SACompany, or Gov.za.
+                   - If a number like "1950/004733/06" (Sasol) is found, use it.
+                3. Identify the Primary Industry.
+                4. Determine Status (Active/Verified, Deregistered, Liquidated).
 
                 Required JSON structure:
                 {
@@ -127,7 +129,7 @@ export async function POST(request) {
                     "identifier": "YYYY/NNNNNN/NN",
                     "industry": "Industry Type",
                     "status": "Verified" | "Deregistered" | "Liquidated",
-                    "summary": "Full summary including when it was registered if visible."
+                    "summary": "Concise summary of registration and status."
                 }
                 `
                 const result = await model.generateContent(prompt)
@@ -143,16 +145,15 @@ export async function POST(request) {
 
                 if (aiResponse) {
                     businessData.name = aiResponse.name || businessData.name
-                    // Ensure the identifier is cleaned up
                     let finalId = aiResponse.identifier || businessData.identifier || topMatch
-                    if (finalId) finalId = finalId.replace(/-/g, '/') // Standardize to slashes
+                    if (finalId) finalId = finalId.replace(/-/g, '/')
 
                     businessData.identifier = finalId
                     businessData.industry = aiResponse.industry || businessData.industry
                     businessData.status = aiResponse.status || businessData.status
                     businessData.summary = aiResponse.summary || businessData.summary
 
-                    const statusLower = businessData.status.toLowerCase();
+                    const statusLower = (businessData.status || '').toLowerCase();
                     if (statusLower.includes('deregistered') || statusLower.includes('liquidated') || statusLower.includes('dissolved')) {
                         businessData.icon = '❌'
                         businessData.status = 'Deregistered'
@@ -163,7 +164,6 @@ export async function POST(request) {
                 }
             } catch (aiErr) {
                 console.error('[Verify] Gemini Extraction failed:', aiErr.message)
-                businessData.status = 'Verified'
             }
         }
 
@@ -175,8 +175,8 @@ export async function POST(request) {
                 industry: businessData.industry,
                 status: businessData.status,
                 message: `${businessData.icon} ${businessData.summary}`,
-                source: 'Official CIPC/BizPortal Index',
-                details: `Registry Sources:\n${links.map(l => {
+                source: 'Globally Sourced Registry Index',
+                details: `Information index derived from:\n${links.map(l => {
                     try { return `• ${new URL(l).hostname}` } catch (e) { return `• ${l}` }
                 }).join('\n')}`
             }
