@@ -40,22 +40,35 @@ export async function POST(request) {
         // Vector 1: Identity (Address, Phone, Map Presence) - OPEN WEB
         const queryIdentity = `"${input}" South Africa contact details address phone headquarters`
 
-        // Vector 2: Legal (Registration, Compliance) - BROAD SEARCH
-        // Increased depth to find older records buried by new shelf companies
-        const queryLegal = `"${input}" registration number CIPC (1900..2024)`
+        // Vector 2: Legal (Registration, Compliance) - SURGICAL STRIKE (Targeting B2BHint directly)
+        // We look for "(Pty) Ltd" explicitly for the Operating Company (1900s)
+        const queryLegal = `site:b2bhint.com "${input}" (Pty) Ltd`
 
-        // Vector 3: Leadership (Directors, Management)
-        const queryLeadership = `"${input}" directors owner manager linkedin`
+        // Vector 3: Leadership & General (Backup)
+        const queryLeadership = `"${input}" directors owner manager registration number CIPC`
+
+        // --------------------------------------------------------------------------------
+        // BROWSER EMULATION HEADERS (To avoid detection/blocking)
+        // --------------------------------------------------------------------------------
+        const BROWSER_HEADERS = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1'
+        };
 
         // A. DUCKDUCKGO SCRAPER (Unlimited)
         const fetchDuckDuckGo = async (q) => {
             try {
                 const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(q)}`;
                 const res = await fetch(url, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
-                    },
+                    headers: BROWSER_HEADERS,
                     cf: { cacheTtl: 300, cacheEverything: true }
                 });
 
@@ -97,7 +110,7 @@ export async function POST(request) {
             if (!cseKey || !cx) return [];
             try {
                 const url = `https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(q)}&num=6`;
-                const res = await fetch(url);
+                const res = await fetch(url); // Standard fetch here is usually fine for API
                 const data = await res.json();
                 return data.items || [];
             } catch (err) {
@@ -152,7 +165,7 @@ export async function POST(request) {
 
                 const fetchAndParse = async (targetUrl) => {
                     const res = await fetch(targetUrl, {
-                        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+                        headers: BROWSER_HEADERS, // Use Stealth Headers
                         signal: AbortSignal.timeout(4000)
                     });
                     if (!res.ok) return null;
