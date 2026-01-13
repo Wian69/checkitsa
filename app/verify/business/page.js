@@ -210,7 +210,16 @@ export default function BusinessVerificationPage() {
                                             <span>👥</span> Key Leadership
                                         </h3>
                                         <div>
-                                            <label style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.3rem' }}>Directors / CEO</label>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                                <label style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Directors / Founders</label>
+                                                {result.rating && (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'rgba(251, 191, 36, 0.1)', padding: '0.2rem 0.5rem', borderRadius: '0.3rem', border: '1px solid rgba(251, 191, 36, 0.2)' }}>
+                                                        <span style={{ color: '#fbbf24', fontSize: '0.8rem' }}>★ {result.rating}</span>
+                                                        <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem' }}>({result.reviews})</span>
+                                                    </div>
+                                                )}
+                                            </div>
+
                                             {result.directors && result.directors.length > 0 ? (
                                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                                                     {result.directors.map((d, i) => (

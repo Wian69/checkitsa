@@ -37,6 +37,7 @@ export async function POST(request) {
         // 2. Simple Extraction
         const context = JSON.stringify({
             knowledgeGraph: serperData.knowledgeGraph,
+            peopleAlsoAsk: serperData.peopleAlsoAsk, // Added for Founder/Owner info
             snippets: serperData.organic?.slice(0, 5).map(r => ({ title: r.title, snippet: r.snippet, link: r.link })),
             places: serperData.places?.slice(0, 1).map(p => ({ address: p.address, title: p.title }))
         });
@@ -47,7 +48,11 @@ export async function POST(request) {
             phone: "Not Found",
             website: null,
             summary: null,
-            tags: []
+            tags: [],
+            vatNumber: "Not Listed",
+            directors: [],
+            rating: null,
+            reviews: null
         };
 
         // 3. Robust AI Extraction with Failover
@@ -72,7 +77,9 @@ export async function POST(request) {
                     5. Summary: 1-2 sentence professional description of OPERATIONS.
                     6. Tags: Extract verify signals like "B-BBEE Level X", "ISO 9001", "SABS".
                     7. VAT: South African VAT Number (10 digits, usually starts with 4).
-                    8. Directors: List names of Directors or Legal Representatives. Look specifically for phrases like "The legal representative(s) of [Company]...".
+                    8. Directors: List names of Directors, Founders, or Owners. Check 'peopleAlsoAsk' specifcally for 'Who is owner/founder'.
+                    9. Rating: Google Review Rating (e.g. 4.2).
+                    10. Reviews: Number of Google Reviews (e.g. 29).
                     
                     Return JSON ONLY: 
                     { 
@@ -83,7 +90,9 @@ export async function POST(request) {
                         "summary": "...",
                         "tags": ["Tag1", "Tag2"],
                         "vatNumber": "...",
-                        "directors": ["Name 1", "Name 2"]
+                        "directors": ["Name 1", "Name 2"],
+                        "rating": 4.5,
+                        "reviews": 100
                     }
                     Use "Not Listed" if missing.
                     `;
@@ -132,7 +141,7 @@ export async function POST(request) {
             }
         }
 
-        // 5. Final Director Cleanup (Double Check Logic)
+        // 5. Final Director Cleanup & Rating Injection from KnowledgeGraph
         // Sometimes AI misses it even if successful, so check Regex again if empty
         if ((!extracted.directors || extracted.directors.length === 0 || extracted.directors[0] === "Not Listed")) {
             const dirBackup = strContext.match(/legal representative\(s\) of .*?[:\s]+([^.]+)/i);
@@ -140,6 +149,17 @@ export async function POST(request) {
                 console.log('[Verify] Injecting missed directors from Regex');
                 extracted.directors = dirBackup[1].split(/,| and /).map(s => s.trim()).filter(s => s.length > 3 && s.length < 30);
             }
+            // Backup Regex for Founders
+            const founderMatch = strContext.match(/(?:founders|owners|founded by) (?:are|is)?\s*([A-Za-z\s&,]+)/i);
+            if (founderMatch && founderMatch[1]) {
+                extracted.directors = founderMatch[1].split(/,| and /).map(s => s.trim()).filter(s => s.length > 3 && s.length < 30);
+            }
+        }
+
+        // Direct Knowledge Graph Injection for perfect accuracy
+        if (serperData.knowledgeGraph) {
+            if (serperData.knowledgeGraph.rating) extracted.rating = serperData.knowledgeGraph.rating;
+            if (serperData.knowledgeGraph.ratingCount) extracted.reviews = serperData.knowledgeGraph.ratingCount;
         }
 
         return NextResponse.json({
