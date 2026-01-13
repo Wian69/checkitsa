@@ -66,15 +66,15 @@ export async function POST(request) {
                     
                     RULES:
                     1. Identifier: CIPC Registration Number (YYYY/NNNNNN/NN).
-                    2. Address: Head Office Address.
+                    2. Address: Head Office Address. (If not explicitly found, check for area codes like 011/021/etc in snippets and infer location e.g. "Johannesburg Area").
                     3. Phone: Primary Contact Number.
-                    4. Website: Official Homepage URL (ignore generic directories).
-                    5. Summary: 1-2 sentence description of what they do.
-                    6. Tags: Extract trust signals like "B-BBEE Level X", "ISO 9001", "SABS", etc.
+                    4. Website: Official Homepage URL.
+                    5. Summary: 1-2 sentence professional description of OPERATIONS. **CRITICAL: DO NOT include phone numbers, VAT IDs, or director names in this summary. Just say what they do.**
+                    6. Tags: Extract verify signals like "B-BBEE Level X", "ISO 9001", "SABS".
                     
                     Return JSON ONLY: 
                     { 
-                        "identifier": "...", 
+                        "identifier": "YYYY/NNNNNN/NN", 
                         "address": "...", 
                         "phone": "...",
                         "website": "...",
@@ -109,10 +109,10 @@ export async function POST(request) {
             if (landline) extracted.phone = landline[0];
             else if (phoneMatch) extracted.phone = phoneMatch[0];
 
-            // Simple website/summary extraction from organic links
             if (serperData.organic && serperData.organic.length > 0) {
                 extracted.website = serperData.organic[0].link;
-                extracted.summary = serperData.organic[0].snippet;
+                // Clean URL as summary fallback
+                extracted.summary = serperData.organic[0].title;
             }
         }
 

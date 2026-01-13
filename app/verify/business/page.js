@@ -10,6 +10,7 @@ export default function BusinessVerificationPage() {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
+    const [expanded, setExpanded] = useState(false);
 
     useEffect(() => {
         const u = localStorage.getItem('checkitsa_user')
@@ -103,9 +104,36 @@ export default function BusinessVerificationPage() {
                                 <div style={{ flex: 1, minWidth: '280px' }}>
                                     <h2 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'white' }}>{result.name}</h2>
                                     {result.summary && (
-                                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.95rem', marginTop: '0.5rem', lineHeight: '1.6' }}>
-                                            {result.summary}
-                                        </p>
+                                        <div style={{ marginTop: '0.5rem' }}>
+                                            <p style={{
+                                                color: 'rgba(255,255,255,0.6)',
+                                                fontSize: '0.95rem',
+                                                lineHeight: '1.6',
+                                                display: '-webkit-box',
+                                                WebkitLineClamp: expanded ? 'unset' : '2',
+                                                WebkitBoxOrient: 'vertical',
+                                                overflow: 'hidden'
+                                            }}>
+                                                {result.summary}
+                                            </p>
+                                            {result.summary.length > 120 && (
+                                                <button
+                                                    onClick={() => setExpanded(!expanded)}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: '#818cf8',
+                                                        fontSize: '0.85rem',
+                                                        fontWeight: '600',
+                                                        padding: '0',
+                                                        marginTop: '0.5rem',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    {expanded ? 'Read Less' : 'Read More'}
+                                                </button>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                                 {result.website && result.website !== "Not Listed" && (
