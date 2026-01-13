@@ -37,8 +37,9 @@ export async function POST(request) {
         // --------------------------------------------------------------------------------
         console.log(`[Intelligence] Search Initiated for: ${input}`);
 
-        // Vector 1: Identity (Address, Phone, Map Presence) - Targets Google Knowledge Panel
-        const queryIdentity = `"${input}" contact number address location South Africa site:facebook.com OR site:linkedin.com OR site:hellohello.co.za OR site:yellowpages.co.za OR site:google.com`
+        // Vector 1: Identity (Address, Phone, Map Presence) - OPEN WEB (Official Sites + Directories)
+        // Removed site:... restriction to find official .co.za websites which have the best data
+        const queryIdentity = `"${input}" South Africa contact details address phone headquarters`
 
         // Vector 2: Legal (Registration, Compliance) - Targets Official Registries
         const queryLegal = `"${input}" registration number CIPC B2BHint "20" site:b2bhint.com OR site:sa-companies.com OR site:easyinfo.co.za`

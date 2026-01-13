@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
+import LoadingOverlay from '@/components/LoadingOverlay';
 
 export default function BusinessVerificationPage() {
     const [user, setUser] = useState(null)
@@ -192,6 +193,7 @@ export default function BusinessVerificationPage() {
                 }
             `}</style>
             </div>
+            {loading && <LoadingOverlay message="Synthesizing Business Profile..." />}
         </main>
     );
 }
