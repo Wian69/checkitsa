@@ -37,14 +37,14 @@ export async function POST(request) {
         // --------------------------------------------------------------------------------
         console.log(`[Intelligence] Search Initiated for: ${input}`);
 
-        // Vector 1: Identity (Address, Phone, Map Presence) - OPEN WEB (Official Sites + Directories)
-        // Removed site:... restriction to find official .co.za websites which have the best data
+        // Vector 1: Identity (Address, Phone, Map Presence) - OPEN WEB
         const queryIdentity = `"${input}" South Africa contact details address phone headquarters`
 
-        // Vector 2: Legal (Registration, Compliance) - Targets Official Registries
-        const queryLegal = `"${input}" registration number CIPC B2BHint "20" site:b2bhint.com OR site:sa-companies.com OR site:easyinfo.co.za`
+        // Vector 2: Legal (Registration, Compliance) - BROAD SEARCH (Removed site restrictions)
+        // We look for the "20" century prefix common in SA Reg Numbers (e.g. 2015/...)
+        const queryLegal = `"${input}" registration number CIPC "20"`
 
-        // Vector 3: Leadership (Directors, Management) - Targets Organizational Structure
+        // Vector 3: Leadership (Directors, Management)
         const queryLeadership = `"${input}" directors owner manager linkedin`
 
         // A. DUCKDUCKGO SCRAPER (Unlimited)
@@ -54,13 +54,9 @@ export async function POST(request) {
                 const res = await fetch(url, {
                     headers: {
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                        'Accept-Language': 'en-US,en;q=0.5'
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
                     },
-                    cf: {
-                        cacheTtl: 300,
-                        cacheEverything: true
-                    }
+                    cf: { cacheTtl: 300, cacheEverything: true }
                 });
 
                 const html = await res.text();
@@ -128,24 +124,14 @@ export async function POST(request) {
 
         const allItems = [...itemsIdentity, ...itemsLegal, ...itemsLeadership];
 
-        if (allItems.length === 0) {
-            console.error('[Intelligence] All vectors failed.');
-            return NextResponse.json({
-                valid: false,
-                data: {
-                    status: 'No Data Found',
-                    message: 'No digital footprint found.',
-                    details: 'Both Scraper and Backup API failed to retrieve data.'
-                }
-            })
-        }
+        if (allItems.length === 0) { return NextResponse.json({ valid: false, data: { status: 'No Data Found', message: 'No digital footprint found.' } }) }
 
         // --------------------------------------------------------------------------------
-        // 2. DEEP DIVE LAYER (Crawling)
+        // 2. DEEP DIVE LAYER (Smart Crawling - SPA/JS Handler)
         // --------------------------------------------------------------------------------
 
         const extractOfficialUrl = (items) => {
-            const blockList = ['linkedin', 'facebook', 'yellowpages', 'b2bhint', 'easyinfo', 'hellopeter', 'sa-companies', 'gov.za'];
+            const blockList = ['linkedin', 'facebook', 'yellowpages', 'b2bhint', 'easyinfo', 'hellopeter', 'sa-companies', 'gov.za', 'google'];
             for (const item of items) {
                 try {
                     const domain = new URL(item.link).hostname;
@@ -156,40 +142,61 @@ export async function POST(request) {
             return null;
         };
 
-        const officialUrl = extractOfficialUrl(itemsIdentity);
         let siteContent = "";
+        const officialUrl = extractOfficialUrl(itemsIdentity);
 
         if (officialUrl) {
             console.log(`[Intelligence] Crawling Official Site: ${officialUrl}`);
             try {
-                // Cheerio is used to strip HTML tags effectively
                 const cheerio = await import('cheerio');
 
-                const siteRes = await fetch(officialUrl, {
-                    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-                    signal: AbortSignal.timeout(5000)
-                });
-
-                if (siteRes.ok) {
-                    const html = await siteRes.text();
+                const fetchAndParse = async (targetUrl) => {
+                    const res = await fetch(targetUrl, {
+                        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+                        signal: AbortSignal.timeout(4000)
+                    });
+                    if (!res.ok) return null;
+                    const html = await res.text();
                     const $ = cheerio.load(html);
-
-                    // Remove scripts/styles to save tokens
-                    $('script').remove();
-                    $('style').remove();
-                    $('nav').remove(); // Often clutter
-
-                    // Focus on Text
-                    const bodyText = $('body').text().replace(/\s+/g, ' ').slice(0, 15000); // Limit context
-                    siteContent = `[OFFICIAL WEBSITE CONTENT (${officialUrl})]:\n${bodyText}\n---`;
+                    $('script').remove(); $('style').remove(); $('nav').remove();
+                    return $('body').text().replace(/\s+/g, ' ').trim();
                 }
+
+                // Try Homepage First
+                let bodyText = await fetchAndParse(officialUrl);
+
+                // Check for SPA/JS Lockout (common in React apps)
+                const isJSLocked = !bodyText || bodyText.length < 200 || bodyText.toLowerCase().includes('enable javascript') || bodyText.toLowerCase().includes('you need to run this app');
+
+                if (isJSLocked) {
+                    console.log('[Intelligence] SPA Detected. Attempting /contact page fallback...');
+                    // Try /contact or /about which are often static
+                    const origin = new URL(officialUrl).origin;
+                    const contactText = await fetchAndParse(`${origin}/contact`);
+
+                    if (contactText && contactText.length > 200 && !contactText.toLowerCase().includes('enable javascript')) {
+                        bodyText = contactText; // Success with Contact Page
+                    } else {
+                        // Try About
+                        const aboutText = await fetchAndParse(`${origin}/about-us`);
+                        if (aboutText && aboutText.length > 200) bodyText = aboutText;
+                    }
+                }
+
+                if (bodyText && !bodyText.toLowerCase().includes('enable javascript')) {
+                    siteContent = `[OFFICIAL SITE DATA (${officialUrl})]:\n${bodyText.slice(0, 10000)}\n---`;
+                } else {
+                    siteContent = `[OFFICIAL SITE]: Unreachable (JavaScript Required). Rely on Search Snippets.`;
+                }
+
             } catch (crawlErr) {
                 console.warn('[Intelligence] Crawl Failed:', crawlErr.message);
+                siteContent = `[OFFICIAL SITE]: Crawl failed (${crawlErr.message})`;
             }
         }
 
         // --------------------------------------------------------------------------------
-        // 3. AI SYNTHESIS (Robust Multi-Model Failover)
+        // 3. AI SYNTHESIS
         // --------------------------------------------------------------------------------
 
         let aiData = null;
@@ -197,30 +204,27 @@ export async function POST(request) {
 
         if (geminiKey) {
             const genAI = new GoogleGenerativeAI(geminiKey);
-            const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro"]; // Prioritize Speed then Intellect
-
             const context = allItems.map(i => `[TITLE]: ${i.title}\n[SNIPPET]: ${i.snippet}\n[LINK]: ${i.link}`).join('\n---\n');
 
             const prompt = `
             You are a Business Intelligence Analyst.
-            Construct a Google-My-Business style profile for: "${input}". 
+            Construct a comprehensive profile for: "${input}". 
             
             DATA SOURCES:
             ${siteContent}
             ${context}
 
             INSTRUCTIONS:
-            1. **DEEP CONNECT**: Check the [OFFICIAL WEBSITE CONTENT] first. The "Reg No" is often in the footer. The Phone/Address is often in the header/contact section.
-            2. **Entity Resolution**: Combine fragments. The address might be in one snippet, the phone in another, the Reg No in a third. Merge them.
-            3. **Registration Number**: Look hard for "YYYY/NNNNNN/NN" or "K20..." formats. This is CRITICAL.
-            4. **Contact Info**: Find a shared physical address and phone number for the HQ.
-            5. **Status**: If "Liquidated" or "Deregistered" appears, flag it immediately.
+            1. **Reg Number**: Search deep! Look for "YYYY/NNNNNN/NN" or "K20" formats in the official site text or legal search results.
+            2. **Contact**: Identify the primary HQ address and Phone Number.
+            3. **JavaScript Errors**: If the content says "Enable JavaScript", IGNORE IT completely. Do not treat "Enable JavaScript" as "Operations".
+            4. **Inference**: If official site failed, heavily infer from the "Legal" and "Identity" snippets.
 
             RETURN JSON:
             {
                 "identifier": "YYYY/NNNNNN/NN" or "Not Listed",
                 "industry": "Primary Industry",
-                "status": "Active/Inactive/Liquidated",
+                "status": "Active/Inactive",
                 "address": "Full Physical Address (Street, Suburb, City)",
                 "phone": "Primary Contact Number or 'Not Listed'",
                 "registrationDate": "YYYY",
@@ -230,20 +234,15 @@ export async function POST(request) {
                 "globalRole": "National/Global",
                 "officialWebsite": "URL"
             }
-            Just raw JSON.
             `;
-
-            for (const modelName of modelsToTry) {
-                try {
-                    const model = genAI.getGenerativeModel({ model: modelName });
-                    const result = await model.generateContent(prompt);
-                    const cleanJson = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-                    aiData = JSON.parse(cleanJson);
-                    usedSource = `AI Synthesized (${modelName})`;
-                    break;
-                } catch (aiError) {
-                    console.warn(`[Intelligence] AI Failed with ${modelName}:`, aiError.message);
-                }
+            try {
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                const result = await model.generateContent(prompt);
+                const cleanJson = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+                aiData = JSON.parse(cleanJson);
+                usedSource = `AI Synthesized (Gemini 1.5)`;
+            } catch (aiError) {
+                console.warn(`[Intelligence] AI Failed:`, aiError.message);
             }
         }
 
@@ -260,7 +259,7 @@ export async function POST(request) {
                 industry: aiData.industry,
                 status: aiData.status,
                 address: aiData.address,
-                phone: aiData.phone || "Not Listed", // New Field
+                phone: aiData.phone || "Not Listed",
                 registrationDate: aiData.registrationDate,
                 directors: aiData.directors || [],
                 employees: aiData.employees,
