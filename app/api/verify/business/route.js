@@ -84,26 +84,26 @@ export async function POST(request) {
                     console.log(`[Verify] Attempting ${m}...`);
                     const model = genAI.getGenerativeModel({ model: m });
                     const prompt = `
-                    Extract fields for "${input}" from data below.
+                    You are a Data Extraction Engine. Extract EXACT VERBATIM details for "${input}" from the provided data.
                     DATA: ${context}
                     
-                    RULES:
-                    1. Identifier: CIPC Registration Number (YYYY/NNNNNN/NN).
-                    2. Address: Head Office Address. (If not explicitly found, check for area codes like 011/021/etc in snippets and infer location e.g. "Johannesburg Area").
-                    3. Phone: Primary Contact Number.
+                    CRITICAL RULES:
+                    1. Identifier: Extract CIPC Registration Number (YYYY/NNNNNN/NN).
+                    2. Address: Extract the FULL physical address. Do not summarize. If multiple exist, choose the specific Head Office address.
+                    3. Phone: Extract the primary contact number (prefer landline +27...).
                     4. Website: Official Homepage URL.
                     5. Summary: 1-2 sentence professional description of OPERATIONS.
                     6. Tags: Extract verify signals like "B-BBEE Level X", "ISO 9001", "SABS".
-                    7. VAT: South African VAT Number (10 digits, usually starts with 4).
-                    8. Directors: List names of Directors, Founders, or Owners. Check 'peopleAlsoAsk' specifcally for 'Who is owner/founder'.
+                    7. VAT: South African VAT Number (10 digits).
+                    8. Directors/Founders: Extract names of people listed as "Founders", "Owners", "Directors", or "Legal Representatives". Look for phrases like "founded by...", "owned by...", "directors are...". LIST THEM ALL.
                     9. Rating: Google Review Rating (e.g. 4.2).
                     10. Reviews: Number of Google Reviews (e.g. 29).
                     
                     Return JSON ONLY: 
                     { 
                         "identifier": "YYYY/NNNNNN/NN", 
-                        "address": "...", 
-                        "phone": "...",
+                        "address": "Full Address String", 
+                        "phone": "+27...",
                         "website": "...",
                         "summary": "...",
                         "tags": ["Tag1", "Tag2"],
@@ -112,7 +112,7 @@ export async function POST(request) {
                         "rating": 4.5,
                         "reviews": 100
                     }
-                    Use "Not Listed" if missing.
+                    Use "Not Listed" if strictly not found.
                     `;
 
                     const result = await model.generateContent(prompt);
@@ -149,12 +149,14 @@ export async function POST(request) {
             if (landline) extracted.phone = landline[0];
             else if (phoneMatch) extracted.phone = phoneMatch[0];
 
-            // Manual Founder Extraction (Override)
-            // Look for "founders ... are" pattern specifically in PAA string
-            const founderMatchStrict = strContext.match(/founders\s+([A-Za-z\s&]+)(?:,| are| and)/i);
-            if (founderMatchStrict && founderMatchStrict[1]) {
-                console.log('[Verify] Found founders via strict regex:', founderMatchStrict[1]);
-                const founders = founderMatchStrict[1].split(/,| and /).map(s => s.trim()).filter(s => s.length > 3);
+            // Manual Founder Extraction (General Purpose)
+            // Look for patterns: "founders are X", "owned by X", "directors: X"
+            // Catches: "Grain Carrier's founders Tom Terblanche..." or "Owned by Mr X."
+            const founderMatchBroad = strContext.match(/(?:founders|owners|directors|leadership)(?:'s)?(?:.*?)(?:are|:|include|by)\s+([A-Za-z\s&,\.]+?)(?:\.|,|\s(?:and|are)|$)/i);
+
+            if (founderMatchBroad && founderMatchBroad[1]) {
+                console.log('[Verify] Found leadership via broad regex:', founderMatchBroad[1]);
+                const founders = founderMatchBroad[1].split(/,| and |&/).map(s => s.trim()).filter(s => s.length > 3 && !s.includes('http'));
                 if (founders.length > 0) {
                     // Add to directors if not already present
                     const current = new Set(extracted.directors || []);
