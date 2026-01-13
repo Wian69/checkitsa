@@ -40,9 +40,9 @@ export async function POST(request) {
         // Vector 1: Identity (Address, Phone, Map Presence) - OPEN WEB
         const queryIdentity = `"${input}" South Africa contact details address phone headquarters`
 
-        // Vector 2: Legal (Registration, Compliance) - BROAD SEARCH (Removed site restrictions)
-        // We look for the "20" century prefix common in SA Reg Numbers (e.g. 2015/...)
-        const queryLegal = `"${input}" registration number CIPC "20"`
+        // Vector 2: Legal (Registration, Compliance) - BROAD SEARCH
+        // Increased depth to find older records buried by new shelf companies
+        const queryLegal = `"${input}" registration number CIPC (1900..2024)`
 
         // Vector 3: Leadership (Directors, Management)
         const queryLeadership = `"${input}" directors owner manager linkedin`
@@ -83,7 +83,7 @@ export async function POST(request) {
                             snippet: snippetMatch[1].replace(/<[^>]*>/g, '').trim()
                         });
                     }
-                    if (items.length >= 4) break; // Limit 4 per vector
+                    if (items.length >= 6) break; // INCREASED LIMIT TO 6 to find older records
                 }
                 return items;
             } catch (err) {
@@ -96,7 +96,7 @@ export async function POST(request) {
         const fetchGoogleAPI = async (q) => {
             if (!cseKey || !cx) return [];
             try {
-                const url = `https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(q)}&num=4`;
+                const url = `https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(q)}&num=6`;
                 const res = await fetch(url);
                 const data = await res.json();
                 return data.items || [];
@@ -165,21 +165,22 @@ export async function POST(request) {
                 // Try Homepage First
                 let bodyText = await fetchAndParse(officialUrl);
 
-                // Check for SPA/JS Lockout (common in React apps)
-                const isJSLocked = !bodyText || bodyText.length < 200 || bodyText.toLowerCase().includes('enable javascript') || bodyText.toLowerCase().includes('you need to run this app');
+                // Check for SPA/JS Lockout OR Empty Content
+                const isInsufficient = !bodyText || bodyText.length < 200 || bodyText.toLowerCase().includes('enable javascript');
 
-                if (isJSLocked) {
-                    console.log('[Intelligence] SPA Detected. Attempting /contact page fallback...');
-                    // Try /contact or /about which are often static
+                if (isInsufficient) {
+                    console.log('[Intelligence] SPA/Empty Detected. Attempting deep fallbacks...');
                     const origin = new URL(officialUrl).origin;
-                    const contactText = await fetchAndParse(`${origin}/contact`);
 
-                    if (contactText && contactText.length > 200 && !contactText.toLowerCase().includes('enable javascript')) {
-                        bodyText = contactText; // Success with Contact Page
-                    } else {
-                        // Try About
-                        const aboutText = await fetchAndParse(`${origin}/about-us`);
-                        if (aboutText && aboutText.length > 200) bodyText = aboutText;
+                    // Comprehensive Fallback List
+                    const fallbacks = ['/contact', '/contact-us', '/about', '/about-us', '/company-profile'];
+
+                    for (const path of fallbacks) {
+                        const fallbackText = await fetchAndParse(`${origin}${path}`);
+                        if (fallbackText && fallbackText.length > 300 && !fallbackText.toLowerCase().includes('enable javascript')) {
+                            bodyText += `\n[${path.toUpperCase()} CONTENT]:\n` + fallbackText;
+                            break; // Stop after finding one good page to save tokens
+                        }
                     }
                 }
 
@@ -214,14 +215,14 @@ export async function POST(request) {
             ${siteContent}
             ${context}
 
-            INSTRUCTIONS:
-            1. **Consistency Check (Time Travel)**: 
-               - If the company was "Founded in 1991", the "Registration Number" MUST start with 1991, 1996, etc.
-               - DO NOT pick a random Shelf Company from 2023 (e.g. 2023/...) if the company is decades old. Look deeper.
-               - Prefer "Grain Carriers (Pty) Ltd" (Old) over "Grain Carriers Holdings" (New).
-            2. **Reg Number**: Look for "YYYY/NNNNNN/NN". Prioritize the one matching the Founded Date.
-            3. **Contact**: Identify the primary HQ address and Phone Number.
-            4. **JavaScript Errors**: If the content says "Enable JavaScript", IGNORE IT completely.
+            CRITICAL RULES:
+            1. **Historical Logic**: 
+               - If the company was established in the 1990s (e.g. 1991), the Reg No **MUST** start with "19" (e.g. 1996/...). 
+               - **REJECT** any Reg No starting with "2023" or "2024" for an old company. That is a completely different, new entity.
+            2. **Contact Mining**: 
+               - You MUST find a Phone Number in the [OFFICIAL SITE DATA]. Look for +27, 021, 011, 012 formats.
+               - If multiple addresses exist, pick the "Head Office" or "Cape Town/Stellenbosch" one for Grain Carriers.
+            3. **JavaScript Handling**: Ignore all "enable javascript" text.
 
             RETURN JSON:
             {
