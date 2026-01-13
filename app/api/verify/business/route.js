@@ -152,7 +152,7 @@ export async function POST(request) {
         };
 
         const [serperData, itemsIdentity, itemsLegal, itemsLeadership, itemsSurgical] = await Promise.all([
-            fetchSerper(`${input} South Africa registration number VAT headquarters`),
+            fetchSerper(`${input} South Africa registration number headquarters branches locations`),
             executeHybridSearch(queryIdentity),
             executeHybridSearch(queryLegal),
             executeHybridSearch(queryLeadership),
@@ -162,7 +162,8 @@ export async function POST(request) {
         const allItems = [...itemsIdentity, ...itemsLegal, ...itemsLeadership, ...itemsSurgical];
         const googleIntelligence = serperData ? JSON.stringify({
             knowledgeGraph: serperData.knowledgeGraph,
-            organic: serperData.organic?.slice(0, 3)
+            organic: serperData.organic?.slice(0, 3),
+            places: serperData.places?.slice(0, 5) // Capture Google Maps branch data
         }) : "Serper API Key Not Configured. Relying on scraping.";
 
         if (allItems.length === 0 && !serperData) {
