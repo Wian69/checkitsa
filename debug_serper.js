@@ -2,40 +2,44 @@ const serperKey = '7c86722fde870590686576c987a15f96f76491c5';
 
 async function testSerperFull() {
     try {
-        const q = "Grain Carriers South Africa"; // Simple Entity Query to trigger PAA/KG
-        console.log(`Searching for: ${q}`);
+        const input = "Grain Carriers";
+        const qEntity = `${input} South Africa`;
+        const qDetails = `${input} South Africa registration number address phone contact`;
 
-        const res = await fetch("https://google.serper.dev/search", {
-            method: "POST",
-            headers: { "X-API-KEY": serperKey, "Content-Type": "application/json" },
-            body: JSON.stringify({
-                q,
-                gl: "za",
-                k: 20
+        console.log(`[Debug] Parallel Search: Entity="${qEntity}" | Details="${qDetails}"`);
+
+        const [resEntity, resDetails] = await Promise.all([
+            fetch("https://google.serper.dev/search", {
+                method: "POST",
+                headers: { "X-API-KEY": serperKey, "Content-Type": "application/json" },
+                body: JSON.stringify({ q: qEntity, gl: "za" })
+            }),
+            fetch("https://google.serper.dev/search", {
+                method: "POST",
+                headers: { "X-API-KEY": serperKey, "Content-Type": "application/json" },
+                body: JSON.stringify({ q: qDetails, gl: "za" })
             })
-        });
+        ]);
 
-        const data = await res.json();
-        const keys = Object.keys(data);
-        console.log("AVAILABLE SECTIONS:", keys);
+        const dataEntity = await resEntity.json();
+        const dataDetails = await resDetails.json();
 
-        if (data.knowledgeGraph) {
-            console.log("\n--- KNOWLEDGE GRAPH ---");
-            console.log(JSON.stringify(data.knowledgeGraph, null, 2));
-        }
+        // 2. Merged Context Construction (Matching route.js)
+        const context = {
+            knowledgeGraph: dataEntity.knowledgeGraph,
+            peopleAlsoAsk: dataEntity.peopleAlsoAsk,
+            snippets: [
+                ...(dataDetails.organic || []).slice(0, 6),
+                ...(dataEntity.organic || []).slice(0, 3)
+            ].map(r => ({ title: r.title, snippet: r.snippet, link: r.link })),
+            places: dataEntity.places || dataDetails.places
+        };
 
-        if (data.peopleAlsoAsk) {
-            console.log("\n--- PEOPLE ALSO ASK ---");
-            console.log(JSON.stringify(data.peopleAlsoAsk, null, 2));
-        }
+        console.log("\n--- MERGED CONTEXT ---");
+        console.log(JSON.stringify(context, null, 2));
 
-        if (data.places && data.places.length > 0) {
-            console.log("\n--- PLACES ---");
-            console.log(JSON.stringify(data.places[0], null, 2));
-        }
-
-    } catch (e) {
-        console.error("Error:", e);
+    } catch (error) {
+        console.error(error);
     }
 }
 

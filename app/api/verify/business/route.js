@@ -135,9 +135,16 @@ export async function POST(request) {
             const regMatch = strContext.match(/\b(19|20)\d{2}\/\d{6}\/\d{2}\b/);
             if (regMatch) extracted.identifier = regMatch[0];
 
+            // Regex for Address (Pattern seen in snippets: "Address: 1 Mercedes...")
+            const addrMatch = strContext.match(/Address:\s*([A-Za-z0-9,\.\s\-]+?)(?:\.|$|Phone|B-BBEE)/i);
+            if (addrMatch && addrMatch[1]) {
+                extracted.address = addrMatch[1].trim();
+            }
+
             const phoneMatch = strContext.match(/(?:\+27|0)[0-9]{2}[\s\-]?[0-9]{3}[\s\-]?[0-9]{4}/);
             const landline = strContext.match(/(?:\+27|0)(11|21|10|12|31|41|51)[0-9]{7}/);
-            // Prioritize landline for business
+
+            // Prioritize landline for business, then mobile
             if (landline) extracted.phone = landline[0];
             else if (phoneMatch) extracted.phone = phoneMatch[0];
 
