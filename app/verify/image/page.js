@@ -16,6 +16,10 @@ export default function ImageScanner() {
     const handleFileChange = (e) => {
         const f = e.target.files[0]
         if (f) {
+            if (f.size > 4 * 1024 * 1024) {
+                alert("File too large. Please upload an image smaller than 4MB.")
+                return
+            }
             setFile(f)
             setPreview(URL.createObjectURL(f))
             setResult(null)
@@ -47,9 +51,14 @@ export default function ImageScanner() {
             })
 
             // 2. Send Image to Backend
-            const userStr = localStorage.getItem('checkitsa_user')
-            const user = userStr ? JSON.parse(userStr) : null
-            const email = user ? user.email : null
+            let email = null
+            try {
+                const userStr = localStorage.getItem('checkitsa_user')
+                const user = userStr ? JSON.parse(userStr) : null
+                email = user ? user.email : null
+            } catch (err) {
+                console.warn("User data error", err)
+            }
 
             const res = await fetch('/api/verify/image', {
                 method: 'POST',
@@ -116,9 +125,9 @@ export default function ImageScanner() {
                                 marginBottom: '1.5rem'
                             }}>
                                 <h3 style={{ color: result.risk_score > 50 ? 'var(--color-danger)' : 'var(--color-success)', marginBottom: '0.5rem' }}>
-                                    {result.message}
+                                    {result.message || result.error || "Analysis Complete"}
                                 </h3>
-                                {result.flags.length > 0 && (
+                                {result.flags && result.flags.length > 0 && (
                                     <ul style={{ paddingLeft: '1.2rem', marginTop: '0.5rem' }}>
                                         {result.flags.map((f, i) => <li key={i}>{f}</li>)}
                                     </ul>
@@ -127,7 +136,7 @@ export default function ImageScanner() {
 
                             <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '0.5rem' }}>
                                 <div style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>Extracted Text:</div>
-                                <p style={{ fontStyle: 'italic', opacity: 0.8, fontSize: '0.9rem' }}>"{result.text_extracted}"</p>
+                                <p style={{ fontStyle: 'italic', opacity: 0.8, fontSize: '0.9rem' }}>"{result.text_extracted || 'No text extracted.'}"</p>
                             </div>
                             <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
                                 <ReportButton url={file?.name || 'Screenshot'} type="General" reason="Scam Screenshot" />

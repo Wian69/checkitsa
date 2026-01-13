@@ -84,6 +84,12 @@ export async function POST(request) {
 
     } catch (error) {
         console.error(error)
-        return NextResponse.json({ error: 'System Error', message: error.message }, { status: 500 })
+        return NextResponse.json({
+            error: 'System Error',
+            message: error.message || 'An unexpected error occurred during analysis.',
+            risk_score: 0,
+            flags: ['Analysis failed due to a system error.'],
+            text_extracted: ''
+        }, { status: 500 })
     }
 }
