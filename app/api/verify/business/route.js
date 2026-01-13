@@ -135,10 +135,11 @@ export async function POST(request) {
             const regMatch = strContext.match(/\b(19|20)\d{2}\/\d{6}\/\d{2}\b/);
             if (regMatch) extracted.identifier = regMatch[0];
 
-            // Regex for Address (Pattern seen in snippets: "Address: 1 Mercedes...")
-            const addrMatch = strContext.match(/Address:\s*([A-Za-z0-9,\.\s\-]+?)(?:\.|$|Phone|B-BBEE)/i);
+            // Regex for Address (Greedy capture until known stop words like B-BBEE or Scorecard or End of string)
+            const addrMatch = strContext.match(/Address:\s*(.*?)(?=\s*(?:B-BBEE|Scorecard|Phone|VAT|$))/i);
             if (addrMatch && addrMatch[1]) {
-                extracted.address = addrMatch[1].trim();
+                let cleanAddr = addrMatch[1].trim().replace(/\.$/, ''); // Remove trailing dot
+                if (cleanAddr.length > 10) extracted.address = cleanAddr;
             }
 
             const phoneMatch = strContext.match(/(?:\+27|0)[0-9]{2}[\s\-]?[0-9]{3}[\s\-]?[0-9]{4}/);
@@ -147,6 +148,20 @@ export async function POST(request) {
             // Prioritize landline for business, then mobile
             if (landline) extracted.phone = landline[0];
             else if (phoneMatch) extracted.phone = phoneMatch[0];
+
+            // Manual Founder Extraction (Override)
+            // Look for "founders ... are" pattern specifically in PAA string
+            const founderMatchStrict = strContext.match(/founders\s+([A-Za-z\s&]+)(?:,| are| and)/i);
+            if (founderMatchStrict && founderMatchStrict[1]) {
+                console.log('[Verify] Found founders via strict regex:', founderMatchStrict[1]);
+                const founders = founderMatchStrict[1].split(/,| and /).map(s => s.trim()).filter(s => s.length > 3);
+                if (founders.length > 0) {
+                    // Add to directors if not already present
+                    const current = new Set(extracted.directors || []);
+                    founders.forEach(f => current.add(f));
+                    extracted.directors = Array.from(current);
+                }
+            }
 
             // Regex for VAT
             const vatMatch = strContext.match(/\b4\d{9}\b/);
