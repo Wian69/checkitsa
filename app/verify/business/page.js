@@ -130,11 +130,15 @@ export default function BusinessVerificationPage() {
 
                             {/* Operations & Global Role */}
                             <div style={{ background: 'rgba(255,255,255,0.03)', padding: '2rem', borderRadius: '1.5rem', border: '1px solid var(--color-border)' }}>
-                                <h3 style={{ fontSize: '1.2rem', fontWeight: '700', marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>Logistics & Global Scale</h3>
+                                <h3 style={{ fontSize: '1.2rem', fontWeight: '700', marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>Logistics & Contact</h3>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                                     <div>
-                                        <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.5rem' }}>Registered Headquarters</label>
+                                        <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.5rem' }}>Headquarters Address</label>
                                         <p style={{ fontWeight: '500', fontSize: '0.95rem' }}>{result.address}</p>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.5rem' }}>Primary Contact</label>
+                                        <p style={{ fontWeight: '500', fontSize: '0.95rem', color: 'var(--color-primary)' }}>{result.phone || "Not Listed"}</p>
                                     </div>
                                     <div>
                                         <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.5rem' }}>Global Footprint</label>
@@ -187,31 +191,6 @@ export default function BusinessVerificationPage() {
                     to { opacity: 1; transform: translateY(0); }
                 }
             `}</style>
-            </div>
-
-            {/* Blocking Overlay */}
-            <div style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                background: 'rgba(0, 0, 0, 0.85)',
-                backdropFilter: 'blur(5px)',
-                zIndex: 9999,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '2rem'
-            }}>
-                <div className="glass-panel" style={{ padding: '3rem', maxWidth: '500px', textAlign: 'center', border: '1px solid var(--color-primary)' }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>🚧</div>
-                    <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: 'white' }}>Coming Soon</h2>
-                    <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem', marginBottom: '2rem' }}>
-                        Advanced Business Intelligence is currently under undergoing maintenance and upgrades.
-                    </p>
-                    <a href="/" className="btn btn-primary">Return Home</a>
-                </div>
             </div>
         </main>
     );

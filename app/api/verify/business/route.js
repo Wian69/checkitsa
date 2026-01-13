@@ -33,12 +33,18 @@ export async function POST(request) {
         const cx = env.GOOGLE_CSE_CX || process.env.GOOGLE_CSE_CX || '16e9212fe3fcf4cea'
 
         // --------------------------------------------------------------------------------
-        // 1. INTELLIGENT SEARCH LAYER (Scraper -> API Fallback)
+        // 1. INTELLIGENT SEARCH LAYER (Multi-Vector Knowledge Graph)
         // --------------------------------------------------------------------------------
         console.log(`[Intelligence] Search Initiated for: ${input}`);
 
-        const queryRegistry = `site:b2bhint.com OR site:sa-companies.com OR site:easyinfo.co.za "${input}"`;
-        const queryProfile = `"${input}" ("Founded" OR "CEO" OR "Employees" OR "Headquarters" OR "Registration Number") -site:b2bhint.com`;
+        // Vector 1: Identity (Address, Phone, Map Presence) - Targets Google Knowledge Panel
+        const queryIdentity = `"${input}" contact number address location South Africa site:facebook.com OR site:linkedin.com OR site:hellohello.co.za OR site:yellowpages.co.za OR site:google.com`
+
+        // Vector 2: Legal (Registration, Compliance) - Targets Official Registries
+        const queryLegal = `"${input}" registration number CIPC B2BHint "20" site:b2bhint.com OR site:sa-companies.com OR site:easyinfo.co.za`
+
+        // Vector 3: Leadership (Directors, Management) - Targets Organizational Structure
+        const queryLeadership = `"${input}" directors owner manager linkedin`
 
         // A. DUCKDUCKGO SCRAPER (Unlimited)
         const fetchDuckDuckGo = async (q) => {
@@ -80,7 +86,7 @@ export async function POST(request) {
                             snippet: snippetMatch[1].replace(/<[^>]*>/g, '').trim()
                         });
                     }
-                    if (items.length >= 5) break;
+                    if (items.length >= 4) break; // Limit 4 per vector
                 }
                 return items;
             } catch (err) {
@@ -93,7 +99,7 @@ export async function POST(request) {
         const fetchGoogleAPI = async (q) => {
             if (!cseKey || !cx) return [];
             try {
-                const url = `https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(q)}&num=6`;
+                const url = `https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(q)}&num=4`;
                 const res = await fetch(url);
                 const data = await res.json();
                 return data.items || [];
@@ -113,12 +119,13 @@ export async function POST(request) {
             return results;
         };
 
-        const [itemsRegistry, itemsProfile] = await Promise.all([
-            executeHybridSearch(queryRegistry),
-            executeHybridSearch(queryProfile)
+        const [itemsIdentity, itemsLegal, itemsLeadership] = await Promise.all([
+            executeHybridSearch(queryIdentity),
+            executeHybridSearch(queryLegal),
+            executeHybridSearch(queryLeadership)
         ]);
 
-        const allItems = [...itemsRegistry, ...itemsProfile];
+        const allItems = [...itemsIdentity, ...itemsLegal, ...itemsLeadership];
 
         if (allItems.length === 0) {
             console.error('[Intelligence] All vectors failed.');
@@ -133,61 +140,65 @@ export async function POST(request) {
         }
 
         // --------------------------------------------------------------------------------
-        // 2. AI SYNTHESIS (Gemini 1.5 Flash)
+        // 2. AI SYNTHESIS (Robust Multi-Model Failover)
         // --------------------------------------------------------------------------------
 
         let aiData = null;
         let usedSource = "Web Intelligence (Hybrid)";
 
         if (geminiKey) {
-            try {
-                const genAI = new GoogleGenerativeAI(geminiKey);
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const genAI = new GoogleGenerativeAI(geminiKey);
+            const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro"]; // Prioritize Speed then Intellect
 
-                const context = allItems.map(i => `[TITLE]: ${i.title}\n[SNIPPET]: ${i.snippet}\n[LINK]: ${i.link}`).join('\n---\n');
+            const context = allItems.map(i => `[TITLE]: ${i.title}\n[SNIPPET]: ${i.snippet}\n[LINK]: ${i.link}`).join('\n---\n');
 
-                const prompt = `
-                You are a Business Intelligence Analyst.
-                Analyze the snippets for: "${input}". 
-                
-                RULES:
-                1. Reg No: Find main holding company (Oldest Year). B2BHint/CIPC format (YYYY/NNNNNN/NN).
-                2. Founded: Extract year.
-                3. Employees: Look for counts (e.g. 169,000).
-                4. Global Role: Multinational or National?
-                5. Status: Active/Liquidated?
+            const prompt = `
+            You are a Business Intelligence Analyst.
+            Construct a Google-My-Business style profile for: "${input}". 
+            
+            DATA SOURCES:
+            ${context}
 
-                Return JSON:
-                {
-                    "identifier": "YYYY/NNNNNN/NN" or "Not found",
-                    "industry": "Industry",
-                    "status": "Active/Inactive",
-                    "address": "City/Address",
-                    "registrationDate": "YYYY",
-                    "directors": ["Name 1"],
-                    "employees": "Count/Unknown",
-                    "operations": "Description",
-                    "globalRole": "National/Global",
-                    "officialWebsite": "URL"
+            INSTRUCTIONS:
+            1. **Entity Resolution**: Combine fragments. The address might be in one snippet, the phone in another, the Reg No in a third. Merge them.
+            2. **Registration Number**: Look hard for "YYYY/NNNNNN/NN" or "K20..." formats. This is CRITICAL.
+            3. **Contact Info**: Find a shared physical address and phone number for the HQ.
+            4. **Status**: If "Liquidated" or "Deregistered" appears, flag it immediately.
+
+            RETURN JSON:
+            {
+                "identifier": "YYYY/NNNNNN/NN" or "Not Listed",
+                "industry": "Primary Industry",
+                "status": "Active/Inactive/Liquidated",
+                "address": "Full Physical Address (Street, Suburb, City)",
+                "phone": "Primary Contact Number or 'Not Listed'",
+                "registrationDate": "YYYY",
+                "directors": ["Name 1", "Name 2"],
+                "employees": "Count/Unknown",
+                "operations": "Short description of what they actually do.",
+                "globalRole": "National/Global",
+                "officialWebsite": "URL"
+            }
+            Just raw JSON.
+            `;
+
+            for (const modelName of modelsToTry) {
+                try {
+                    const model = genAI.getGenerativeModel({ model: modelName });
+                    const result = await model.generateContent(prompt);
+                    const cleanJson = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+                    aiData = JSON.parse(cleanJson);
+                    usedSource = `AI Synthesized (${modelName})`;
+                    break;
+                } catch (aiError) {
+                    console.warn(`[Intelligence] AI Failed with ${modelName}:`, aiError.message);
                 }
-
-                SNIPPETS:
-                ${context}
-                `;
-
-                const result = await model.generateContent(prompt);
-                const cleanJson = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-                aiData = JSON.parse(cleanJson);
-                usedSource = "AI Synthesized (Gemini 1.5)";
-
-            } catch (aiError) {
-                console.warn('[Intelligence] AI Failed:', aiError);
             }
         }
 
         // FALLBACK: Regex if AI Failed
         if (!aiData) {
-            aiData = synthesizeWithRegex(itemsRegistry, itemsProfile, input, allItems);
+            aiData = synthesizeWithRegex(itemsIdentity, itemsLegal, input, allItems);
         }
 
         return NextResponse.json({
@@ -198,14 +209,15 @@ export async function POST(request) {
                 industry: aiData.industry,
                 status: aiData.status,
                 address: aiData.address,
+                phone: aiData.phone || "Not Listed", // New Field
                 registrationDate: aiData.registrationDate,
                 directors: aiData.directors || [],
                 employees: aiData.employees,
                 operations: aiData.operations,
                 globalRole: aiData.globalRole,
-                summary: `Automated verified profile.`,
+                summary: `Automated verified profile via ${usedSource}.`,
                 source: `${usedSource}`,
-                website: aiData.officialWebsite || (itemsProfile[0]?.link || ""),
+                website: aiData.officialWebsite || (itemsIdentity[0]?.link || ""),
                 icon: aiData.status === 'Active' ? '🏢' : '⚠️',
                 details: `Synthesized from ${allItems.length} verified sources.`
             }
@@ -224,25 +236,14 @@ export async function POST(request) {
     }
 }
 
-function synthesizeWithRegex(itemsRegistry, itemsProfile, input, allItems) {
+function synthesizeWithRegex(itemsIdentity, itemsLegal, input, allItems) {
     let identifier = "Not found in web index";
     const regNumRegex = /\b(\d{4})\/\d{6}\/\d{2}\b/;
-    let registryMatch = null;
 
-    for (const item of itemsRegistry) {
-        if (item.title.toLowerCase().includes(input.toLowerCase())) {
-            const match = item.title.match(regNumRegex) || item.snippet.match(regNumRegex);
-            if (match) { registryMatch = match[0]; break; }
-        }
-    }
-    if (registryMatch) identifier = registryMatch;
-    else {
-        for (const item of itemsProfile) {
-            const match = item.snippet.match(regNumRegex);
-            if (match && item.title.toLowerCase().includes(input.toLowerCase())) {
-                identifier = match[0]; break;
-            }
-        }
+    // Scan Legal Vector First
+    for (const item of itemsLegal) {
+        const match = item.title.match(regNumRegex) || item.snippet.match(regNumRegex);
+        if (match) { identifier = match[0]; break; }
     }
 
     const cleanSnippets = allItems.map(i => `${i.title} ${i.snippet}`).join(' | ');
@@ -252,17 +253,18 @@ function synthesizeWithRegex(itemsRegistry, itemsProfile, input, allItems) {
     const foundIndustry = industries.find(ind => lowerSnippets.includes(ind.toLowerCase()));
 
     let address = "See web results";
-    const hqMatch = cleanSnippets.match(/(?:Headquarters|Based) in ([A-Z][a-z]+)/);
-    if (hqMatch) address = hqMatch[1];
-    else {
-        const addrItem = itemsProfile.find(i => /\d+\s+[A-Za-z]+\s+(Street|Road|Box)/i.test(i.snippet));
-        if (addrItem) address = addrItem.snippet;
-    }
+    const hqMatch = cleanSnippets.match(/(?:Headquarters|Based|Address|Location)[:\s]+([A-Za-z0-9,\s]+)/i);
+    if (hqMatch && hqMatch[1].length < 50) address = hqMatch[1];
+
+    let phone = "Not Listed";
+    // Regex for SA Phone: 011 123 4567 or +27 11...
+    const phoneMatch = cleanSnippets.match(/(?:\+27|0)[0-9]{2}[\s\-]?[0-9]{3}[\s\-]?[0-9]{4}/);
+    if (phoneMatch) phone = phoneMatch[0];
 
     const empMatch = cleanSnippets.match(/(?:employs|staff of)\s*(\d+(?:,\d+)?)/i);
     const employees = empMatch ? `${empMatch[1]} (Est.)` : "Unknown";
 
-    const descItem = itemsProfile.find(i => /is a|provides|specializes/i.test(i.snippet));
+    const descItem = itemsIdentity.find(i => /is a|provides|specializes/i.test(i.snippet));
     const operations = descItem ? descItem.snippet : "Business listing found.";
 
     return {
@@ -270,11 +272,12 @@ function synthesizeWithRegex(itemsRegistry, itemsProfile, input, allItems) {
         industry: foundIndustry || "Multi-Sector",
         status: "Active",
         address,
+        phone,
         registrationDate: identifier.startsWith("2") || identifier.startsWith("1") ? identifier.substring(0, 4) : "Unknown",
         directors: ["Listed in report"],
         employees,
         operations,
         globalRole: "National Entity",
-        officialWebsite: itemsProfile[0]?.link || ""
+        officialWebsite: itemsIdentity[0]?.link || ""
     };
 }
