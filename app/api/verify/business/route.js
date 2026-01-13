@@ -215,16 +215,19 @@ export async function POST(request) {
             ${context}
 
             INSTRUCTIONS:
-            1. **Reg Number**: Search deep! Look for "YYYY/NNNNNN/NN" or "K20" formats in the official site text or legal search results.
-            2. **Contact**: Identify the primary HQ address and Phone Number.
-            3. **JavaScript Errors**: If the content says "Enable JavaScript", IGNORE IT completely. Do not treat "Enable JavaScript" as "Operations".
-            4. **Inference**: If official site failed, heavily infer from the "Legal" and "Identity" snippets.
+            1. **Consistency Check (Time Travel)**: 
+               - If the company was "Founded in 1991", the "Registration Number" MUST start with 1991, 1996, etc.
+               - DO NOT pick a random Shelf Company from 2023 (e.g. 2023/...) if the company is decades old. Look deeper.
+               - Prefer "Grain Carriers (Pty) Ltd" (Old) over "Grain Carriers Holdings" (New).
+            2. **Reg Number**: Look for "YYYY/NNNNNN/NN". Prioritize the one matching the Founded Date.
+            3. **Contact**: Identify the primary HQ address and Phone Number.
+            4. **JavaScript Errors**: If the content says "Enable JavaScript", IGNORE IT completely.
 
             RETURN JSON:
             {
                 "identifier": "YYYY/NNNNNN/NN" or "Not Listed",
                 "industry": "Primary Industry",
-                "status": "Active/Inactive",
+                "status": "Active/Inactive/Liquidated",
                 "address": "Full Physical Address (Street, Suburb, City)",
                 "phone": "Primary Contact Number or 'Not Listed'",
                 "registrationDate": "YYYY",
