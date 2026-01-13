@@ -72,7 +72,7 @@ export async function POST(request) {
                     5. Summary: 1-2 sentence professional description of OPERATIONS.
                     6. Tags: Extract verify signals like "B-BBEE Level X", "ISO 9001", "SABS".
                     7. VAT: South African VAT Number (10 digits, usually starts with 4).
-                    8. Directors: List names of Directors or Legal Representatives found.
+                    8. Directors: List names of Directors or Legal Representatives. Look specifically for phrases like "The legal representative(s) of [Company]...".
                     
                     Return JSON ONLY: 
                     { 
@@ -100,9 +100,10 @@ export async function POST(request) {
         }
 
         // 4. Regex Fallback (Safety Net)
+        const strContext = JSON.stringify(context); // Compute once
+
         if (extracted.identifier === "Not Found" || extracted.identifier === "Not Listed") {
             console.log('[Verify] AI Fallback -> Regex');
-            const strContext = JSON.stringify(context);
 
             const regMatch = strContext.match(/\b(19|20)\d{2}\/\d{6}\/\d{2}\b/);
             if (regMatch) extracted.identifier = regMatch[0];
@@ -117,10 +118,27 @@ export async function POST(request) {
             const vatMatch = strContext.match(/\b4\d{9}\b/);
             if (vatMatch) extracted.vatNumber = vatMatch[0];
 
+            // Regex for Directors (Legal Representatives)
+            const dirMatch = strContext.match(/legal representative\(s\) of .*?[:\s]+([A-Za-z\s,\.]+)/i);
+            if (dirMatch && dirMatch[1]) {
+                // Simple split cleanup
+                extracted.directors = dirMatch[1].split(/,| and /).map(s => s.trim()).filter(s => s.length > 3 && s.length < 30);
+            }
+
             if (serperData.organic && serperData.organic.length > 0) {
                 extracted.website = serperData.organic[0].link;
                 // Clean URL as summary fallback
                 extracted.summary = serperData.organic[0].title;
+            }
+        }
+
+        // 5. Final Director Cleanup (Double Check Logic)
+        // Sometimes AI misses it even if successful, so check Regex again if empty
+        if ((!extracted.directors || extracted.directors.length === 0 || extracted.directors[0] === "Not Listed")) {
+            const dirBackup = strContext.match(/legal representative\(s\) of .*?[:\s]+([^.]+)/i);
+            if (dirBackup && dirBackup[1]) {
+                console.log('[Verify] Injecting missed directors from Regex');
+                extracted.directors = dirBackup[1].split(/,| and /).map(s => s.trim()).filter(s => s.length > 3 && s.length < 30);
             }
         }
 
