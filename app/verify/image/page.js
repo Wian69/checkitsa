@@ -6,8 +6,6 @@ import { useState } from 'react'
 import { trackSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
 
-import { createWorker } from 'tesseract.js'
-
 export default function ImageScanner() {
     const [file, setFile] = useState(null)
     const [result, setResult] = useState(null)
@@ -28,36 +26,27 @@ export default function ImageScanner() {
         e.preventDefault()
         if (!file) return
 
-        /*
         const { tier } = trackSearch()
-        if (tier === 'free') {
-            alert("Screenshot Analysis is only available for Pro, Elite, and Enterprise members. Please upgrade to access this feature.")
+        const allowedTiers = ['pro', 'elite', 'custom']
+        if (!allowedTiers.includes(tier)) {
+            alert("Visual Fraud Analysis is a Premium Feature. Please upgrade to Pro or Elite.")
             router.push('/subscription')
             return
         }
-        */
 
         setLoading(true)
         setResult(null)
 
         try {
-            // 1. Client-Side OCR
-            const worker = await createWorker('eng')
-            const ret = await worker.recognize(file)
-            const extractedText = ret.data.text
-            await worker.terminate()
+            // 1. Convert Image to Base64
+            const base64Image = await new Promise((resolve, reject) => {
+                const reader = new FileReader()
+                reader.readAsDataURL(file)
+                reader.onload = () => resolve(reader.result.split(',')[1]) // Remove data:image/png;base64, prefix
+                reader.onerror = error => reject(error)
+            })
 
-            if (!extractedText || extractedText.trim().length === 0) {
-                setResult({
-                    risk_score: 0,
-                    message: 'No text detected in image.',
-                    flags: [],
-                    text_extracted: 'No text found.'
-                })
-                return
-            }
-
-            // 2. Send TEXT to backend for analysis
+            // 2. Send Image to Backend
             const userStr = localStorage.getItem('checkitsa_user')
             const user = userStr ? JSON.parse(userStr) : null
             const email = user ? user.email : null
@@ -65,7 +54,7 @@ export default function ImageScanner() {
             const res = await fetch('/api/verify/image', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: extractedText, email })
+                body: JSON.stringify({ image: base64Image, mimeType: file.type, email })
             })
             const data = await res.json()
             setResult(data)
@@ -74,7 +63,7 @@ export default function ImageScanner() {
             setResult({
                 risk_score: 0,
                 message: 'Error processing image: ' + e.message,
-                flags: ['Client-side OCR failed'],
+                flags: ['Analysis failed'],
                 text_extracted: ''
             })
         }
@@ -113,7 +102,7 @@ export default function ImageScanner() {
 
                     {file && !result && (
                         <button onClick={handleScan} disabled={loading} className="btn btn-primary" style={{ width: '100%' }}>
-                            {loading ? 'Scanning Text...' : 'Analyze Screenshot'}
+                            {loading ? 'Analyzing Visuals...' : 'Analyze Screenshot (Pro)'}
                         </button>
                     )}
 
