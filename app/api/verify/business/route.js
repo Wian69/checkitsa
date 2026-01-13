@@ -69,8 +69,10 @@ export async function POST(request) {
                     2. Address: Head Office Address. (If not explicitly found, check for area codes like 011/021/etc in snippets and infer location e.g. "Johannesburg Area").
                     3. Phone: Primary Contact Number.
                     4. Website: Official Homepage URL.
-                    5. Summary: 1-2 sentence professional description of OPERATIONS. **CRITICAL: DO NOT include phone numbers, VAT IDs, or director names in this summary. Just say what they do.**
+                    5. Summary: 1-2 sentence professional description of OPERATIONS.
                     6. Tags: Extract verify signals like "B-BBEE Level X", "ISO 9001", "SABS".
+                    7. VAT: South African VAT Number (10 digits, usually starts with 4).
+                    8. Directors: List names of Directors or Legal Representatives found.
                     
                     Return JSON ONLY: 
                     { 
@@ -79,7 +81,9 @@ export async function POST(request) {
                         "phone": "...",
                         "website": "...",
                         "summary": "...",
-                        "tags": ["Tag1", "Tag2"]
+                        "tags": ["Tag1", "Tag2"],
+                        "vatNumber": "...",
+                        "directors": ["Name 1", "Name 2"]
                     }
                     Use "Not Listed" if missing.
                     `;
@@ -109,6 +113,10 @@ export async function POST(request) {
             if (landline) extracted.phone = landline[0];
             else if (phoneMatch) extracted.phone = phoneMatch[0];
 
+            // Regex for VAT
+            const vatMatch = strContext.match(/\b4\d{9}\b/);
+            if (vatMatch) extracted.vatNumber = vatMatch[0];
+
             if (serperData.organic && serperData.organic.length > 0) {
                 extracted.website = serperData.organic[0].link;
                 // Clean URL as summary fallback
@@ -125,7 +133,9 @@ export async function POST(request) {
                 phone: extracted.phone || "Not Listed",
                 website: extracted.website || null,
                 summary: extracted.summary || null,
-                tags: extracted.tags || []
+                tags: extracted.tags || [],
+                vatNumber: extracted.vatNumber || "Not Listed",
+                directors: extracted.directors || []
             }
         });
 

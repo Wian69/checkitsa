@@ -184,22 +184,65 @@ export default function BusinessVerificationPage() {
                                 </div>
                             )}
 
-                            <div style={{ display: 'grid', gap: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem' }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
-                                    <div>
-                                        <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>Registration Number</label>
-                                        <div style={{ fontSize: '1.5rem', fontFamily: 'monospace', color: '#34d399' }}>{result.identifier}</div>
+                            <div style={{ display: 'grid', gap: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
+                                    {/* Legal Section */}
+                                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <h3 style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#818cf8', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <span>⚖️</span> Legal & Financial
+                                        </h3>
+                                        <div style={{ display: 'grid', gap: '1rem' }}>
+                                            <div>
+                                                <label style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.3rem' }}>Registration Number</label>
+                                                <div style={{ fontSize: '1.1rem', fontFamily: 'monospace', color: 'white' }}>{result.identifier}</div>
+                                            </div>
+                                            <div>
+                                                <label style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.3rem' }}>VAT Number</label>
+                                                <div style={{ fontSize: '1.1rem', fontFamily: 'monospace', color: result.vatNumber !== "Not Listed" ? 'white' : 'rgba(255,255,255,0.3)' }}>{result.vatNumber}</div>
+                                            </div>
+                                        </div>
                                     </div>
 
+                                    {/* Leadership Section */}
+                                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <h3 style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#818cf8', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <span>👥</span> Key Leadership
+                                        </h3>
+                                        <div>
+                                            <label style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.3rem' }}>Directors / CEO</label>
+                                            {result.directors && result.directors.length > 0 ? (
+                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                                    {result.directors.map((d, i) => (
+                                                        <span key={i} style={{
+                                                            fontSize: '0.9rem',
+                                                            color: 'white',
+                                                            background: 'rgba(255,255,255,0.05)',
+                                                            padding: '0.3rem 0.6rem',
+                                                            borderRadius: '0.4rem',
+                                                            border: '1px solid rgba(255,255,255,0.1)'
+                                                        }}>
+                                                            {d}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.9rem', fontStyle: 'italic' }}>Not publically listed</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Contact Section */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
                                     <div>
                                         <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>Contact Number</label>
                                         <div style={{ fontSize: '1.2rem', color: 'white' }}>{result.phone}</div>
                                     </div>
-                                </div>
-
-                                <div>
-                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>Physical Address</label>
-                                    <div style={{ fontSize: '1.1rem', color: 'white' }}>{result.address}</div>
+                                    <div>
+                                        <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>Physical Address</label>
+                                        <div style={{ fontSize: '1.1rem', color: 'white' }}>{result.address}</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
