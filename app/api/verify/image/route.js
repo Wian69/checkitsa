@@ -86,13 +86,32 @@ export async function POST(request) {
     } catch (error) {
         console.error("Gemini API Error:", error)
 
+        // DIAGNOSTIC: List available models if 404 occurs
+        let availableModels = "Unable to list models"
+        try {
+            if (error.message.includes('404') || error.message.includes('not found')) {
+                // Temporary new instance to list models - use fetch directly to avoid SDK restrictions
+                const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`)
+                const listData = await listRes.json()
+                if (listData.models) {
+                    availableModels = listData.models.map(m => m.name).join(', ')
+                }
+            }
+        } catch (listErr) {
+            console.error("Model List Error", listErr)
+        }
+
         // Diagnose 404 (Model not found / API not enabled)
         if (error.message.includes('404') || error.message.includes('not found')) {
             return NextResponse.json({
                 error: 'Configuration Error',
-                message: 'Support for this AI model is not enabled on your API Key.',
+                message: 'The AI model could not be found via your API Key.',
                 risk_score: 0,
-                flags: ['Please enable "Generative Language API" in Google Cloud Console.'],
+                flags: [
+                    'API Key Valid: Yes',
+                    `Available Models: ${availableModels}`,
+                    'Action: Please verify "Generative Language API" is enabled.'
+                ],
                 text_extracted: ''
             }, { status: 503 })
         }
