@@ -141,7 +141,55 @@ export async function POST(request) {
         }
 
         // --------------------------------------------------------------------------------
-        // 2. AI SYNTHESIS (Robust Multi-Model Failover)
+        // 2. DEEP DIVE LAYER (Crawling)
+        // --------------------------------------------------------------------------------
+
+        const extractOfficialUrl = (items) => {
+            const blockList = ['linkedin', 'facebook', 'yellowpages', 'b2bhint', 'easyinfo', 'hellopeter', 'sa-companies', 'gov.za'];
+            for (const item of items) {
+                try {
+                    const domain = new URL(item.link).hostname;
+                    const isBlocked = blockList.some(b => domain.includes(b));
+                    if (!isBlocked) return item.link;
+                } catch (e) { }
+            }
+            return null;
+        };
+
+        const officialUrl = extractOfficialUrl(itemsIdentity);
+        let siteContent = "";
+
+        if (officialUrl) {
+            console.log(`[Intelligence] Crawling Official Site: ${officialUrl}`);
+            try {
+                // Cheerio is used to strip HTML tags effectively
+                const cheerio = await import('cheerio');
+
+                const siteRes = await fetch(officialUrl, {
+                    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+                    signal: AbortSignal.timeout(5000)
+                });
+
+                if (siteRes.ok) {
+                    const html = await siteRes.text();
+                    const $ = cheerio.load(html);
+
+                    // Remove scripts/styles to save tokens
+                    $('script').remove();
+                    $('style').remove();
+                    $('nav').remove(); // Often clutter
+
+                    // Focus on Text
+                    const bodyText = $('body').text().replace(/\s+/g, ' ').slice(0, 15000); // Limit context
+                    siteContent = `[OFFICIAL WEBSITE CONTENT (${officialUrl})]:\n${bodyText}\n---`;
+                }
+            } catch (crawlErr) {
+                console.warn('[Intelligence] Crawl Failed:', crawlErr.message);
+            }
+        }
+
+        // --------------------------------------------------------------------------------
+        // 3. AI SYNTHESIS (Robust Multi-Model Failover)
         // --------------------------------------------------------------------------------
 
         let aiData = null;
@@ -158,13 +206,15 @@ export async function POST(request) {
             Construct a Google-My-Business style profile for: "${input}". 
             
             DATA SOURCES:
+            ${siteContent}
             ${context}
 
             INSTRUCTIONS:
-            1. **Entity Resolution**: Combine fragments. The address might be in one snippet, the phone in another, the Reg No in a third. Merge them.
-            2. **Registration Number**: Look hard for "YYYY/NNNNNN/NN" or "K20..." formats. This is CRITICAL.
-            3. **Contact Info**: Find a shared physical address and phone number for the HQ.
-            4. **Status**: If "Liquidated" or "Deregistered" appears, flag it immediately.
+            1. **DEEP CONNECT**: Check the [OFFICIAL WEBSITE CONTENT] first. The "Reg No" is often in the footer. The Phone/Address is often in the header/contact section.
+            2. **Entity Resolution**: Combine fragments. The address might be in one snippet, the phone in another, the Reg No in a third. Merge them.
+            3. **Registration Number**: Look hard for "YYYY/NNNNNN/NN" or "K20..." formats. This is CRITICAL.
+            4. **Contact Info**: Find a shared physical address and phone number for the HQ.
+            5. **Status**: If "Liquidated" or "Deregistered" appears, flag it immediately.
 
             RETURN JSON:
             {
@@ -218,7 +268,7 @@ export async function POST(request) {
                 globalRole: aiData.globalRole,
                 summary: `Automated verified profile via ${usedSource}.`,
                 source: `${usedSource}`,
-                website: aiData.officialWebsite || (itemsIdentity[0]?.link || ""),
+                website: aiData.officialWebsite || (officialUrl || itemsIdentity[0]?.link || ""),
                 icon: aiData.status === 'Active' ? '🏢' : '⚠️',
                 details: `Synthesized from ${allItems.length} verified sources.`
             }
