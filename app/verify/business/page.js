@@ -42,7 +42,7 @@ export default function BusinessVerificationPage() {
         <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
             <Navbar />
 
-            {loading && <LoadingOverlay message="Locating Registration Details..." />}
+            {loading && <LoadingOverlay message="Compiling Contact Intelligence..." />}
 
             <div className="container" style={{ paddingTop: '10rem', maxWidth: '800px', margin: '0 auto', padding: '8rem 2rem 4rem' }}>
                 <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center', fontWeight: '800' }}>Business Search</h1>
@@ -98,22 +98,80 @@ export default function BusinessVerificationPage() {
                 {result && (
                     <div style={{ animation: 'fadeIn 0.3s ease' }}>
                         <div style={{ background: 'rgba(255,255,255,0.05)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--color-border)' }}>
-                            <h2 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'white', marginBottom: '1.5rem' }}>{result.name}</h2>
 
-                            <div style={{ display: 'grid', gap: '1.5rem' }}>
-                                <div>
-                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>Registration Number</label>
-                                    <div style={{ fontSize: '1.5rem', fontFamily: 'monospace', color: '#34d399' }}>{result.identifier}</div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                                <div style={{ flex: 1, minWidth: '280px' }}>
+                                    <h2 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'white' }}>{result.name}</h2>
+                                    {result.summary && (
+                                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.95rem', marginTop: '0.5rem', lineHeight: '1.6' }}>
+                                            {result.summary}
+                                        </p>
+                                    )}
+                                </div>
+                                {result.website && result.website !== "Not Listed" && (
+                                    <a
+                                        href={result.website}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                            padding: '0.7rem 1.4rem',
+                                            background: 'rgba(99, 102, 241, 0.15)',
+                                            border: '1px solid rgba(99, 102, 241, 0.4)',
+                                            color: '#818cf8',
+                                            borderRadius: '0.5rem',
+                                            fontWeight: '600',
+                                            textDecoration: 'none',
+                                            fontSize: '0.9rem',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '0.5rem',
+                                            whiteSpace: 'nowrap',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                        onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.25)'; e.currentTarget.style.borderColor = '#818cf8'; }}
+                                        onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)'; e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.4)'; }}
+                                    >
+                                        Visit Website ↗
+                                    </a>
+                                )}
+                            </div>
+
+                            {result.tags && result.tags.length > 0 && (
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '2rem' }}>
+                                    {result.tags.map((tag, i) => (
+                                        <span key={i} style={{
+                                            fontSize: '0.75rem',
+                                            background: 'rgba(16, 185, 129, 0.1)',
+                                            color: '#34d399',
+                                            padding: '0.3rem 0.8rem',
+                                            borderRadius: '999px',
+                                            fontWeight: '600',
+                                            border: '1px solid rgba(52, 211, 153, 0.25)',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.02em'
+                                        }}>
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div style={{ display: 'grid', gap: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+                                    <div>
+                                        <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>Registration Number</label>
+                                        <div style={{ fontSize: '1.5rem', fontFamily: 'monospace', color: '#34d399' }}>{result.identifier}</div>
+                                    </div>
+
+                                    <div>
+                                        <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>Contact Number</label>
+                                        <div style={{ fontSize: '1.2rem', color: 'white' }}>{result.phone}</div>
+                                    </div>
                                 </div>
 
                                 <div>
                                     <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>Physical Address</label>
-                                    <div style={{ fontSize: '1.2rem', color: 'white' }}>{result.address}</div>
-                                </div>
-
-                                <div>
-                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>Contact Number</label>
-                                    <div style={{ fontSize: '1.2rem', color: 'white' }}>{result.phone}</div>
+                                    <div style={{ fontSize: '1.1rem', color: 'white' }}>{result.address}</div>
                                 </div>
                             </div>
                         </div>

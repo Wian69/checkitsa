@@ -44,7 +44,10 @@ export async function POST(request) {
         let extracted = {
             identifier: "Not Found",
             address: "Not Found",
-            phone: "Not Found"
+            phone: "Not Found",
+            website: null,
+            summary: null,
+            tags: []
         };
 
         // 3. Robust AI Extraction with Failover
@@ -58,15 +61,26 @@ export async function POST(request) {
                     console.log(`[Verify] Attempting ${m}...`);
                     const model = genAI.getGenerativeModel({ model: m });
                     const prompt = `
-                    Extract 3 fields for company "${input}" from data below.
+                    Extract fields for "${input}" from data below.
                     DATA: ${context}
                     
                     RULES:
                     1. Identifier: CIPC Registration Number (YYYY/NNNNNN/NN).
                     2. Address: Head Office Address.
                     3. Phone: Primary Contact Number.
+                    4. Website: Official Homepage URL (ignore generic directories).
+                    5. Summary: 1-2 sentence description of what they do.
+                    6. Tags: Extract trust signals like "B-BBEE Level X", "ISO 9001", "SABS", etc.
                     
-                    Return JSON ONLY: { "identifier": "...", "address": "...", "phone": "..." }
+                    Return JSON ONLY: 
+                    { 
+                        "identifier": "...", 
+                        "address": "...", 
+                        "phone": "...",
+                        "website": "...",
+                        "summary": "...",
+                        "tags": ["Tag1", "Tag2"]
+                    }
                     Use "Not Listed" if missing.
                     `;
 
@@ -90,10 +104,16 @@ export async function POST(request) {
             if (regMatch) extracted.identifier = regMatch[0];
 
             const phoneMatch = strContext.match(/(?:\+27|0)[0-9]{2}[\s\-]?[0-9]{3}[\s\-]?[0-9]{4}/);
-            // Bias towards landlines (010, 011, 021)
             const landline = strContext.match(/(?:\+27|0)(11|21|10|12|31|41|51)[0-9]{7}/);
+            // Prioritize landline for business
             if (landline) extracted.phone = landline[0];
             else if (phoneMatch) extracted.phone = phoneMatch[0];
+
+            // Simple website/summary extraction from organic links
+            if (serperData.organic && serperData.organic.length > 0) {
+                extracted.website = serperData.organic[0].link;
+                extracted.summary = serperData.organic[0].snippet;
+            }
         }
 
         return NextResponse.json({
@@ -102,7 +122,10 @@ export async function POST(request) {
                 name: input,
                 identifier: extracted.identifier || "Not Listed",
                 address: extracted.address || "Not Listed",
-                phone: extracted.phone || "Not Listed"
+                phone: extracted.phone || "Not Listed",
+                website: extracted.website || null,
+                summary: extracted.summary || null,
+                tags: extracted.tags || []
             }
         });
 
