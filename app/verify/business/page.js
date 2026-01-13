@@ -179,45 +179,37 @@ export default function BusinessVerificationPage() {
                                 </div>
                             </div>
 
-                            {/* Leadership */}
-                            <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
-                                <h3 className="text-indigo-400 text-sm font-bold mb-4 flex items-center gap-2">
-                                    <svg style={{ width: '1rem', height: '1rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                                    Key Leadership
-                                </h3>
-                                <div className="space-y-2">
-                                    {result.directors && result.directors.length > 0 ? (
-                                        result.directors.map((d, i) => (
+                            {/* Leadership - OPTIONAL RENDER */}
+                            {result.directors && result.directors.length > 0 && (
+                                <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
+                                    <h3 className="text-indigo-400 text-sm font-bold mb-4 flex items-center gap-2">
+                                        <svg style={{ width: '1rem', height: '1rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                        Key Leadership
+                                    </h3>
+                                    <div className="space-y-2">
+                                        {result.directors.map((d, i) => (
                                             <div key={i} className="flex items-center gap-2 bg-indigo-500/5 px-3 py-2 rounded-lg border border-indigo-500/10">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
                                                 <span className="text-xs text-indigo-100 font-medium">{d}</span>
                                             </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-white/20 text-xs italic">Director mapping not found in current context</p>
-                                    )}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
-                            {/* Scale & Ops */}
-                            <div className="bg-white/5 p-6 rounded-2xl border border-white/10 col-span-full">
-                                <h3 className="text-indigo-400 text-sm font-bold mb-3">Core Operations & Market Position</h3>
-                                <p className="text-white/70 text-sm leading-relaxed mb-4">{result.operations}</p>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-white/5">
-                                    <div>
-                                        <p className="text-white/30 text-[10px] uppercase font-bold">Global Footprint</p>
-                                        <p className="text-white text-xs font-bold">{result.globalRole}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-white/30 text-[10px] uppercase font-bold">Employee Scale</p>
-                                        <p className="text-white text-xs font-bold">{result.employees}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-white/30 text-[10px] uppercase font-bold">Data Source</p>
-                                        <p className="text-indigo-400 text-[10px] font-bold">{result.source}</p>
+                            {/* Scale & Ops - OPTIONAL RENDER */}
+                            {result.operations && (
+                                <div className="bg-white/5 p-6 rounded-2xl border border-white/10 col-span-full">
+                                    <h3 className="text-indigo-400 text-sm font-bold mb-3">Core Operations & Market Position</h3>
+                                    <p className="text-white/70 text-sm leading-relaxed mb-4">{result.operations}</p>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-white/5">
+                                        <div>
+                                            <p className="text-white/30 text-[10px] uppercase font-bold">Data Source</p>
+                                            <p className="text-indigo-400 text-[10px] font-bold">{result.source}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 )}

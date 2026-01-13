@@ -266,32 +266,21 @@ export async function POST(request) {
             ${context}
 
             CRITICAL COMPILATION RULES:
-            1. **Truth Vector**: Use the "knowledgeGraph" and "GOVERNMENT INTELLIGENCE" fields as the absolute source of truth for Registration Numbers and Headquarters.
-            2. **Operating Entity Resolution**: 
-               - If multiple registration numbers or entities appear in the search results, you MUST identify and prioritize the **Actual Operating Company**.
-               - Heuristic: Favor the oldest registration number that includes a standard operating suffix like **(Pty) Ltd**, **CC**, or **Ltd**.
-               - Distinguish these from newer "Holding Companies", "Shelf Companies", or "Subsidiaries" (e.g., if a company founded in 1991 has a 2023 registration as well, prioritize the 1991 foundational data).
-            3. **VAT Number**: Actively hunt for a 10-digit SA VAT number (usually starts with 4).
-            4. **Branches**: List multi-location details (city names, depots, countries) found in web content or Google Places.
-            5. **Contact Intelligence**: Extract physical Head Office address and primary phone.
-            6. **Business Age**: Calculate years from the established date to 2026.
-            7. **Operations**: Professional summary of core services and market scale.
+            1. **Primary Goal**: Extract confirmable contact details.
+            2. **Registration Number**: Find the CIPC registration number (e.g., YYYY/NNNNNN/NN).
+            3. **Address**: Find the Head Office / Physical Address.
+            4. **Phone**: Find the primary contact number.
+            5. **Status**: Determine if Active or Inactive.
             
             RETURN JSON:
             {
                 "identifier": "YYYY/NNNNNN/NN", 
-                "vatNumber": "4XXXXXXXXX or Not Listed",
-                "industry": "Primary Sector",
                 "status": "Active",
-                "address": "Full Physical Address of Head Office",
+                "address": "Full Physical Address",
                 "phone": "Primary Contact Number",
-                "registrationDate": "YYYY",
+                "industry": "Primary Sector",
                 "businessAge": "X Years Active",
-                "directors": ["Name 1", "Name 2"],
-                "branches": ["City 1", "City 2"],
-                "employees": "Count or Unknown",
-                "operations": "Detailed professional summary of core services.",
-                "globalRole": "National/Global Presence description",
+                "vatNumber": "Optional/Not Listed",
                 "officialWebsite": "URL"
             }
             Just the raw JSON object.
