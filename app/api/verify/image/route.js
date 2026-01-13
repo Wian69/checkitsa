@@ -36,8 +36,8 @@ export async function POST(request) {
 
         // --- GEMINI VISION ANALYSIS ---
         const genAI = new GoogleGenerativeAI(geminiKey)
-        // Switch to Pro model for better stability and "Elite" quality
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" })
+        // Fallback to Stable 1.0 Vision Model (1.5 appears restricted for this key)
+        const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" })
 
         const prompt = `
         You are a Cyber Security Expert specializing in Social Engineering and Fraud Detection.
