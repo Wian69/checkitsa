@@ -2,9 +2,7 @@
 import Navbar from '@/components/Navbar'
 import AdBanner from '@/components/AdBanner'
 
-
 import { useState, useEffect } from 'react'
-import { trackSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
 
 export default function GamblingCheck() {
@@ -84,37 +82,37 @@ export default function GamblingCheck() {
                     />
                 </div>
 
-            </div>
+                {/* Top Ad */}
+                <div className="container" style={{ marginBottom: '2rem' }}>
+                    <AdBanner format="leaderboard" />
+                </div>
 
-            <div className="container" style={{ marginBottom: '2rem' }}>
-                <AdBanner format="leaderboard" />
-            </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                    {filteredSites.map((site) => (
+                        <div key={site.domain} className="glass-panel" style={{ padding: '1.5rem', border: '1px solid var(--color-success)', position: 'relative', overflow: 'hidden' }}>
+                            <div style={{ position: 'absolute', top: 0, right: 0, background: 'var(--color-success)', color: 'black', padding: '0.25rem 0.75rem', fontSize: '0.75rem', fontWeight: 600, borderBottomLeftRadius: '0.5rem' }}>
+                                LICENSED
+                            </div>
+                            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{site.name}</h3>
+                            <div style={{ color: 'var(--color-primary)', marginBottom: '1rem', fontSize: '0.9rem' }}>{site.domain}</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                                <strong>Regulator:</strong> {site.license}
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--color-primary)', marginTop: '0.25rem' }}>
+                                <strong>License No:</strong> {site.licenseNumber}
+                            </div>
+                            <button onClick={() => handleVisit(site)} className="btn btn-outline" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center', fontSize: '0.875rem' }}>
+                                Visit Safe Site ↗
+                            </button>
+                        </div>
+                    ))}
+                </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-                {filteredSites.map((site) => (
-                    <div key={site.domain} className="glass-panel" style={{ padding: '1.5rem', border: '1px solid var(--color-success)', position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ position: 'absolute', top: 0, right: 0, background: 'var(--color-success)', color: 'black', padding: '0.25rem 0.75rem', fontSize: '0.75rem', fontWeight: 600, borderBottomLeftRadius: '0.5rem' }}>
-                            LICENSED
-                        </div>
-                        <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{site.name}</h3>
-                        <div style={{ color: 'var(--color-primary)', marginBottom: '1rem', fontSize: '0.9rem' }}>{site.domain}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                            <strong>Regulator:</strong> {site.license}
-                        </div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--color-primary)', marginTop: '0.25rem' }}>
-                            <strong>License No:</strong> {site.licenseNumber}
-                        </div>
-                        <button onClick={() => handleVisit(site)} className="btn btn-outline" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center', fontSize: '0.875rem' }}>
-                            Visit Safe Site ↗
-                        </button>
-                    </div>
-                ))}
+                {/* Bottom Ad */}
+                <div className="container" style={{ marginTop: '3rem' }}>
+                    <AdBanner format="rectangle" />
+                </div>
             </div>
-
-            <div className="container" style={{ marginTop: '3rem' }}>
-                <AdBanner format="rectangle" />
-            </div>
-        </div>
-        </main >
+        </main>
     )
 }
