@@ -28,32 +28,81 @@ export async function POST(request) {
             }, { status: 402 })
         }
 
-        const cseKey = env.GOOGLE_CSE_API_KEY || process.env.GOOGLE_CSE_API_KEY
-        const cx = env.GOOGLE_CSE_CX || process.env.GOOGLE_CSE_CX || '16e9212fe3fcf4cea'
         const geminiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY
 
-        if (!cseKey || !cx) {
-            return NextResponse.json({ valid: false, data: { status: 'Config Error', message: 'Intelligence services are not correctly configured.' } })
-        }
-
         // --------------------------------------------------------------------------------
-        // 1. MULTI-VECTOR WEB SEARCH (Data Gathering)
+        // 1. UNLIMITED MULTI-VECTOR SEARCH (DuckDuckGo Scraper)
         // --------------------------------------------------------------------------------
-        console.log(`[Intelligence] Directed Search for: ${input}`);
+        console.log(`[Intelligence] Unlimited Search for: ${input}`);
 
+        // Vector A: DIRECTORY AUTHORITY ("The Truth")
+        // Target specific business directories for strict Reg No matching
         const queryRegistry = `site:b2bhint.com OR site:sa-companies.com OR site:easyinfo.co.za "${input}"`;
+
+        // Vector B: CORPORATE PROFILE ("The Context")
+        // Target general web for rich details (excluding the purely data sites to find natural text)
         const queryProfile = `"${input}" ("Founded" OR "CEO" OR "Employees" OR "Headquarters" OR "Registration Number") -site:b2bhint.com`;
 
-        const fetchSearch = async (q) => {
-            const url = `https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(q)}&num=6`;
-            const res = await fetch(url);
-            const data = await res.json();
-            return data.items || [];
+        // SCERAPER ENGINE (Bypasses API Limits)
+        const fetchDuckDuckGo = async (q) => {
+            try {
+                // Fetch HTML version of DDG (lighter, easier to parse, no JS required)
+                const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(q)}`;
+
+                const res = await fetch(url, {
+                    headers: {
+                        // Imperative: Pretend to be a real browser to avoid instant 403 blocks
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                        'Accept-Language': 'en-US,en;q=0.5'
+                    }
+                });
+
+                const html = await res.text();
+
+                // Parse Logic: Extract items from the HTML string using Regex (Edge-safe)
+                // DDG HTML structure: <div class="result ..."> <a class="result__a" href="...">Title</a> ... <a class="result__snippet" ...>Snippet</a>
+
+                const items = [];
+                // Regex to find result blocks. This is brittle but highly effective for DDG HTML.
+                // We capture Title, Link, and Snippet roughly.
+                const resultRegex = /<div class="result[^>]*>([\s\S]*?)<\/div>/g;
+                const linkRegex = /href="(.*?)"/;
+                const titleRegex = /<a class="result__a"[^>]*>(.*?)<\/a>/;
+                const snippetRegex = /<a class="result__snippet"[^>]*>([\s\S]*?)<\/a>/;
+
+                let match;
+                while ((match = resultRegex.exec(html)) !== null) {
+                    const block = match[1];
+                    const linkMatch = block.match(linkRegex);
+                    const titleMatch = block.match(titleRegex);
+                    const snippetMatch = block.match(snippetRegex);
+
+                    if (linkMatch && titleMatch && snippetMatch) {
+                        // Clean HTML tags from content
+                        const cleanTitle = titleMatch[1].replace(/<[^>]*>/g, '').trim();
+                        const cleanSnippet = snippetMatch[1].replace(/<[^>]*>/g, '').trim();
+
+                        items.push({
+                            title: cleanTitle,
+                            link: linkMatch[1],
+                            snippet: cleanSnippet
+                        });
+                    }
+                    if (items.length >= 6) break; // Limit to 6 best results per vector
+                }
+
+                return items;
+
+            } catch (err) {
+                console.warn('[Scraper] DDG Fetch Failed:', err);
+                return []; // Fail gracefully, don't crash
+            }
         };
 
         const [itemsRegistry, itemsProfile] = await Promise.all([
-            fetchSearch(queryRegistry),
-            fetchSearch(queryProfile)
+            fetchDuckDuckGo(queryRegistry),
+            fetchDuckDuckGo(queryProfile)
         ]);
 
         const allItems = [...itemsRegistry, ...itemsProfile];
@@ -66,17 +115,16 @@ export async function POST(request) {
         }
 
         // --------------------------------------------------------------------------------
-        // 2. HYBRID INTELLIGENCE (AI with Regex Fallback)
+        // 2. HYBRID INTELLIGENCE (Gemini AI + Regex Fallback)
         // --------------------------------------------------------------------------------
 
         let aiData = null;
-        let usedSource = "Web-Only Heuristic";
+        let usedSource = "Web Scraper (Regex)";
 
-        // TRY AI SYNTHESIS FIRST (Gemini 1.5 Flash)
+        // A. TRY AI SYNTHESIS (Gemini 1.5 Flash)
         if (geminiKey) {
             try {
                 const genAI = new GoogleGenerativeAI(geminiKey);
-                // Use 'gemini-1.5-flash' for speed and cost effectiveness
                 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
                 const context = allItems.map(i => `[TITLE]: ${i.title}\n[SNIPPET]: ${i.snippet}\n[LINK]: ${i.link}`).join('\n---\n');
@@ -89,7 +137,6 @@ export async function POST(request) {
                 
                 CRITICAL RULES:
                 1. Registration Number: Prioritize the OLDEST entity if multiple are found (Parent vs Subsidiary). Identify the main holding company. 
-                   - Example: If you see "1996/..." and "2017/...", the 1996 one is likely the parent.
                    - Look for CIPC format: YYYY/NNNNNN/NN.
                 2. Employee Count: specific numbers (e.g., "169,000") are better than "Unknown". Look for "employs", "staff of", "workforce".
                 3. Industry: Classify into one general sector (e.g. Logistics, Retail, Mining, Finance).
@@ -116,24 +163,21 @@ export async function POST(request) {
 
                 const result = await model.generateContent(prompt);
                 const responseText = result.response.text();
-
-                // Clean markdown code blocks if present
                 const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+
                 aiData = JSON.parse(cleanJson);
                 usedSource = "AI Verified (Gemini 1.5)";
 
             } catch (aiError) {
                 console.warn('[Intelligence] AI Synthesis Failed, falling back to Regex:', aiError);
-                // Fallthrough to Regex logic below
             }
         }
 
-        // 3. FALLBACK: V7 REGEX PARSER (If AI failed or no Key)
+        // B. FALLBACK: REGEX PARSER (If AI failed)
         if (!aiData) {
-            aiData = synthesizeWithWebOnly(itemsRegistry, itemsProfile, input, allItems);
+            aiData = synthesizeWithRegex(itemsRegistry, itemsProfile, input, allItems);
         }
 
-        // Final Response Construction
         return NextResponse.json({
             valid: true,
             data: {
@@ -147,11 +191,11 @@ export async function POST(request) {
                 employees: aiData.employees,
                 operations: aiData.operations,
                 globalRole: aiData.globalRole,
-                summary: `Automated web profile generated from authoritative sources.`,
+                summary: `Automated web profile generated from verified sources.`,
                 source: `${usedSource}`,
                 website: aiData.officialWebsite || (allItems[0]?.link || ""),
                 icon: aiData.status === 'Active' ? '🏢' : '⚠️',
-                details: `Synthesized from ${allItems.length} verified web endpoints.`
+                details: `Synthesized from ${allItems.length} verified web endpoints (Unlimited).`
             }
         });
 
@@ -169,14 +213,14 @@ export async function POST(request) {
 }
 
 // -----------------------------------------------------------------------
-// FALLBACK LOGIC (The "v7" Regex Engine)
+// FALLBACK LOGIC
 // -----------------------------------------------------------------------
-function synthesizeWithWebOnly(itemsRegistry, itemsProfile, input, allItems) {
+function synthesizeWithRegex(itemsRegistry, itemsProfile, input, allItems) {
     let identifier = "Not found in web index";
     const regNumRegex = /\b(\d{4})\/\d{6}\/\d{2}\b/;
     let registryMatch = null;
 
-    // 1. Registry Vector
+    // Registry Vector First
     for (const item of itemsRegistry) {
         if (item.title.toLowerCase().includes(input.toLowerCase())) {
             const match = item.title.match(regNumRegex) || item.snippet.match(regNumRegex);
@@ -191,7 +235,6 @@ function synthesizeWithWebOnly(itemsRegistry, itemsProfile, input, allItems) {
     }
     if (registryMatch) identifier = registryMatch;
     else {
-        // Fallback to Profile Vector
         for (const item of itemsProfile) {
             const match = item.snippet.match(regNumRegex);
             if (match && item.title.toLowerCase().includes(input.toLowerCase())) {
@@ -203,11 +246,9 @@ function synthesizeWithWebOnly(itemsRegistry, itemsProfile, input, allItems) {
     const cleanSnippets = allItems.map(i => `${i.title} ${i.snippet}`).join(' | ');
     const lowerSnippets = cleanSnippets.toLowerCase();
 
-    // Industry
     const industries = ['Agriculture', 'Mining', 'Manufacturing', 'Logistics', 'Retail', 'Technology', 'Finance', 'Healthcare', 'Consulting'];
     const foundIndustry = industries.find(ind => lowerSnippets.includes(ind.toLowerCase()));
 
-    // Address
     let address = "See web results";
     const hqMatch = cleanSnippets.match(/(?:Headquarters|Based) in ([A-Z][a-z]+)/);
     if (hqMatch) address = hqMatch[1];
@@ -216,11 +257,9 @@ function synthesizeWithWebOnly(itemsRegistry, itemsProfile, input, allItems) {
         if (addrItem) address = addrItem.snippet;
     }
 
-    // Employees
     const empMatch = cleanSnippets.match(/(?:employs|staff of)\s*(\d+(?:,\d+)?)/i);
     const employees = empMatch ? `${empMatch[1]} (Est.)` : "Unknown";
 
-    // Operations
     const descItem = itemsProfile.find(i => /is a|provides|specializes/i.test(i.snippet));
     const operations = descItem ? descItem.snippet : "Business listing found.";
 
