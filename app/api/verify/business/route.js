@@ -22,8 +22,8 @@ export async function POST(request) {
         }
 
         // 1. Single Serper Call (No vectors, no crawling)
-        // We ask specifically for the "Imprint" or "Contact" data to find the Reg No.
-        const q = `${input} South Africa registration number address phone contact`
+        // We Use a simple "Brand Entity" query to trigger Knowledge Graph & People Also Ask.
+        const q = `${input} South Africa`
         console.log(`[SimpleVerify] Searching: ${q}`)
 
         const res = await fetch("https://google.serper.dev/search", {
