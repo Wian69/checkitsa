@@ -178,9 +178,9 @@ export async function POST(request) {
         }
 
         // Direct Knowledge Graph Injection for perfect accuracy
-        if (serperData.knowledgeGraph) {
-            if (serperData.knowledgeGraph.rating) extracted.rating = serperData.knowledgeGraph.rating;
-            if (serperData.knowledgeGraph.ratingCount) extracted.reviews = serperData.knowledgeGraph.ratingCount;
+        if (dataEntity.knowledgeGraph) {
+            if (dataEntity.knowledgeGraph.rating) extracted.rating = dataEntity.knowledgeGraph.rating;
+            if (dataEntity.knowledgeGraph.ratingCount) extracted.reviews = dataEntity.knowledgeGraph.ratingCount;
         }
 
         return NextResponse.json({
