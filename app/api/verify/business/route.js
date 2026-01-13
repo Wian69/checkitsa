@@ -160,9 +160,12 @@ export async function POST(request) {
         ]);
 
         const allItems = [...itemsIdentity, ...itemsLegal, ...itemsLeadership, ...itemsSurgical];
+
+        // PARSE SERPER RESULTS:
+        // If Knowledge Graph is missing, map the high-level organic snippets which contain the B-BBEE and Imprint data (1996 Reg No).
         const googleIntelligence = serperData ? JSON.stringify({
-            knowledgeGraph: serperData.knowledgeGraph,
-            organic: serperData.organic?.slice(0, 3),
+            knowledgeGraph: serperData.knowledgeGraph || "Not Found",
+            verifiedSnippets: serperData.organic?.slice(0, 4).map(o => `[VERIFIED GOOGLE RESULT]: ${o.title} - ${o.snippet} (Link: ${o.link})`).join('\n') || "None",
             places: serperData.places?.slice(0, 5) // Capture Google Maps branch data
         }) : "Serper API Key Not Configured. Relying on scraping.";
 
