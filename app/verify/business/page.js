@@ -80,7 +80,7 @@ export default function BusinessVerificationPage() {
                             disabled={loading}
                             style={{ padding: '1rem 2rem', borderRadius: '0.5rem', background: 'var(--color-primary)', color: 'white', fontWeight: '600', border: 'none', cursor: 'pointer', opacity: loading ? 0.7 : 1 }}
                         >
-                            {loading ? 'Synthesizing...' : 'Search Intelligence'}
+                            {loading ? 'Compiling...' : 'Search Intelligence'}
                         </button>
                     </form>
                 </div>
@@ -100,100 +100,133 @@ export default function BusinessVerificationPage() {
                     </div>
                 )}
 
-                {result && (
+                {result && result.identifier && (
                     <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '3rem' }}>
-                            {/* Company Identity */}
-                            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '2rem', borderRadius: '1.5rem', border: '1px solid var(--color-border)' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                                    <span style={{ fontSize: '2.5rem' }}>{result.icon}</span>
-                                    <div>
-                                        <h2 style={{ fontSize: '1.5rem', fontWeight: '700' }}>{result.name}</h2>
-                                        <p style={{ color: 'var(--color-primary)', fontWeight: '600' }}>Reg No: {result.identifier}</p>
-                                    </div>
-                                </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
 
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            {/* Profile Header */}
+                            <div className="bg-white/5 p-6 rounded-2xl border border-white/10 col-span-full">
+                                <div className="flex items-center gap-4">
+                                    <span className="text-5xl">{result.icon || '🏢'}</span>
                                     <div>
-                                        <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.2rem' }}>Industry</label>
-                                        <p style={{ fontWeight: '500' }}>{result.industry}</p>
+                                        <h2 className="text-2xl font-black text-white">{result.name}</h2>
+                                        <p className="text-indigo-400 font-bold uppercase tracking-widest text-xs mt-1">{result.industry}</p>
                                     </div>
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.2rem' }}>Registration Date</label>
-                                        <p style={{ fontWeight: '500' }}>{result.registrationDate}</p>
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.2rem' }}>Employees</label>
-                                        <p style={{ fontWeight: '500' }}>{result.employees}</p>
+                                    <div className="ml-auto text-right">
+                                        <p className="text-white/40 text-[10px] uppercase">Intelligence Confidence</p>
+                                        <p className="text-emerald-400 font-bold">HIGH</p>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Operations & Global Role */}
-                            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '2rem', borderRadius: '1.5rem', border: '1px solid var(--color-border)' }}>
-                                <h3 style={{ fontSize: '1.2rem', fontWeight: '700', marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>Logistics & Contact</h3>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                            {/* Legal & Financial */}
+                            <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
+                                <h3 className="text-indigo-400 text-sm font-bold mb-4 flex items-center gap-2">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                    Legal & Financial
+                                </h3>
+                                <div className="space-y-4">
                                     <div>
-                                        <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.5rem' }}>Headquarters Address</label>
-                                        <p style={{ fontWeight: '500', fontSize: '0.95rem' }}>{result.address}</p>
+                                        <p className="text-white/30 text-[10px] uppercase font-bold">Registration Number</p>
+                                        <p className="text-white font-mono text-lg">{result.identifier}</p>
                                     </div>
                                     <div>
-                                        <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.5rem' }}>Primary Contact</label>
-                                        <p style={{ fontWeight: '500', fontSize: '0.95rem', color: 'var(--color-primary)' }}>{result.phone || "Not Listed"}</p>
+                                        <p className="text-white/30 text-[10px] uppercase font-bold">VAT Number</p>
+                                        <p className="text-white font-mono">{result.vatNumber || 'Not Found'}</p>
                                     </div>
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.5rem' }}>Global Footprint</label>
-                                        <p style={{ fontWeight: '500', fontSize: '0.95rem' }}>{result.globalRole}</p>
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.5rem' }}>Core Operations</label>
-                                        <p style={{ fontWeight: '500', fontSize: '0.95rem' }}>{result.operations}</p>
+                                    <div className="flex gap-4">
+                                        <div>
+                                            <p className="text-white/30 text-[10px] uppercase font-bold">Status</p>
+                                            <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 rounded text-[10px] font-black uppercase">{result.status}</span>
+                                        </div>
+                                        <div>
+                                            <p className="text-white/30 text-[10px] uppercase font-bold">Est.</p>
+                                            <p className="text-white text-xs font-bold">{result.registrationDate}</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Leadership & Status */}
-                            <div style={{ background: 'rgba(99, 102, 241, 0.05)', padding: '2rem', borderRadius: '1.5rem', border: '1px solid var(--color-primary)' }}>
-                                <h3 style={{ fontSize: '1.2rem', fontWeight: '700', marginBottom: '1.5rem', color: '#818cf8' }}>Executive Leadership</h3>
-                                <div style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                            {/* Logistics & Contact */}
+                            <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
+                                <h3 className="text-indigo-400 text-sm font-bold mb-4 flex items-center gap-2">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                    Logistics & HQ
+                                </h3>
+                                <div className="space-y-4">
+                                    <div>
+                                        <p className="text-white/30 text-[10px] uppercase font-bold">Headquarters Address</p>
+                                        <p className="text-white text-sm leading-snug">{result.address}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-white/30 text-[10px] uppercase font-bold">Primary Contact</p>
+                                        <p className="text-white font-bold">{result.phone}</p>
+                                    </div>
+                                    {result.branches && result.branches.length > 0 && (
+                                        <div>
+                                            <p className="text-white/30 text-[10px] uppercase font-bold">Other Locations</p>
+                                            <div className="flex flex-wrap gap-1 mt-1">
+                                                {result.branches.map((b, i) => (
+                                                    <span key={i} className="text-[9px] bg-white/5 px-2 py-0.5 rounded border border-white/5 text-white/60">{b}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Leadership */}
+                            <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
+                                <h3 className="text-indigo-400 text-sm font-bold mb-4 flex items-center gap-2">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                    Key Leadership
+                                </h3>
+                                <div className="space-y-2">
                                     {result.directors && result.directors.length > 0 ? (
-                                        result.directors.map((name, i) => (
-                                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', background: 'rgba(255,255,255,0.03)', padding: '0.8rem', borderRadius: '0.5rem' }}>
-                                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-primary)' }}></div>
-                                                <span style={{ fontWeight: '500' }}>{name}</span>
+                                        result.directors.map((d, i) => (
+                                            <div key={i} className="flex items-center gap-2 bg-indigo-500/5 px-3 py-2 rounded-lg border border-indigo-500/10">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                                                <span className="text-xs text-indigo-100 font-medium">{d}</span>
                                             </div>
                                         ))
                                     ) : (
-                                        <p style={{ color: 'var(--color-text-dim)' }}>Leadership details being processed...</p>
+                                        <p className="text-white/20 text-xs italic">Director mapping not found in current context</p>
                                     )}
                                 </div>
-                                <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid rgba(99, 102, 241, 0.2)' }}>
-                                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-dim)', marginBottom: '0.2rem' }}>Current Status</label>
-                                    <span style={{ padding: '0.3rem 0.8rem', borderRadius: '2rem', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontSize: '0.85rem', fontWeight: '700' }}>
-                                        {result.status}
-                                    </span>
-                                </div>
                             </div>
-                        </div>
 
-                        <div style={{ marginTop: '2rem', background: 'rgba(255,255,255,0.03)', padding: '2rem', borderRadius: '1.5rem', border: '1px solid var(--color-border)' }}>
-                            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '1rem' }}>Executive Intelligence Summary</h3>
-                            <p style={{ color: 'var(--color-text-dim)', lineHeight: '1.6', fontSize: '1rem' }}>{result.summary}</p>
-                            <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--color-border)', fontSize: '0.85rem', color: 'var(--color-text-dim)' }}>
-                                <p><strong>Intelligence Source:</strong> {result.source}</p>
+                            {/* Scale & Ops */}
+                            <div className="bg-white/5 p-6 rounded-2xl border border-white/10 col-span-full">
+                                <h3 className="text-indigo-400 text-sm font-bold mb-3">Core Operations & Market Position</h3>
+                                <p className="text-white/70 text-sm leading-relaxed mb-4">{result.operations}</p>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-white/5">
+                                    <div>
+                                        <p className="text-white/30 text-[10px] uppercase font-bold">Global Footprint</p>
+                                        <p className="text-white text-xs font-bold">{result.globalRole}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-white/30 text-[10px] uppercase font-bold">Employee Scale</p>
+                                        <p className="text-white text-xs font-bold">{result.employees}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-white/30 text-[10px] uppercase font-bold">Data Source</p>
+                                        <p className="text-indigo-400 text-[10px] font-bold">{result.source}</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 )}
+            </div>
 
-                <style jsx>{`
+            <style jsx>{`
                 @keyframes fadeIn {
                     from { opacity: 0; transform: translateY(10px); }
                     to { opacity: 1; transform: translateY(0); }
                 }
             `}</style>
-            </div>
-            {loading && <LoadingOverlay message="Synthesizing Business Profile..." />}
+
+            {loading && <LoadingOverlay message="Compiling Deep Business Profile..." />}
         </main>
     );
 }

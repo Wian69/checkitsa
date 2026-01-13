@@ -37,15 +37,17 @@ export async function POST(request) {
         // --------------------------------------------------------------------------------
         console.log(`[Intelligence] Search Initiated for: ${input}`);
 
-        // Vector 1: Identity (Address, Phone, Map Presence) - OPEN WEB
-        const queryIdentity = `"${input}" South Africa contact details address phone headquarters`
+        // Vector 1: Identity & Operations (About, Branches, HQ)
+        const queryIdentity = `"${input}" South Africa about company branches locations headquarters`
 
-        // Vector 2: Legal (Registration, Compliance) - SURGICAL STRIKE (Targeting B2BHint directly)
-        // We look for "(Pty) Ltd" explicitly for the Operating Company (1900s)
-        const queryLegal = `site:b2bhint.com "${input}" (Pty) Ltd`
+        // Vector 2: Legal & Financial (Reg No, VAT, CIPC)
+        const queryLegal = `"${input}" registration number VAT number CIPC South Africa`
 
-        // Vector 3: Leadership & General (Backup)
-        const queryLeadership = `"${input}" directors owner manager registration number CIPC`
+        // Vector 3: Leadership & Financial Status (Directors, Liquidation)
+        const queryLeadership = `"${input}" directors owner manager status`
+
+        // Vector 4: Surgical B2B (Operating Entity Hunter)
+        const querySurgical = `site:b2bhint.com "${input}" (Pty) Ltd`
 
         // --------------------------------------------------------------------------------
         // BROWSER EMULATION HEADERS (To avoid detection/blocking)
@@ -54,9 +56,6 @@ export async function POST(request) {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.9',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
             'Sec-Fetch-Dest': 'document',
             'Sec-Fetch-Mode': 'navigate',
             'Sec-Fetch-Site': 'none',
@@ -129,13 +128,14 @@ export async function POST(request) {
             return results;
         };
 
-        const [itemsIdentity, itemsLegal, itemsLeadership] = await Promise.all([
+        const [itemsIdentity, itemsLegal, itemsLeadership, itemsSurgical] = await Promise.all([
             executeHybridSearch(queryIdentity),
             executeHybridSearch(queryLegal),
-            executeHybridSearch(queryLeadership)
+            executeHybridSearch(queryLeadership),
+            executeHybridSearch(querySurgical)
         ]);
 
-        const allItems = [...itemsIdentity, ...itemsLegal, ...itemsLeadership];
+        const allItems = [...itemsIdentity, ...itemsLegal, ...itemsLeadership, ...itemsSurgical];
 
         if (allItems.length === 0) { return NextResponse.json({ valid: false, data: { status: 'No Data Found', message: 'No digital footprint found.' } }) }
 
@@ -156,7 +156,7 @@ export async function POST(request) {
         };
 
         let siteContent = "";
-        const officialUrl = extractOfficialUrl(itemsIdentity);
+        const officialUrl = extractOfficialUrl(allItems);
 
         if (officialUrl) {
             console.log(`[Intelligence] Crawling Official Site: ${officialUrl}`);
@@ -221,43 +221,48 @@ export async function POST(request) {
             const context = allItems.map(i => `[TITLE]: ${i.title}\n[SNIPPET]: ${i.snippet}\n[LINK]: ${i.link}`).join('\n---\n');
 
             const prompt = `
-            You are a Business Intelligence Analyst.
-            Construct a comprehensive profile for: "${input}". 
+            You are a Deep Business Intelligence Compiler.
+            Your mission is to compile a 100% accurate profile for: "${input}", mimicking an expert human researcher.
             
             DATA SOURCES:
             ${siteContent}
             ${context}
 
-            CRITICAL RULES:
-            1. **Historical Logic**: 
-               - If the company was established in the 1990s (e.g. 1991), the Reg No **MUST** start with "19" (e.g. 1996/...). 
-               - **REJECT** any Reg No starting with "2023" or "2024" for an old company. That is a completely different, new entity.
-            2. **Contact Mining**: 
-               - You MUST find a Phone Number in the [OFFICIAL SITE DATA]. Look for +27, 021, 011, 012 formats.
-               - If multiple addresses exist, pick the "Head Office" or "Cape Town/Stellenbosch" one for Grain Carriers.
-            3. **JavaScript Handling**: Ignore all "enable javascript" text.
+            CRITICAL COMPILATION RULES:
+            1. **Operating Entity Priority**: 
+               - THE MOST CRITICAL STEP: Distinguish between the "Operating Company" and "Holding Companies".
+               - Example: For "Grain Carriers", prioritize "Grain Carriers (Pty) Ltd" (1996) over "Grain Carriers Holdings" (2023).
+               - If multiple Reg Nos appear, resolve which one matches the actual operational history (e.g., if founded in 1991, rejection 2023 Reg Nos).
+            2. **VAT Number**: Actively hunt for a 10-digit VAT number (usually starts with 4).
+            3. **Branches & Presence**: Look for mentions of other cities, depots, locations, or countries (e.g., "Namibia", "Botswana", "Stellenbosch branch").
+            4. **Contact Intelligence**: Extract the specific Head Office phone and physical address.
+            5. **Directors**: List key directors or founders mentioned in B2BHint or LinkedIn snippets.
+            6. **About**: Synthesize a professional summary of what they actually do, their scale, and market position.
 
             RETURN JSON:
             {
-                "identifier": "YYYY/NNNNNN/NN" or "Not Listed",
-                "industry": "Primary Industry",
+                "identifier": "YYYY/NNNNNN/NN",
+                "vatNumber": "4XXXXXXXXX or Not Listed",
+                "industry": "Primary Sector",
                 "status": "Active/Inactive/Liquidated",
-                "address": "Full Physical Address (Street, Suburb, City)",
-                "phone": "Primary Contact Number or 'Not Listed'",
+                "address": "Full Physical Address of Head Office",
+                "phone": "Primary Contact Number",
                 "registrationDate": "YYYY",
                 "directors": ["Name 1", "Name 2"],
-                "employees": "Count/Unknown",
-                "operations": "Short description of what they actually do.",
-                "globalRole": "National/Global",
+                "branches": ["City/Location 1", "City/Location 2"],
+                "employees": "Count or Unknown",
+                "operations": "Detailed professional summary of core services.",
+                "globalRole": "National/Global Presence description",
                 "officialWebsite": "URL"
             }
+            Just the raw JSON object.
             `;
             try {
                 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
                 const result = await model.generateContent(prompt);
                 const cleanJson = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
                 aiData = JSON.parse(cleanJson);
-                usedSource = `AI Synthesized (Gemini 1.5)`;
+                usedSource = `Deep Intelligence (Gemini 1.5)`;
             } catch (aiError) {
                 console.warn(`[Intelligence] AI Failed:`, aiError.message);
             }
@@ -273,20 +278,22 @@ export async function POST(request) {
             data: {
                 name: input,
                 identifier: aiData.identifier,
+                vatNumber: aiData.vatNumber || "Not Listed",
                 industry: aiData.industry,
                 status: aiData.status,
                 address: aiData.address,
                 phone: aiData.phone || "Not Listed",
                 registrationDate: aiData.registrationDate,
                 directors: aiData.directors || [],
+                branches: aiData.branches || [],
                 employees: aiData.employees,
                 operations: aiData.operations,
                 globalRole: aiData.globalRole,
-                summary: `Automated verified profile via ${usedSource}.`,
+                summary: `Deep verified profile via ${usedSource}.`,
                 source: `${usedSource}`,
                 website: aiData.officialWebsite || (officialUrl || itemsIdentity[0]?.link || ""),
                 icon: aiData.status === 'Active' ? '🏢' : '⚠️',
-                details: `Synthesized from ${allItems.length} verified sources.`
+                details: `Compiled from ${allItems.length} verified data points across the web and official registries.`
             }
         });
 
