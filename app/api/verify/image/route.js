@@ -13,6 +13,7 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Unauthorized', message: 'Please sign in to analyze screenshots.' }, { status: 401 })
         }
 
+        /*
         const userMeta = await db.prepare("SELECT tier FROM user_meta WHERE email = ?").bind(email).first()
         const tier = userMeta ? userMeta.tier : 'free'
 
@@ -24,6 +25,7 @@ export async function POST(request) {
                 flags: ['Please upgrade to analyze images.']
             }, { status: 402 })
         }
+        */
 
         if (!text) {
             return NextResponse.json({ error: 'No text extracted' }, { status: 400 })

@@ -28,12 +28,14 @@ export default function ImageScanner() {
         e.preventDefault()
         if (!file) return
 
+        /*
         const { tier } = trackSearch()
         if (tier === 'free') {
             alert("Screenshot Analysis is only available for Pro, Elite, and Enterprise members. Please upgrade to access this feature.")
             router.push('/subscription')
             return
         }
+        */
 
         setLoading(true)
         setResult(null)
