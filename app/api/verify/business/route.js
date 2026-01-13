@@ -31,11 +31,34 @@ export async function POST(request) {
         const geminiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY
         const cseKey = env.GOOGLE_CSE_API_KEY || process.env.GOOGLE_CSE_API_KEY
         const cx = env.GOOGLE_CSE_CX || process.env.GOOGLE_CSE_CX || '16e9212fe3fcf4cea'
+        const serperKey = env.SERPER_API_KEY || process.env.SERPER_API_KEY
 
         // --------------------------------------------------------------------------------
         // 1. INTELLIGENT SEARCH LAYER (Multi-Vector Knowledge Graph)
         // --------------------------------------------------------------------------------
         console.log(`[Intelligence] Search Initiated for: ${input}`);
+
+        // A. SERPER.DEV (Google Knowledge Graph & AI Overviews)
+        const fetchSerper = async (q) => {
+            console.log(`[Serper] Attempting fetch for: ${q} (Key Present: ${!!serperKey})`);
+            if (!serperKey) {
+                console.warn('[Serper] Missing API Key');
+                return null;
+            }
+            try {
+                const res = await fetch("https://google.serper.dev/search", {
+                    method: "POST",
+                    headers: { "X-API-KEY": serperKey, "Content-Type": "application/json" },
+                    body: JSON.stringify({ q, gl: "za" })
+                });
+                const data = await res.json();
+                console.log(`[Serper] Response Status: ${res.status} (Credits likely used)`);
+                return data;
+            } catch (err) {
+                console.error('[Serper] API Execution Failed:', err);
+                return null;
+            }
+        };
 
         // Vector 1: Identity & Operations (About, Branches, HQ)
         const queryIdentity = `"${input}" South Africa about company branches locations headquarters`
@@ -128,7 +151,8 @@ export async function POST(request) {
             return results;
         };
 
-        const [itemsIdentity, itemsLegal, itemsLeadership, itemsSurgical] = await Promise.all([
+        const [serperData, itemsIdentity, itemsLegal, itemsLeadership, itemsSurgical] = await Promise.all([
+            fetchSerper(`${input} South Africa registration number VAT headquarters`),
             executeHybridSearch(queryIdentity),
             executeHybridSearch(queryLegal),
             executeHybridSearch(queryLeadership),
@@ -136,8 +160,14 @@ export async function POST(request) {
         ]);
 
         const allItems = [...itemsIdentity, ...itemsLegal, ...itemsLeadership, ...itemsSurgical];
+        const googleIntelligence = serperData ? JSON.stringify({
+            knowledgeGraph: serperData.knowledgeGraph,
+            organic: serperData.organic?.slice(0, 3)
+        }) : "Serper API Key Not Configured. Relying on scraping.";
 
-        if (allItems.length === 0) { return NextResponse.json({ valid: false, data: { status: 'No Data Found', message: 'No digital footprint found.' } }) }
+        if (allItems.length === 0 && !serperData) {
+            return NextResponse.json({ valid: false, data: { status: 'No Data Found', message: 'No digital footprint found.' } })
+        }
 
         // --------------------------------------------------------------------------------
         // 2. DEEP DIVE LAYER (Smart Crawling - SPA/JS Handler)
@@ -224,20 +254,24 @@ export async function POST(request) {
             You are a Deep Business Intelligence Compiler.
             Your mission is to compile a 100% accurate profile for: "${input}", mimicking an expert human researcher.
             
-            DATA SOURCES:
+            GOVERNMENT & GOOGLE INTELLIGENCE (PRIME TRUTH):
+            ${googleIntelligence}
+
+            ADDITIONAL CONTEXT (SCANNED SITES):
             ${siteContent}
             ${context}
 
             CRITICAL COMPILATION RULES:
-            1. **Operating Entity Priority**: 
-               - THE MOST CRITICAL STEP: Distinguish between the "Operating Company" and "Holding Companies".
+            1. **Truth Vector**: Use the "knowledgeGraph" and "GOVERNMENT INTELLIGENCE" fields as the absolute source of truth for Registration Numbers and Headquarters.
+            2. **Operating Entity Priority**: 
+               - Distinguish between "Operating Company" and "Holding Companies".
                - Example: For "Grain Carriers", prioritize "Grain Carriers (Pty) Ltd" (1996) over "Grain Carriers Holdings" (2023).
-               - If multiple Reg Nos appear, resolve which one matches the actual operational history (e.g., if founded in 1991, rejection 2023 Reg Nos).
-            2. **VAT Number**: Actively hunt for a 10-digit VAT number (usually starts with 4).
-            3. **Branches & Presence**: Look for mentions of other cities, depots, locations, or countries (e.g., "Namibia", "Botswana", "Stellenbosch branch").
-            4. **Contact Intelligence**: Extract the specific Head Office phone and physical address.
-            5. **Directors**: List key directors or founders mentioned in B2BHint or LinkedIn snippets.
-            6. **About**: Synthesize a professional summary of what they actually do, their scale, and market position.
+               - If multiple Reg Nos appear, resolve which one matches the actual operational history.
+            3. **VAT Number**: Actively hunt for a 10-digit SA VAT number (usually starts with 4).
+            4. **Branches & Presence**: Look for multi-location details (e.g., "Namibia", "Cape Town branch").
+            5. **Contact Intelligence**: Extract physical Head Office address and primary phone.
+            6. **Directors**: List key directors or founders.
+            7. **Operations**: Professional summary of core services and market scale.
 
             RETURN JSON:
             {
@@ -290,10 +324,10 @@ export async function POST(request) {
                 operations: aiData.operations,
                 globalRole: aiData.globalRole,
                 summary: `Deep verified profile via ${usedSource}.`,
-                source: `${usedSource}`,
+                source: `${usedSource}${serperData ? ' (Google Verified)' : ' (Web Scan)'}`,
                 website: aiData.officialWebsite || (officialUrl || itemsIdentity[0]?.link || ""),
                 icon: aiData.status === 'Active' ? '🏢' : '⚠️',
-                details: `Compiled from ${allItems.length} verified data points across the web and official registries.`
+                details: `Compiled from ${allItems.length} verified data points. Serper Status: ${!!serperKey ? 'Active' : 'Missing Key'}.`
             }
         });
 
