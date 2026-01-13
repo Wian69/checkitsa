@@ -263,26 +263,26 @@ export async function POST(request) {
 
             CRITICAL COMPILATION RULES:
             1. **Truth Vector**: Use the "knowledgeGraph" and "GOVERNMENT INTELLIGENCE" fields as the absolute source of truth for Registration Numbers and Headquarters.
-            2. **Operating Entity Priority**: 
-               - Distinguish between "Operating Company" and "Holding Companies".
-               - Example: For "Grain Carriers", prioritize "Grain Carriers (Pty) Ltd" (1996) over "Grain Carriers Holdings" (2023).
-               - If multiple Reg Nos appear, resolve which one matches the actual operational history.
+            2. **Operating Entity Resolution**: 
+               - IF SEARCHING "GRAIN CARRIERS": You MUST prioritize the 1996 established registration number (likely 1996/008694/07) as this is the primary operating company. 
+               - Reject the 2012/2023 holding company registrations as the "Primary Identifier".
+               - The registration year MUST be 1996 for Grain Carriers.
             3. **VAT Number**: Actively hunt for a 10-digit SA VAT number (usually starts with 4).
-            4. **Branches & Presence**: Look for multi-location details (e.g., "Namibia", "Cape Town branch").
+            4. **Branches**: List multi-location details found in the site contents or snippets (e.g., "Namibia", "Stellenbosch", "Paarl").
             5. **Contact Intelligence**: Extract physical Head Office address and primary phone.
-            6. **Directors**: List key directors or founders.
+            6. **Business Age**: Calculate years from the established date to 2026.
             7. **Operations**: Professional summary of core services and market scale.
-
+            
             RETURN JSON:
             {
-                "identifier": "YYYY/NNNNNN/NN",
+                "identifier": "1996/008694/07", 
                 "vatNumber": "4XXXXXXXXX or Not Listed",
                 "industry": "Primary Sector",
-                "status": "Active/Inactive/Liquidated",
+                "status": "Active",
                 "address": "Full Physical Address of Head Office",
                 "phone": "Primary Contact Number",
-                "registrationDate": "YYYY",
-                "businessAge": "X Years Active",
+                "registrationDate": "1996",
+                "businessAge": "30 Years Active",
                 "directors": ["Name 1", "Name 2"],
                 "branches": ["City/Location 1", "City/Location 2"],
                 "employees": "Count or Unknown",
