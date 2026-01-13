@@ -113,6 +113,10 @@ export default function BusinessVerificationPage() {
                                         <p className="text-indigo-400 font-bold uppercase tracking-widest text-xs mt-1">{result.industry}</p>
                                     </div>
                                     <div className="ml-auto text-right">
+                                        <p className="text-white/40 text-[10px] uppercase font-bold">Business Age</p>
+                                        <p className="text-indigo-400 font-bold text-lg">{result.businessAge || 'Verified'}</p>
+                                    </div>
+                                    <div className="ml-4 text-right border-l border-white/10 pl-4">
                                         <p className="text-white/40 text-[10px] uppercase">Intelligence Confidence</p>
                                         <p className="text-emerald-400 font-bold">HIGH</p>
                                     </div>
