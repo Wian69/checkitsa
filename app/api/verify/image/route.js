@@ -36,8 +36,8 @@ export async function POST(request) {
 
         // --- GEMINI VISION ANALYSIS ---
         const genAI = new GoogleGenerativeAI(geminiKey)
-        // Fallback to Stable 1.0 Vision Model (1.5 appears restricted for this key)
-        const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" })
+        // Revert to Flash 1.5 (Standard). If this fails, user has not enabled API.
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
         const prompt = `
         You are a Cyber Security Expert specializing in Social Engineering and Fraud Detection.
@@ -84,7 +84,19 @@ export async function POST(request) {
         return NextResponse.json(aiData)
 
     } catch (error) {
-        console.error(error)
+        console.error("Gemini API Error:", error)
+
+        // Diagnose 404 (Model not found / API not enabled)
+        if (error.message.includes('404') || error.message.includes('not found')) {
+            return NextResponse.json({
+                error: 'Configuration Error',
+                message: 'Support for this AI model is not enabled on your API Key.',
+                risk_score: 0,
+                flags: ['Please enable "Generative Language API" in Google Cloud Console.'],
+                text_extracted: ''
+            }, { status: 503 })
+        }
+
         return NextResponse.json({
             error: 'System Error',
             message: error.message || 'An unexpected error occurred during analysis.',
