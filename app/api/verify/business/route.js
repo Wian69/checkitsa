@@ -47,26 +47,53 @@ export async function POST(request) {
             phone: "Not Found"
         };
 
+        // 3. Robust AI Extraction with Failover
         if (geminiKey) {
             const genAI = new GoogleGenerativeAI(geminiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            const prompt = `
-            Extract ONLY the following 3 fields for the company "${input}" from the data below.
-            
-            DATA:
-            ${context}
+            // Try simpler/older models first if Flash fails (404 issues)
+            const models = ["gemini-1.5-flash", "gemini-pro"];
 
-            RULES:
-            1. Registration Number: Look for format YYYY/NNNNNN/NN.
-            2. Address: Look for the Head Office / Physical Address.
-            3. Phone: Look for the primary contact number.
-            
-            Return ONLY JSON: { "identifier": "...", "address": "...", "phone": "..." }
-            `;
+            for (const m of models) {
+                try {
+                    console.log(`[Verify] Attempting ${m}...`);
+                    const model = genAI.getGenerativeModel({ model: m });
+                    const prompt = `
+                    Extract 3 fields for company "${input}" from data below.
+                    DATA: ${context}
+                    
+                    RULES:
+                    1. Identifier: CIPC Registration Number (YYYY/NNNNNN/NN).
+                    2. Address: Head Office Address.
+                    3. Phone: Primary Contact Number.
+                    
+                    Return JSON ONLY: { "identifier": "...", "address": "...", "phone": "..." }
+                    Use "Not Listed" if missing.
+                    `;
 
-            const result = await model.generateContent(prompt);
-            const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-            try { extracted = JSON.parse(text); } catch (e) { }
+                    const result = await model.generateContent(prompt);
+                    const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+                    extracted = JSON.parse(text);
+                    console.log(`[Verify] Success with ${m}`);
+                    break;
+                } catch (e) {
+                    console.warn(`[Verify] ${m} failed:`, e.message);
+                }
+            }
+        }
+
+        // 4. Regex Fallback (Safety Net)
+        if (extracted.identifier === "Not Found" || extracted.identifier === "Not Listed") {
+            console.log('[Verify] AI Fallback -> Regex');
+            const strContext = JSON.stringify(context);
+
+            const regMatch = strContext.match(/\b(19|20)\d{2}\/\d{6}\/\d{2}\b/);
+            if (regMatch) extracted.identifier = regMatch[0];
+
+            const phoneMatch = strContext.match(/(?:\+27|0)[0-9]{2}[\s\-]?[0-9]{3}[\s\-]?[0-9]{4}/);
+            // Bias towards landlines (010, 011, 021)
+            const landline = strContext.match(/(?:\+27|0)(11|21|10|12|31|41|51)[0-9]{7}/);
+            if (landline) extracted.phone = landline[0];
+            else if (phoneMatch) extracted.phone = phoneMatch[0];
         }
 
         return NextResponse.json({
