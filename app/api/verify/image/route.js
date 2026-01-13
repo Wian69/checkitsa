@@ -34,36 +34,34 @@ export async function POST(request) {
             return NextResponse.json({ error: 'No image provided' }, { status: 400 })
         }
 
-        // --- GEMINI VISION ANALYSIS ---
+        // --- GEMINI VISION ANALYSIS (Robust Multi-Model Failover) ---
         const genAI = new GoogleGenerativeAI(geminiKey)
-        // Revert to Flash 1.5 (Standard). If this fails, user has not enabled API.
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+        const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro-vision"]
+        let result = null
+        let lastError = null
+        let successModel = null
 
-        const prompt = `
-        You are a Cyber Security Expert specializing in Social Engineering and Fraud Detection.
-        Analyze this screenshot for signs of a scam.
-
-        Look for:
-        1. **Visual Mismatches:** Poorly aligned logos, bad fonts, fake UI elements (e.g. Android status bar on an email).
-        2. **Brand Impersonation:** Is this pretending to be a bank (FNB, Capitec, Standard Bank), Post Office, or Courier?
-        3. **Urgency/Threats:** Text demanding immediate payment or threatening account closure.
-        4. **Suspicious Content:** "Payment Pending", "Winner", "Inheritance", "Clearance Fee".
-
-        Return a JSON object:
-        {
-            "risk_score": 0-100,
-            "verdict": "Safe" | "Suspicious" | "Dangerous",
-            "flags": ["list", "of", "visual", "indicators"],
-            "message": "A short, direct warning or confirmation message for the user.",
-            "text_extracted": "Summary of visible text"
+        // Try models in sequence
+        for (const modelName of modelsToTry) {
+            try {
+                console.log(`[Vision] Attempting analysis with: ${modelName}`)
+                const model = genAI.getGenerativeModel({ model: modelName })
+                result = await model.generateContent([
+                    prompt,
+                    { inlineData: { data: image, mimeType: mimeType || 'image/png' } }
+                ])
+                successModel = modelName
+                break // Success! Exit loop
+            } catch (err) {
+                console.warn(`[Vision] Failed with ${modelName}:`, err.message)
+                lastError = err
+                // Continue to next model...
+            }
         }
-        Do not include markdown formatting. Just raw JSON.
-        `
 
-        const result = await model.generateContent([
-            prompt,
-            { inlineData: { data: image, mimeType: mimeType || 'image/png' } }
-        ])
+        if (!result && lastError) {
+            throw lastError // All models failed, throw the last error to be caught by main handler
+        }
 
         const responseText = result.response.text()
         const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim()
