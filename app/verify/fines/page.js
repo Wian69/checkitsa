@@ -1,6 +1,6 @@
 "use client"
 import Navbar from '@/components/Navbar'
-import AdBanner from '@/components/AdBanner'
+
 
 
 import { useState } from 'react'
@@ -73,7 +73,7 @@ export default function FinesCheck() {
                     </div>
 
                     <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--color-border)', textAlign: 'center' }}>
-                        <AdBanner format="rectangle" />
+
                         <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '1rem' }}>Found a fraudulent fine notice?</p>
                         <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
                             To report a fraudulent fine, please use the <a href="/report" style={{ textDecoration: 'underline', fontWeight: 'bold' }}>Report Incident</a> feature.
@@ -82,7 +82,7 @@ export default function FinesCheck() {
 
                 </div>
 
-                <AdBanner format="leaderboard" />
+
             </div>
 
             {/* Blocking Overlay */}

@@ -2,7 +2,13 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export default function AdBanner({ format = 'rectangle', className = '' }) {
-    const affiliateLink = "https://hollywoodbetsaffs.click/o/hP6iNE?lpage=wkMWJB&site_id=100761"
+    // Randomized Affiliate Links for A/B Testing
+    const links = [
+        "https://hollywoodbetsaffs.click/o/hP6iNE?lpage=wkMWJB&site_id=100761",
+        "https://hollywoodbetsaffs.click/o/TjUFnm?lpage=HukrZu"
+    ]
+    // Simple random selection (Client-side mainly, hydration safe enough for ads)
+    const affiliateLink = links[Math.floor(Math.random() * links.length)]
 
     // Asset Mapping based on format
     const assets = {

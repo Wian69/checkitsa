@@ -1,5 +1,6 @@
 "use client"
 import Navbar from '@/components/Navbar'
+import AdBanner from '@/components/AdBanner'
 
 
 import { useState, useEffect } from 'react'
@@ -22,7 +23,7 @@ export default function GamblingCheck() {
     const legalSites = [
         { domain: 'lottostar.co.za', name: 'LottoStar', license: 'Mpumalanga Economic Regulator', licenseNumber: '9-2-1-09467', affiliateUrl: 'https://lottostar.co.za/?ref=checkitsa' },
         { domain: 'betway.co.za', name: 'Betway', license: 'Western Cape Gambling Board', licenseNumber: '10181496-012', affiliateUrl: 'https://betway.co.za/?ref=checkitsa' },
-        { domain: 'hollywoodbets.net', name: 'Hollywoodbets', license: 'Western Cape Gambling Board', licenseNumber: '10110547-015', affiliateUrl: 'https://hollywoodbets.net/?ref=checkitsa' },
+        { domain: 'hollywoodbets.net', name: 'Hollywoodbets', license: 'Western Cape Gambling Board', licenseNumber: '10110547-015', affiliateUrl: 'https://hollywoodbetsaffs.click/o/hP6iNE?lpage=wkMWJB&site_id=100761' },
         { domain: 'supabets.co.za', name: 'Supabets', license: 'Mpumalanga Gambling Board', licenseNumber: '9-2-1-00055', affiliateUrl: 'https://supabets.co.za/?ref=checkitsa' },
         { domain: 'sunbet.co.za', name: 'SunBet', license: 'Western Cape Gambling Board', licenseNumber: '10138713-016', affiliateUrl: 'https://sunbet.co.za/?ref=checkitsa' },
         { domain: 'bet.co.za', name: 'Bet.co.za', license: 'Western Cape Gambling Board', licenseNumber: '10145732-016', affiliateUrl: 'https://bet.co.za/?ref=checkitsa' },
@@ -83,27 +84,37 @@ export default function GamblingCheck() {
                     />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-                    {filteredSites.map((site) => (
-                        <div key={site.domain} className="glass-panel" style={{ padding: '1.5rem', border: '1px solid var(--color-success)', position: 'relative', overflow: 'hidden' }}>
-                            <div style={{ position: 'absolute', top: 0, right: 0, background: 'var(--color-success)', color: 'black', padding: '0.25rem 0.75rem', fontSize: '0.75rem', fontWeight: 600, borderBottomLeftRadius: '0.5rem' }}>
-                                LICENSED
-                            </div>
-                            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{site.name}</h3>
-                            <div style={{ color: 'var(--color-primary)', marginBottom: '1rem', fontSize: '0.9rem' }}>{site.domain}</div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                                <strong>Regulator:</strong> {site.license}
-                            </div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--color-primary)', marginTop: '0.25rem' }}>
-                                <strong>License No:</strong> {site.licenseNumber}
-                            </div>
-                            <button onClick={() => handleVisit(site)} className="btn btn-outline" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center', fontSize: '0.875rem' }}>
-                                Visit Safe Site ↗
-                            </button>
-                        </div>
-                    ))}
-                </div>
             </div>
-        </main>
+
+            <div className="container" style={{ marginBottom: '2rem' }}>
+                <AdBanner format="leaderboard" />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                {filteredSites.map((site) => (
+                    <div key={site.domain} className="glass-panel" style={{ padding: '1.5rem', border: '1px solid var(--color-success)', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: 0, right: 0, background: 'var(--color-success)', color: 'black', padding: '0.25rem 0.75rem', fontSize: '0.75rem', fontWeight: 600, borderBottomLeftRadius: '0.5rem' }}>
+                            LICENSED
+                        </div>
+                        <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{site.name}</h3>
+                        <div style={{ color: 'var(--color-primary)', marginBottom: '1rem', fontSize: '0.9rem' }}>{site.domain}</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                            <strong>Regulator:</strong> {site.license}
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--color-primary)', marginTop: '0.25rem' }}>
+                            <strong>License No:</strong> {site.licenseNumber}
+                        </div>
+                        <button onClick={() => handleVisit(site)} className="btn btn-outline" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center', fontSize: '0.875rem' }}>
+                            Visit Safe Site ↗
+                        </button>
+                    </div>
+                ))}
+            </div>
+
+            <div className="container" style={{ marginTop: '3rem' }}>
+                <AdBanner format="rectangle" />
+            </div>
+        </div>
+        </main >
     )
 }
