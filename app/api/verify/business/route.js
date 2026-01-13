@@ -21,25 +21,43 @@ export async function POST(request) {
             return NextResponse.json({ valid: false, data: { status: 'Config Error', message: 'Serper API Key missing.' } })
         }
 
-        // 1. Single Serper Call (No vectors, no crawling)
-        // We Use a simple "Brand Entity" query to trigger Knowledge Graph & People Also Ask.
-        const q = `${input} South Africa`
-        console.log(`[SimpleVerify] Searching: ${q}`)
+        // 1. Dual-Search Strategy (Entity + Details)
+        // Query A: "Entity Focus" -> Triggers Knowledge Graph, Ratings, Founders (PAA)
+        // Query B: "Deep Details" -> Triggers VAT, Registration Numbers, Addresses (Organic Snippets)
 
-        const res = await fetch("https://google.serper.dev/search", {
-            method: "POST",
-            headers: { "X-API-KEY": serperKey, "Content-Type": "application/json" },
-            body: JSON.stringify({ q, gl: "za" })
-        });
+        const qEntity = `${input} South Africa`;
+        const qDetails = `${input} South Africa registration number address phone contact`;
 
-        const serperData = await res.json();
+        console.log(`[Verify] Parallel Search: Entity="${qEntity}" | Details="${qDetails}"`);
 
-        // 2. Simple Extraction
+        const [resEntity, resDetails] = await Promise.all([
+            fetch("https://google.serper.dev/search", {
+                method: "POST",
+                headers: { "X-API-KEY": serperKey, "Content-Type": "application/json" },
+                body: JSON.stringify({ q: qEntity, gl: "za" })
+            }),
+            fetch("https://google.serper.dev/search", {
+                method: "POST",
+                headers: { "X-API-KEY": serperKey, "Content-Type": "application/json" },
+                body: JSON.stringify({ q: qDetails, gl: "za" })
+            })
+        ]);
+
+        const dataEntity = await resEntity.json();
+        const dataDetails = await resDetails.json();
+
+        // 2. Merged Context Construction
         const context = JSON.stringify({
-            knowledgeGraph: serperData.knowledgeGraph,
-            peopleAlsoAsk: serperData.peopleAlsoAsk, // Added for Founder/Owner info
-            snippets: serperData.organic?.slice(0, 5).map(r => ({ title: r.title, snippet: r.snippet, link: r.link })),
-            places: serperData.places?.slice(0, 1).map(p => ({ address: p.address, title: p.title }))
+            knowledgeGraph: dataEntity.knowledgeGraph, // From Entity Search (Stars, Logo, etc)
+            peopleAlsoAsk: dataEntity.peopleAlsoAsk,   // From Entity Search (Founders)
+
+            // Merge snippets: Prioritize "Detailed" snippets for Reg/VAT, but keep Entity ones for Bio/Context
+            snippets: [
+                ...(dataDetails.organic || []).slice(0, 6), // Deep details
+                ...(dataEntity.organic || []).slice(0, 3)   // General context
+            ].map(r => ({ title: r.title, snippet: r.snippet, link: r.link })),
+
+            places: dataEntity.places || dataDetails.places // Fallback to either
         });
 
         let extracted = {
@@ -134,10 +152,13 @@ export async function POST(request) {
                 extracted.directors = dirMatch[1].split(/,| and /).map(s => s.trim()).filter(s => s.length > 3 && s.length < 30);
             }
 
-            if (serperData.organic && serperData.organic.length > 0) {
-                extracted.website = serperData.organic[0].link;
-                // Clean URL as summary fallback
-                extracted.summary = serperData.organic[0].title;
+            if (extracted.website === "Not Listed" || !extracted.website) {
+                // Try to find website in merged snippets
+                const webSnippet = (dataEntity.organic || []).find(r => r.link) || (dataDetails.organic || []).find(r => r.link);
+                if (webSnippet) {
+                    extracted.website = webSnippet.link;
+                    extracted.summary = webSnippet.title;
+                }
             }
         }
 
