@@ -39,55 +39,94 @@ export default function BusinessVerificationPage() {
     };
 
     return (
-        <main className="min-h-screen pb-24">
+        <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
             <Navbar />
-            <div className="max-w-4xl mx-auto pt-32 px-8">
-                <h1 className="text-4xl font-black text-white mb-8 text-center">Business Search</h1>
 
-                <div className="bg-white/5 p-8 rounded-2xl border border-white/10 mb-12">
-                    <form onSubmit={handleVerify} className="flex gap-4">
+            {loading && <LoadingOverlay message="Locating Registration Details..." />}
+
+            <div className="container" style={{ paddingTop: '10rem', maxWidth: '800px', margin: '0 auto', padding: '8rem 2rem 4rem' }}>
+                <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center', fontWeight: '800' }}>Business Search</h1>
+                <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', marginBottom: '4rem', fontSize: '1.2rem' }}>
+                    Verify legally registered South African companies (CIPC).
+                </p>
+
+                <div className="glass-panel" style={{ padding: '2rem', marginBottom: '3rem', background: 'rgba(255,255,255,0.03)', borderRadius: '1.5rem', border: '1px solid var(--color-border)' }}>
+                    <form onSubmit={handleVerify} style={{ display: 'flex', gap: '1rem' }}>
                         <input
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             placeholder="Enter Company Name..."
-                            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500"
                             required
+                            style={{
+                                flex: 1,
+                                padding: '1rem',
+                                borderRadius: '0.5rem',
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid var(--color-border)',
+                                color: 'white',
+                                fontSize: '1.1rem'
+                            }}
                         />
-                        <button type="submit" disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3 rounded-lg transition-colors">
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="btn btn-primary"
+                            style={{
+                                padding: '1rem 2rem',
+                                borderRadius: '0.5rem',
+                                background: 'var(--color-primary)',
+                                color: 'white',
+                                fontWeight: '600',
+                                border: 'none',
+                                cursor: 'pointer',
+                                opacity: loading ? 0.7 : 1,
+                                minWidth: '120px'
+                            }}
+                        >
                             {loading ? 'Searching...' : 'Search'}
                         </button>
                     </form>
                 </div>
 
-                {error && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg mb-8">{error}</div>}
+                {error && (
+                    <div style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.2)', color: '#fca5a5', borderRadius: '0.5rem', marginBottom: '2rem', border: '1px solid #ef4444' }}>
+                        Error: {error}
+                    </div>
+                )}
 
                 {result && (
-                    <div className="grid gap-6">
-                        <div className="bg-white/5 p-6 rounded-xl border border-white/10">
-                            <h2 className="text-2xl font-bold text-white mb-6">{result.name}</h2>
+                    <div style={{ animation: 'fadeIn 0.3s ease' }}>
+                        <div style={{ background: 'rgba(255,255,255,0.05)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--color-border)' }}>
+                            <h2 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'white', marginBottom: '1.5rem' }}>{result.name}</h2>
 
-                            <div className="space-y-6">
+                            <div style={{ display: 'grid', gap: '1.5rem' }}>
                                 <div>
-                                    <label className="text-xs font-bold text-white/40 uppercase tracking-wider block mb-2">Registration Number</label>
-                                    <div className="text-xl font-mono text-emerald-400">{result.identifier}</div>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>Registration Number</label>
+                                    <div style={{ fontSize: '1.5rem', fontFamily: 'monospace', color: '#34d399' }}>{result.identifier}</div>
                                 </div>
 
                                 <div>
-                                    <label className="text-xs font-bold text-white/40 uppercase tracking-wider block mb-2">Physical Address</label>
-                                    <div className="text-lg text-white">{result.address}</div>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>Physical Address</label>
+                                    <div style={{ fontSize: '1.2rem', color: 'white' }}>{result.address}</div>
                                 </div>
 
                                 <div>
-                                    <label className="text-xs font-bold text-white/40 uppercase tracking-wider block mb-2">Contact Number</label>
-                                    <div className="text-lg text-white">{result.phone}</div>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>Contact Number</label>
+                                    <div style={{ fontSize: '1.2rem', color: 'white' }}>{result.phone}</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 )}
             </div>
-            {loading && <LoadingOverlay message="Locating Registration Details..." />}
+
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+            `}</style>
         </main>
     );
 }
