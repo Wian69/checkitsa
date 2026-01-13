@@ -65,6 +65,27 @@ export default function GamblingCheck() {
                 </div>
 
                 <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>
+
+                    {/* Official Partnership Badge */}
+                    <div style={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid var(--color-primary)',
+                        borderRadius: '0.5rem',
+                        padding: '1rem',
+                        marginBottom: '1.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1rem'
+                    }}>
+                        <div style={{ fontSize: '1.5rem' }}>🤝</div>
+                        <div>
+                            <p style={{ fontWeight: 'bold', color: 'white', marginBottom: '0.2rem' }}>Official Partnership</p>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', lineHeight: '1.4' }}>
+                                We are a proud affiliated member of <strong>Hollywoodbets</strong>. As South Africa's most trusted betting platform, they set the standard for safety and compliance.
+                            </p>
+                        </div>
+                    </div>
+
                     <input
                         type="text"
                         value={searchTerm}
