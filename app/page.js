@@ -1,6 +1,7 @@
 "use client" // Convert to Client Component for interactivity
 
 import Link from 'next/link'
+import AdBanner from '@/components/AdBanner'
 import { useState, useEffect } from 'react'
 
 import Navbar from '@/components/Navbar'
@@ -145,6 +146,11 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      {/* Footer Ad */}
+      <div className="container" style={{ marginBottom: '2rem' }}>
+        <AdBanner format="leaderboard" />
+      </div>
 
       {/* Community Reports Section */}
       <section className="container content-section">
