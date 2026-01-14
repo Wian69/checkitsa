@@ -49,6 +49,17 @@ export default function Subscription() {
             }
         }
         // Verification: Intentionally NOT determining cleanup of script to ensure it stays loaded
+
+        // Polling fallback in case event listeners are missed
+        const timer = setInterval(() => {
+            if (window.YocoSDK && !sdkReady) {
+                setSdkReady(true)
+                clearInterval(timer)
+            }
+        }, 500)
+
+        // Cleanup interval on unmount
+        return () => clearInterval(timer)
     }, [])
 
     // State for Custom Slider
