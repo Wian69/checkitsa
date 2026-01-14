@@ -136,6 +136,13 @@ export default function Subscription() {
         }
     }
 
+    // Helper to determine active plan UI
+    const isCurrentPlan = (plan) => {
+        if (!user) return plan === 'basic' // Default to basic if no user loaded yet
+        const tier = (user.tier || 'basic').toLowerCase()
+        return tier === plan
+    }
+
     return (
         <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             {/* Primary Loader via Next.js Script */}
@@ -179,7 +186,19 @@ export default function Subscription() {
                             <li>✅ Community Reports</li>
                             <li>❌ Advanced Analysis</li>
                         </ul>
-                        <button disabled className="btn btn-outline" style={{ width: '100%', opacity: 0.5, cursor: 'not-allowed' }}>Current Plan</button>
+                        <button
+                            disabled
+                            className="btn btn-outline"
+                            style={{
+                                width: '100%',
+                                opacity: isCurrentPlan('basic') ? 0.5 : 1,
+                                cursor: 'not-allowed',
+                                borderColor: isCurrentPlan('basic') ? 'var(--color-success)' : 'rgba(255,255,255,0.1)',
+                                color: isCurrentPlan('basic') ? 'var(--color-success)' : 'inherit'
+                            }}
+                        >
+                            {isCurrentPlan('basic') ? 'Current Plan' : 'Free Version'}
+                        </button>
                     </div>
 
                     {/* Pro Plan */}
@@ -196,11 +215,16 @@ export default function Subscription() {
                         </ul>
                         <button
                             onClick={() => handleUpgrade('pro')}
-                            disabled={loading}
-                            className="btn btn-outline"
-                            style={{ width: '100%' }}
+                            disabled={loading || isCurrentPlan('pro')}
+                            className={isCurrentPlan('pro') ? "btn btn-outline" : "btn btn-outline"}
+                            style={{
+                                width: '100%',
+                                opacity: isCurrentPlan('pro') ? 1 : 1,
+                                borderColor: isCurrentPlan('pro') ? 'var(--color-success)' : 'var(--color-primary)',
+                                color: isCurrentPlan('pro') ? 'var(--color-success)' : 'white'
+                            }}
                         >
-                            {loading ? 'Processing...' : 'Pay Now'}
+                            {loading ? 'Processing...' : (isCurrentPlan('pro') ? '✅ Current Plan' : 'Pay Now')}
                         </button>
                     </div>
 
@@ -230,11 +254,18 @@ export default function Subscription() {
                         </ul>
                         <button
                             onClick={() => handleUpgrade('elite')}
-                            disabled={loading}
+                            disabled={loading || isCurrentPlan('elite')}
                             className="btn btn-primary"
-                            style={{ width: '100%', padding: '1rem' }}
+                            style={{
+                                width: '100%',
+                                padding: '1rem',
+                                background: isCurrentPlan('elite') ? 'transparent' : 'var(--color-primary)',
+                                border: isCurrentPlan('elite') ? '1px solid var(--color-success)' : 'none',
+                                color: isCurrentPlan('elite') ? 'var(--color-success)' : 'white',
+                                cursor: isCurrentPlan('elite') ? 'default' : 'pointer'
+                            }}
                         >
-                            {loading ? 'Processing...' : 'Pay Now'}
+                            {loading ? 'Processing...' : (isCurrentPlan('elite') ? '✅ Current Plan' : 'Pay Now')}
                         </button>
                     </div>
 
@@ -285,11 +316,16 @@ export default function Subscription() {
                         </ul>
                         <button
                             onClick={() => handleUpgrade('custom')}
-                            disabled={loading}
+                            disabled={loading || isCurrentPlan('enterprise')}
                             className="btn btn-outline"
-                            style={{ width: '100%', maxWidth: '300px' }}
+                            style={{
+                                width: '100%',
+                                maxWidth: '300px',
+                                borderColor: isCurrentPlan('enterprise') ? 'var(--color-success)' : 'rgba(255,255,255,0.1)',
+                                color: isCurrentPlan('enterprise') ? 'var(--color-success)' : 'inherit'
+                            }}
                         >
-                            {loading ? 'Processing...' : 'Pay Now'}
+                            {loading ? 'Processing...' : (isCurrentPlan('enterprise') ? '✅ Current Plan' : 'Pay Now')}
                         </button>
                     </div>
 
