@@ -10,6 +10,30 @@ export default function Subscription() {
     const [sdkError, setSdkError] = useState(false)
     const router = useRouter()
 
+    const loadYoco = () => {
+        setSdkError(false)
+        if (window.YocoSDK) {
+            setSdkReady(true)
+            return
+        }
+
+        const existingScript = document.querySelector('script[src="https://js.yoco.com/sdk/v1/yoco-sdk-web.js"]')
+        if (existingScript) existingScript.remove()
+
+        const script = document.createElement('script')
+        script.src = "https://js.yoco.com/sdk/v1/yoco-sdk-web.js"
+        script.async = true
+        script.onload = () => {
+            console.log("Yoco SDK Loaded")
+            setSdkReady(true)
+        }
+        script.onerror = () => {
+            console.error("Failed to load Yoco SDK")
+            setSdkError(true)
+        }
+        document.body.appendChild(script)
+    }
+
     useEffect(() => {
         // Load User
         const u = localStorage.getItem('checkitsa_user')
@@ -19,39 +43,10 @@ export default function Subscription() {
             router.push('/login')
         }
 
-        // Load Yoco SDK Robustly
-        if (window.YocoSDK) {
-            setSdkReady(true)
-        } else {
-            // Check if script already exists to avoid duplicates/race conditions
-            const existingScript = document.querySelector('script[src="https://js.yoco.com/sdk/v1/yoco-sdk-web.js"]')
+        // Initial Load Attempt
+        loadYoco()
 
-            if (existingScript) {
-                // If it exists but sdkReady is false, check if it's loaded
-                if (window.YocoSDK) {
-                    setSdkReady(true)
-                } else {
-                    // Attach listener to existing script just in case
-                    existingScript.addEventListener('load', () => setSdkReady(true))
-                }
-            } else {
-                const script = document.createElement('script')
-                script.src = "https://js.yoco.com/sdk/v1/yoco-sdk-web.js"
-                script.async = true
-                script.onload = () => {
-                    console.log("Yoco SDK Loaded")
-                    setSdkReady(true)
-                }
-                script.onerror = () => {
-                    console.error("Failed to load Yoco SDK")
-                    alert("Failed to load payment system. Please disable ad-blockers and refresh.")
-                }
-                document.body.appendChild(script)
-            }
-        }
-        // Verification: Intentionally NOT determining cleanup of script to ensure it stays loaded
-
-        // Polling fallback in case event listeners are missed
+        // Polling fallback
         const timer = setInterval(() => {
             if (window.YocoSDK && !sdkReady) {
                 setSdkReady(true)
@@ -59,7 +54,6 @@ export default function Subscription() {
             }
         }, 500)
 
-        // Cleanup interval on unmount
         return () => clearInterval(timer)
     }, [])
 
