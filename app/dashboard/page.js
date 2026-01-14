@@ -66,7 +66,7 @@ export default function Dashboard() {
         }
     }
 
-    const searchPercentage = Math.min((stats.count / stats.limit) * 100, 100)
+    const searchPercentage = stats.limit > 0 ? Math.min((stats.count / stats.limit) * 100, 100) : (stats.count > 0 ? 100 : 0)
     const isCrisis = searchPercentage >= 80
 
     return (
@@ -105,22 +105,46 @@ export default function Dashboard() {
                             <span>📊</span> Usage & Quota
                         </h3>
 
-                        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                            <div style={{
-                                width: '150px',
-                                height: '150px',
-                                borderRadius: '50%',
-                                border: `8px solid ${isCrisis ? 'var(--color-danger)' : 'var(--color-primary)'}`,
-                                borderRightColor: 'rgba(255,255,255,0.1)', // Simplistic CSS loader look
-                                margin: '0 auto 1.5rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexDirection: 'column'
-                            }}>
-                                <span style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{stats.count}</span>
-                                <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>/ {stats.limit}</span>
+                        <div style={{ textAlign: 'center', marginBottom: '2rem', position: 'relative', display: 'flex', justifyContent: 'center' }}>
+                            {/* SVG Circular Progress Bar */}
+                            <div style={{ width: '160px', height: '160px', position: 'relative' }}>
+                                <svg width="160" height="160" viewBox="0 0 160 160" style={{ transform: 'rotate(-90deg)' }}>
+                                    {/* Background Circle */}
+                                    <circle
+                                        cx="80"
+                                        cy="80"
+                                        r="70"
+                                        fill="none"
+                                        stroke="rgba(255,255,255,0.05)"
+                                        strokeWidth="12"
+                                    />
+                                    {/* Progress Circle */}
+                                    <circle
+                                        cx="80"
+                                        cy="80"
+                                        r="70"
+                                        fill="none"
+                                        stroke={isCrisis ? 'var(--color-danger)' : 'var(--color-primary)'}
+                                        strokeWidth="12"
+                                        strokeDasharray="440" // 2 * PI * 70 ≈ 440
+                                        strokeDashoffset={440 - (440 * searchPercentage) / 100}
+                                        strokeLinecap="round"
+                                        style={{ transition: 'stroke-dashoffset 1s ease-in-out' }}
+                                    />
+                                </svg>
+                                {/* Centered Text */}
+                                <div style={{
+                                    position: 'absolute',
+                                    top: 0, left: 0, width: '100%', height: '100%',
+                                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+                                }}>
+                                    <span style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{stats.count}</span>
+                                    <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>/ {stats.limit > 1000 ? '∞' : stats.limit}</span>
+                                </div>
                             </div>
+                        </div>
+
+                        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                             <div style={{ fontSize: '1.1rem', fontWeight: 'bold', textTransform: 'uppercase', color: stats.tier === 'free' ? 'var(--color-text-muted)' : 'var(--color-primary)' }}>
                                 {stats.tier} Plan
                             </div>
