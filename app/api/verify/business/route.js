@@ -18,9 +18,11 @@ export async function POST(request) {
         const TIER_LIMITS = {
             'free': 0,       // Strictly blocked for now (upsell)
             'pro': 50,       // Standard
+            'premium': 50,   // Legacy support / Fallback
             'elite': 500,    // Power User
             'enterprise': 10000, // High Volume
-            'ultimate': 10000 // Legacy support
+            'ultimate': 10000,   // Admin
+            'custom': 0      // Uses custom_limit column
         };
 
         let userTier = 'free';

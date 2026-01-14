@@ -34,25 +34,32 @@ export async function POST(req) {
 
         // 2. Determine Plan Details
         let daysToAdd = 30
-        let newTier = 'premium' // Fallback
+        let newTier = 'pro' // Default to Pro (safest fallback for paid users)
         let limit = 0
+        let planDesc = "Standard Upgrade";
 
         if (customLimit > 0) {
             newTier = 'custom'
             limit = customLimit
+            planDesc = "Custom Enterprise";
         } else if (amount >= 7900 && amount < 11000) {
             newTier = 'pro'
+            planDesc = "Pro Plan";
         } else if (amount >= 11900) {
             newTier = 'elite'
+            planDesc = "Elite Plan";
         }
 
         const expiryDate = new Date()
         expiryDate.setDate(expiryDate.getDate() + daysToAdd)
 
-        // 3. Update User in DB
+        console.log(`[Checkout] Processing ${planDesc} for ${email}. Resetting quota.`);
+
+        // 3. Update User in DB (BULLETPROOF QUOTA RESET)
+        // Explicitly setting searches = 0 ensures they get a fresh start immediately.
         await db.prepare(`
             UPDATE users 
-            SET tier = ?, subscription_end = ?, searches = 0, custom_limit = ?
+            SET tier = ?, subscription_end = ?, searches = 0, custom_limit = ?, updated_at = CURRENT_TIMESTAMP
             WHERE email = ?
         `)
             .bind(newTier, expiryDate.toISOString(), limit, email)
