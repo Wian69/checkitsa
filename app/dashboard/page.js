@@ -9,6 +9,7 @@ export default function Dashboard() {
     const [history, setHistory] = useState({ searches: [], reports: [] })
     const [myReviews, setMyReviews] = useState([])
     const [user, setUser] = useState(null)
+    const [historyPage, setHistoryPage] = useState(1)
 
     const fetchMyReviews = (email) => {
         fetch(`/api/reviews?email=${encodeURIComponent(email)}`)
@@ -237,38 +238,59 @@ export default function Dashboard() {
                                 No recent searches found.
                             </div>
                         ) : (
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead>
-                                    <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                                        <th style={{ padding: '1rem' }}>Type</th>
-                                        <th style={{ padding: '1rem' }}>Query</th>
-                                        <th style={{ padding: '1rem' }}>Status</th>
-                                        <th style={{ padding: '1rem' }}>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {history.searches.map(s => (
-                                        <tr key={s.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <td style={{ padding: '1rem' }}>{s.type}</td>
-                                            <td style={{ padding: '1rem', fontFamily: 'monospace' }}>{s.query}</td>
-                                            <td style={{ padding: '1rem' }}>
-                                                <span style={{
-                                                    padding: '0.25rem 0.5rem',
-                                                    borderRadius: '1rem',
-                                                    fontSize: '0.8rem',
-                                                    background: s.status === 'Dangerous' ? 'rgba(220, 38, 38, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                                                    color: s.status === 'Dangerous' ? '#fca5a5' : '#6ee7b7'
-                                                }}>
-                                                    {s.status}
-                                                </span>
-                                            </td>
-                                            <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-                                                {new Date(s.date).toLocaleDateString()}
-                                            </td>
+                            <>
+                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead>
+                                        <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
+                                            <th style={{ padding: '1rem' }}>Type</th>
+                                            <th style={{ padding: '1rem' }}>Query</th>
+                                            <th style={{ padding: '1rem' }}>Status</th>
+                                            <th style={{ padding: '1rem' }}>Date</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {history.searches.slice((historyPage - 1) * 10, historyPage * 10).map(s => (
+                                            <tr key={s.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                                <td style={{ padding: '1rem' }}>{s.type}</td>
+                                                <td style={{ padding: '1rem', fontFamily: 'monospace' }}>{s.query}</td>
+                                                <td style={{ padding: '1rem' }}>
+                                                    <span style={{
+                                                        padding: '0.25rem 0.5rem',
+                                                        borderRadius: '1rem',
+                                                        fontSize: '0.8rem',
+                                                        background: s.status === 'Dangerous' ? 'rgba(220, 38, 38, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                                                        color: s.status === 'Dangerous' ? '#fca5a5' : '#6ee7b7'
+                                                    }}>
+                                                        {s.status}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
+                                                    {new Date(s.date).toLocaleDateString()}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                <div style={{ padding: '1rem', display: 'flex', justifyContent: 'center', gap: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <button
+                                        onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
+                                        disabled={historyPage === 1}
+                                        className="btn btn-outline"
+                                        style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', opacity: historyPage === 1 ? 0.5 : 1 }}
+                                    >
+                                        Previous
+                                    </button>
+                                    <span style={{ display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)' }}>Page {historyPage}</span>
+                                    <button
+                                        onClick={() => setHistoryPage(p => p + 1)}
+                                        disabled={historyPage * 10 >= history.searches.length}
+                                        className="btn btn-outline"
+                                        style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', opacity: historyPage * 10 >= history.searches.length ? 0.5 : 1 }}
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </>
                         )}
                     </div>
                 </div>
