@@ -202,13 +202,14 @@ export default function Subscription() {
                             <li>✅ Priority support</li>
                         </ul>
                         <button
-                            onClick={() => handleUpgrade('pro')}
-                            disabled={loading || !sdkReady}
-                            className="btn btn-outline"
-                            style={{ width: '100%', opacity: !sdkReady ? 0.7 : 1 }}
+                            onClick={() => sdkError ? loadYoco() : handleUpgrade('pro')}
+                            disabled={loading || (!sdkReady && !sdkError)}
+                            className={sdkError ? "btn btn-danger" : "btn btn-outline"}
+                            style={{ width: '100%', opacity: (!sdkReady && !sdkError) ? 0.7 : 1 }}
                         >
-                            {!sdkReady ? 'Loading...' : 'Get Pro'}
+                            {sdkError ? 'Retry Connection' : (!sdkReady ? 'Loading...' : 'Get Pro')}
                         </button>
+                        {sdkError && <div style={{ fontSize: '0.8rem', color: 'var(--color-danger)', marginTop: '0.5rem', textAlign: 'center' }}>Payment system blocked. Please disable adblockers.</div>}
                     </div>
 
                     {/* Elite Plan */}
@@ -236,13 +237,14 @@ export default function Subscription() {
                             <li>⚡ <strong>Fastest Execution</strong></li>
                         </ul>
                         <button
-                            onClick={() => handleUpgrade('elite')}
-                            disabled={loading || !sdkReady}
+                            onClick={() => sdkError ? loadYoco() : handleUpgrade('elite')}
+                            disabled={loading || (!sdkReady && !sdkError)}
                             className="btn btn-primary"
-                            style={{ width: '100%', padding: '1rem', opacity: !sdkReady ? 0.7 : 1 }}
+                            style={{ width: '100%', padding: '1rem', opacity: (!sdkReady && !sdkError) ? 0.7 : 1 }}
                         >
-                            {!sdkReady ? 'Loading...' : 'Get Elite'}
+                            {sdkError ? 'Retry Connection' : (!sdkReady ? 'Loading...' : 'Get Elite')}
                         </button>
+                        {sdkError && <div style={{ fontSize: '0.8rem', color: '#f87171', marginTop: '0.5rem', textAlign: 'center' }}>Payment system blocked. Please disable adblockers.</div>}
                     </div>
 
                     {/* Custom Plan (Slider) */}
@@ -291,12 +293,12 @@ export default function Subscription() {
                             <li>✅ <strong>Custom Integration</strong></li>
                         </ul>
                         <button
-                            onClick={() => handleUpgrade('custom')}
-                            disabled={loading || !sdkReady}
+                            onClick={() => sdkError ? loadYoco() : handleUpgrade('custom')}
+                            disabled={loading || (!sdkReady && !sdkError)}
                             className="btn btn-outline"
-                            style={{ width: '100%', maxWidth: '300px', opacity: !sdkReady ? 0.7 : 1 }}
+                            style={{ width: '100%', maxWidth: '300px', opacity: (!sdkReady && !sdkError) ? 0.7 : 1 }}
                         >
-                            {!sdkReady ? 'Loading...' : 'Upgrade to Enterprise'}
+                            {sdkError ? 'Retry Connection' : (!sdkReady ? 'Loading...' : 'Upgrade to Enterprise')}
                         </button>
                     </div>
 
