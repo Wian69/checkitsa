@@ -21,50 +21,102 @@ export async function POST(request) {
             return NextResponse.json({ valid: false, data: { status: 'Config Error', message: 'Serper API Key missing.' } })
         }
 
-        // 1. Dual-Search Strategy (Entity + Details)
-        // Query A: "Entity Focus" -> Triggers Knowledge Graph, Ratings, Founders (PAA)
-        // Query B: "Deep Details" -> Triggers VAT, Registration Numbers, Addresses (Organic Snippets)
+        // COMMERCIAL VERIFICATION ENGINE ("THE HUNTER")
 
-        const qEntity = `${input} South Africa`;
-        const qDetails = `${input} South Africa registration number address phone contact`;
+        // STAGE 1: IDENTITY SEARCH
+        // Goal: Find the official domain and basic Knowledge Graph data
+        const qIdentity = `${input} South Africa`;
+        console.log(`[Verify] Stage 1: Identity Search -> "${qIdentity}"`);
 
-        console.log(`[Verify] Parallel Search: Entity="${qEntity}" | Details="${qDetails}"`);
-
-        const [resEntity, resDetails] = await Promise.all([
-            fetch("https://google.serper.dev/search", {
-                method: "POST",
-                headers: { "X-API-KEY": serperKey, "Content-Type": "application/json" },
-                body: JSON.stringify({ q: qEntity, gl: "za" })
-            }),
-            fetch("https://google.serper.dev/search", {
-                method: "POST",
-                headers: { "X-API-KEY": serperKey, "Content-Type": "application/json" },
-                body: JSON.stringify({ q: qDetails, gl: "za" })
-            })
-        ]);
-
-        const dataEntity = await resEntity.json();
-        const dataDetails = await resDetails.json();
-
-        // 2. Merged Context Construction
-        const context = JSON.stringify({
-            knowledgeGraph: dataEntity.knowledgeGraph, // From Entity Search (Stars, Logo, etc)
-            peopleAlsoAsk: dataEntity.peopleAlsoAsk,   // From Entity Search (Founders)
-
-            // Merge snippets: Prioritize "Detailed" snippets for Reg/VAT, but keep Entity ones for Bio/Context
-            snippets: [
-                ...(dataDetails.organic || []).slice(0, 6), // Deep details
-                ...(dataEntity.organic || []).slice(0, 3)   // General context
-            ].map(r => ({ title: r.title, snippet: r.snippet, link: r.link })),
-
-            places: dataEntity.places || dataDetails.places // Fallback to either
+        const resIdentity = await fetch("https://google.serper.dev/search", {
+            method: "POST",
+            headers: { "X-API-KEY": serperKey, "Content-Type": "application/json" },
+            body: JSON.stringify({ q: qIdentity, gl: "za" })
         });
 
+        const dataIdentity = await resIdentity.json();
+
+        // Detect Official Domain
+        let officialDomain = null;
+        if (dataIdentity.organic && dataIdentity.organic.length > 0) {
+            try {
+                // heuristic: first result is usually the official site for a specific brand search
+                const urlObj = new URL(dataIdentity.organic[0].link);
+                const domain = urlObj.hostname.replace('www.', '');
+                // Filter out common social/directory sites if they appear first (rare but possible)
+                const blacklist = ['facebook.com', 'linkedin.com', 'hellopeter.com', 'b2bhint.com'];
+                if (!blacklist.some(b => domain.includes(b))) {
+                    officialDomain = domain;
+                }
+            } catch (e) { console.warn("Domain parse error", e); }
+        }
+
+        let secondarySnippets = [];
+        let sourceMode = "UNKNOWN";
+
+        // STAGE 2: BRANCHING LOGIC
+        if (officialDomain) {
+            console.log(`[Verify] Domain Found: ${officialDomain} -> Activating HUNTER Protocol`);
+            sourceMode = "OFFICIAL_WEB";
+
+            // Hunter Queries: Force Google to read the specific pages we care about
+            const qLeadership = `site:${officialDomain} "directors" OR "management" OR "leadership" OR "our team" OR "founders"`;
+            const qCompliance = `site:${officialDomain} "VAT registration" OR "registration number" OR "contact"`;
+
+            const [resLead, resComp] = await Promise.all([
+                fetch("https://google.serper.dev/search", {
+                    method: "POST",
+                    headers: { "X-API-KEY": serperKey, "Content-Type": "application/json" },
+                    body: JSON.stringify({ q: qLeadership, gl: "za" })
+                }),
+                fetch("https://google.serper.dev/search", {
+                    method: "POST",
+                    headers: { "X-API-KEY": serperKey, "Content-Type": "application/json" },
+                    body: JSON.stringify({ q: qCompliance, gl: "za" })
+                })
+            ]);
+
+            const dataLead = await resLead.json();
+            const dataComp = await resComp.json();
+
+            secondarySnippets = [
+                ...(dataLead.organic || []).map(r => ({ ...r, type: "LEADERSHIP_PAGE" })),
+                ...(dataComp.organic || []).map(r => ({ ...r, type: "COMPLIANCE_PAGE" }))
+            ];
+
+        } else {
+            console.log(`[Verify] No Official Domain -> Activating DIRECTORY FALLBACK`);
+            sourceMode = "DIRECTORY_FALLBACK";
+
+            const qDir = `site:b2bhint.com OR site:sa-companies.com "${input}" directors vat`;
+
+            const resDir = await fetch("https://google.serper.dev/search", {
+                method: "POST",
+                headers: { "X-API-KEY": serperKey, "Content-Type": "application/json" },
+                body: JSON.stringify({ q: qDir, gl: "za" })
+            });
+            const dataDir = await resDir.json();
+
+            secondarySnippets = (dataDir.organic || []).map(r => ({ ...r, type: "DIRECTORY_ENTRY" }));
+        }
+
+        // 3. Merged Context Construction
+        const context = JSON.stringify({
+            MODE: sourceMode,
+            OFFICIAL_DOMAIN: officialDomain,
+            knowledgeGraph: dataIdentity.knowledgeGraph,
+            peopleAlsoAsk: dataIdentity.peopleAlsoAsk,
+
+            primarySnippets: (dataIdentity.organic || []).slice(0, 3), // General Google Results
+            hunterSnippets: secondarySnippets // Targeted Deep Results
+        });
+
+        // 3. Robust AI Extraction with Failover
         let extracted = {
             identifier: "Not Found",
             address: "Not Found",
             phone: "Not Found",
-            website: null,
+            website: officialDomain ? `https://${officialDomain}` : null, // Auto-fill if found
             summary: null,
             tags: [],
             vatNumber: "Not Listed",
@@ -73,10 +125,8 @@ export async function POST(request) {
             reviews: null
         };
 
-        // 3. Robust AI Extraction with Failover
         if (geminiKey) {
             const genAI = new GoogleGenerativeAI(geminiKey);
-            // Try simpler/older models first if Flash fails (404 issues)
             const models = ["gemini-1.5-flash", "gemini-pro"];
 
             for (const m of models) {
@@ -84,26 +134,25 @@ export async function POST(request) {
                     console.log(`[Verify] Attempting ${m}...`);
                     const model = genAI.getGenerativeModel({ model: m });
                     const prompt = `
-                    You are a Data Extraction Engine. Extract EXACT VERBATIM details for "${input}" from the provided data.
+                    You are a Commercial Verification Engine. Extract EXACT VALIDATED details for "${input}".
+                    
+                    SOURCE MODE: ${sourceMode} (Trust Level: ${sourceMode === "OFFICIAL_WEB" ? "HIGH" : "MEDIUM"})
                     DATA: ${context}
                     
-                    CRITICAL RULES:
-                    1. Identifier: Extract CIPC Registration Number (YYYY/NNNNNN/NN).
-                    2. Address: Extract the FULL physical address. Do not summarize. If multiple exist, choose the specific Head Office address.
-                    3. Phone: Extract the primary contact number (prefer landline +27...).
-                    4. Website: Official Homepage URL.
-                    5. Summary: 1-2 sentence professional description of OPERATIONS.
-                    6. Tags: Extract verify signals like "B-BBEE Level X", "ISO 9001", "SABS".
-                    7. VAT: South African VAT Number (10 digits).
-                    8. Directors/Founders: Extract names of people listed as "Founders", "Owners", "Directors", or "Legal Representatives". Look for phrases like "founded by...", "owned by...", "directors are...". LIST THEM ALL.
-                    9. Rating: Google Review Rating (e.g. 4.2).
-                    10. Reviews: Number of Google Reviews (e.g. 29).
+                    CRITICAL INSTRUCTIONS:
+                    1. WEBSITE: Use the OFFICIAL_DOMAIN if available.
+                    2. LEADERSHIP: Look specifically in 'hunterSnippets' (type: LEADERSHIP_PAGE) for Directors/ExCo.
+                    3. COMPLIANCE: Look specifically in 'hunterSnippets' (type: COMPLIANCE_PAGE) for VAT/Reg Numbers.
+                    4. IDENTIFIER: CIPC Registration Number (YYYY/NNNNNN/NN).
+                    5. DIRECTORS: Extract ALL names of Directors/Founders. Do not summarize.
+                    6. ADDRESS: Full physical address.
+                    7. RATING: Google Review Rating (from knowledgeGraph).
                     
                     Return JSON ONLY: 
                     { 
-                        "identifier": "YYYY/NNNNNN/NN", 
-                        "address": "Full Address String", 
-                        "phone": "+27...",
+                        "identifier": "...", 
+                        "address": "...", 
+                        "phone": "...",
                         "website": "...",
                         "summary": "...",
                         "tags": ["Tag1", "Tag2"],
@@ -117,7 +166,12 @@ export async function POST(request) {
 
                     const result = await model.generateContent(prompt);
                     const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-                    extracted = JSON.parse(text);
+                    const aiData = JSON.parse(text);
+
+                    // Merge AI data but respect our "Official Domain" hard-lock
+                    extracted = { ...extracted, ...aiData };
+                    if (officialDomain) extracted.website = `https://${officialDomain}`;
+
                     console.log(`[Verify] Success with ${m}`);
                     break;
                 } catch (e) {
@@ -127,58 +181,37 @@ export async function POST(request) {
         }
 
         // 4. Regex Fallback (Safety Net)
-        const strContext = JSON.stringify(context); // Compute once
+        const strContext = JSON.stringify(context);
 
         if (extracted.identifier === "Not Found" || extracted.identifier === "Not Listed") {
-            console.log('[Verify] AI Fallback -> Regex');
-
             const regMatch = strContext.match(/\b(19|20)\d{2}\/\d{6}\/\d{2}\b/);
             if (regMatch) extracted.identifier = regMatch[0];
 
-            // Regex for Address (Greedy capture until known stop words like B-BBEE or Scorecard or End of string)
             const addrMatch = strContext.match(/Address:\s*(.*?)(?=\s*(?:B-BBEE|Scorecard|Phone|VAT|$))/i);
             if (addrMatch && addrMatch[1]) {
-                let cleanAddr = addrMatch[1].trim().replace(/\.$/, ''); // Remove trailing dot
+                let cleanAddr = addrMatch[1].trim().replace(/\.$/, '');
                 if (cleanAddr.length > 10) extracted.address = cleanAddr;
             }
 
             const phoneMatch = strContext.match(/(?:\+27|0)[0-9]{2}[\s\-]?[0-9]{3}[\s\-]?[0-9]{4}/);
             const landline = strContext.match(/(?:\+27|0)(11|21|10|12|31|41|51)[0-9]{7}/);
-
-            // Prioritize landline for business, then mobile
             if (landline) extracted.phone = landline[0];
             else if (phoneMatch) extracted.phone = phoneMatch[0];
 
-            // Manual Founder Extraction (General Purpose)
-            // Look for patterns: "founders are X", "owned by X", "directors: X"
-            // Catches: "Grain Carrier's founders Tom Terblanche..." or "Owned by Mr X."
             const founderMatchBroad = strContext.match(/(?:founders|owners|directors|leadership)(?:'s)?(?:.*?)(?:are|:|include|by)\s+([A-Za-z\s&,\.]+?)(?:\.|,|\s(?:and|are)|$)/i);
-
             if (founderMatchBroad && founderMatchBroad[1]) {
-                console.log('[Verify] Found leadership via broad regex:', founderMatchBroad[1]);
                 const founders = founderMatchBroad[1].split(/,| and |&/).map(s => s.trim()).filter(s => s.length > 3 && !s.includes('http'));
-                if (founders.length > 0) {
-                    // Add to directors if not already present
-                    const current = new Set(extracted.directors || []);
-                    founders.forEach(f => current.add(f));
-                    extracted.directors = Array.from(current);
-                }
+                const current = new Set(extracted.directors || []);
+                founders.forEach(f => current.add(f));
+                extracted.directors = Array.from(current);
             }
 
-            // Regex for VAT
             const vatMatch = strContext.match(/\b4\d{9}\b/);
             if (vatMatch) extracted.vatNumber = vatMatch[0];
 
-            // Regex for Directors (Legal Representatives)
-            const dirMatch = strContext.match(/legal representative\(s\) of .*?[:\s]+([A-Za-z\s,\.]+)/i);
-            if (dirMatch && dirMatch[1]) {
-                // Simple split cleanup
-                extracted.directors = dirMatch[1].split(/,| and /).map(s => s.trim()).filter(s => s.length > 3 && s.length < 30);
-            }
-
-            if (extracted.website === "Not Listed" || !extracted.website) {
-                // Try to find website in merged snippets
-                const webSnippet = (dataEntity.organic || []).find(r => r.link) || (dataDetails.organic || []).find(r => r.link);
+            // If still no website, check primary snippets
+            if (!extracted.website) {
+                const webSnippet = (dataIdentity.organic || []).slice(0, 1)[0];
                 if (webSnippet) {
                     extracted.website = webSnippet.link;
                     extracted.summary = webSnippet.title;
@@ -186,25 +219,10 @@ export async function POST(request) {
             }
         }
 
-        // 5. Final Director Cleanup & Rating Injection from KnowledgeGraph
-        // Sometimes AI misses it even if successful, so check Regex again if empty
-        if ((!extracted.directors || extracted.directors.length === 0 || extracted.directors[0] === "Not Listed")) {
-            const dirBackup = strContext.match(/legal representative\(s\) of .*?[:\s]+([^.]+)/i);
-            if (dirBackup && dirBackup[1]) {
-                console.log('[Verify] Injecting missed directors from Regex');
-                extracted.directors = dirBackup[1].split(/,| and /).map(s => s.trim()).filter(s => s.length > 3 && s.length < 30);
-            }
-            // Backup Regex for Founders
-            const founderMatch = strContext.match(/(?:founders|owners|founded by) (?:are|is)?\s*([A-Za-z\s&,]+)/i);
-            if (founderMatch && founderMatch[1]) {
-                extracted.directors = founderMatch[1].split(/,| and /).map(s => s.trim()).filter(s => s.length > 3 && s.length < 30);
-            }
-        }
-
-        // Direct Knowledge Graph Injection for perfect accuracy
-        if (dataEntity.knowledgeGraph) {
-            if (dataEntity.knowledgeGraph.rating) extracted.rating = dataEntity.knowledgeGraph.rating;
-            if (dataEntity.knowledgeGraph.ratingCount) extracted.reviews = dataEntity.knowledgeGraph.ratingCount;
+        // Direct Knowledge Graph Injection
+        if (dataIdentity.knowledgeGraph) {
+            if (dataIdentity.knowledgeGraph.rating) extracted.rating = dataIdentity.knowledgeGraph.rating;
+            if (dataIdentity.knowledgeGraph.ratingCount) extracted.reviews = dataIdentity.knowledgeGraph.ratingCount;
         }
 
         return NextResponse.json({
