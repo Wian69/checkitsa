@@ -31,11 +31,23 @@ export async function POST(req) {
 
         const db = env.DB
 
-        // Update main users table
-        const userUpdate = await db.prepare("UPDATE users SET tier = ? WHERE email = ?").bind(tier, email).run()
+        // Update main users table (Critical: Reset searches on tier change/renewal)
+        // Also sets subscription_end to 30 days from now
+        const userUpdate = await db.prepare(`
+            UPDATE users 
+            SET tier = ?, 
+                searches = 0, 
+                subscription_end = datetime('now', '+30 days'),
+                updated_at = CURRENT_TIMESTAMP 
+            WHERE email = ?
+        `).bind(tier, email).run()
 
-        // Update user_meta (Usage/Tier)
-        const metaUpdate = await db.prepare("UPDATE user_meta SET tier = ?, updated_at = CURRENT_TIMESTAMP WHERE email = ?").bind(tier, email).run()
+        // Update user_meta (Usage/Tier) - Legacy support
+        try {
+            await db.prepare("UPDATE user_meta SET tier = ?, updated_at = CURRENT_TIMESTAMP WHERE email = ?").bind(tier, email).run()
+        } catch (e) {
+            console.warn("user_meta update failed (table might not exist)", e)
+        }
 
         return NextResponse.json({
             success: true,

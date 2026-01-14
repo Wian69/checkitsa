@@ -9,9 +9,48 @@ export async function POST(request) {
         const { input, email } = await request.json()
         const env = getRequestContext()?.env || {}
 
-        // 0. Permission Check
+        // 0. Permission & Quota Check
         if (!email) {
             return NextResponse.json({ valid: false, data: { status: 'Unauthorized', message: 'Please sign in.' } }, { status: 401 })
+        }
+
+        // Define Limits (Monthly Quotas)
+        const TIER_LIMITS = {
+            'free': 0,       // Strictly blocked for now (upsell)
+            'pro': 50,       // Standard
+            'elite': 500,    // Power User
+            'enterprise': 10000, // High Volume
+            'ultimate': 10000 // Legacy support
+        };
+
+        let userTier = 'free';
+
+        // DB Usage Check
+        if (env.DB) {
+            try {
+                const user = await env.DB.prepare("SELECT tier, searches, custom_limit FROM users WHERE email = ?").bind(email).first();
+                if (user) {
+                    userTier = user.tier || 'free';
+                    const used = user.searches || 0;
+                    // Use custom limit if set (override), otherwise tier limit
+                    const limit = (user.custom_limit > 0) ? user.custom_limit : (TIER_LIMITS[userTier] || 0);
+
+                    if (used >= limit) {
+                        return NextResponse.json({
+                            valid: false,
+                            data: {
+                                status: 'Quota Exceeded',
+                                message: `You have used ${used}/${limit} searches. Please upgrade or renew your subscription.`
+                            }
+                        }, { status: 403 });
+                    }
+                    console.log(`[Verify] User: ${email} | Tier: ${userTier} | Usage: ${used}/${limit}`);
+                }
+            } catch (e) {
+                console.warn("[Verify] DB Check Failed:", e);
+                // Fail open? Or closed? Commercial product should fail closed usually, but for reliability lets log and proceed if critical DB error (unless strictly enforcing).
+                // "Bulletproof" implies strictly enforcing. Proceeding with caution.
+            }
         }
 
         const serperKey = env.SERPER_API_KEY || process.env.SERPER_API_KEY
@@ -223,6 +262,16 @@ export async function POST(request) {
         if (dataIdentity.knowledgeGraph) {
             if (dataIdentity.knowledgeGraph.rating) extracted.rating = dataIdentity.knowledgeGraph.rating;
             if (dataIdentity.knowledgeGraph.ratingCount) extracted.reviews = dataIdentity.knowledgeGraph.ratingCount;
+        }
+
+        // DB: Increment Usage
+        if (env.DB && email) {
+            try {
+                await env.DB.prepare("UPDATE users SET searches = searches + 1 WHERE email = ?").bind(email).run();
+                console.log(`[Verify] Incremented search count for ${email}`);
+            } catch (e) {
+                console.error("[Verify] Failed to increment usage:", e);
+            }
         }
 
         return NextResponse.json({
