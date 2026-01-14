@@ -7,31 +7,33 @@ export default function Subscription() {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(false)
     const [sdkReady, setSdkReady] = useState(false)
-    const [sdkError, setSdkError] = useState(false)
     const router = useRouter()
 
     const loadYoco = () => {
-        setSdkError(false)
+        if (typeof window === 'undefined') return Promise.resolve(false)
         if (window.YocoSDK) {
             setSdkReady(true)
-            return
+            return Promise.resolve(true)
         }
 
-        const existingScript = document.querySelector('script[src="https://js.yoco.com/sdk/v1/yoco-sdk-web.js"]')
-        if (existingScript) existingScript.remove()
+        return new Promise((resolve) => {
+            const existingScript = document.querySelector('script[src="https://js.yoco.com/sdk/v1/yoco-sdk-web.js"]')
+            if (existingScript) existingScript.remove()
 
-        const script = document.createElement('script')
-        script.src = "https://js.yoco.com/sdk/v1/yoco-sdk-web.js"
-        script.async = true
-        script.onload = () => {
-            console.log("Yoco SDK Loaded")
-            setSdkReady(true)
-        }
-        script.onerror = () => {
-            console.error("Failed to load Yoco SDK")
-            setSdkError(true)
-        }
-        document.body.appendChild(script)
+            const script = document.createElement('script')
+            script.src = "https://js.yoco.com/sdk/v1/yoco-sdk-web.js"
+            script.async = true
+            script.onload = () => {
+                console.log("Yoco SDK Loaded")
+                setSdkReady(true)
+                resolve(true)
+            }
+            script.onerror = () => {
+                console.error("Failed to load Yoco SDK")
+                resolve(false)
+            }
+            document.body.appendChild(script)
+        })
     }
 
     useEffect(() => {
@@ -43,18 +45,8 @@ export default function Subscription() {
             router.push('/login')
         }
 
-        // Initial Load Attempt
+        // Initial Background Load Attempt (Best Effort)
         loadYoco()
-
-        // Polling fallback
-        const timer = setInterval(() => {
-            if (window.YocoSDK && !sdkReady) {
-                setSdkReady(true)
-                clearInterval(timer)
-            }
-        }, 500)
-
-        return () => clearInterval(timer)
     }, [])
 
     // State for Custom Slider
@@ -63,35 +55,39 @@ export default function Subscription() {
 
     // Update price when slider moves
     useEffect(() => {
-        // Formula: Base R50 + (Scans * R0.08)
         const price = Math.round(50 + (customScans * 0.08))
         setCustomPrice(price)
     }, [customScans])
 
 
-    const handleUpgrade = (plan) => {
-        if (!sdkReady || !window.YocoSDK) {
-            console.warn("Attempted upgrade before SDK ready")
-            return
+    const handleUpgrade = async (plan) => {
+        // 1. Check/Load SDK
+        if (!window.YocoSDK) {
+            setLoading(true)
+            const loaded = await loadYoco()
+            if (!loaded) {
+                setLoading(false)
+                alert("Payment System Error: Unable to connect to Yoco security. Please disable ad-blockers for this site and try again.")
+                return
+            }
         }
 
         // Pricing Logic
         let amount = 0
         let desc = ''
         let limit = 0
-
         let planName = 'CheckItSA Premium'
 
         if (plan === 'pro') {
-            amount = 7900 // R79.00
+            amount = 7900
             desc = 'Pro Subscription (100 Scans)'
             planName = 'CheckItSA Pro'
         } else if (plan === 'elite') {
-            amount = 11900 // R119.00
+            amount = 11900
             desc = 'Elite Subscription (1k Scans)'
             planName = 'CheckItSA Elite'
         } else if (plan === 'custom') {
-            amount = customPrice * 100 // Convert to cents
+            amount = customPrice * 100
             desc = `Custom Subscription (${customScans.toLocaleString()} Scans)`
             planName = 'CheckItSA Enterprise'
             limit = customScans
@@ -118,9 +114,9 @@ export default function Subscription() {
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                     token: result.id,
-                                    email: user.email,
+                                    email: user?.email,
                                     amount: amount,
-                                    customLimit: limit // Pass the custom limit
+                                    customLimit: limit
                                 })
                             })
 
@@ -145,6 +141,7 @@ export default function Subscription() {
         } catch (e) {
             console.error("Yoco Initialization Error", e)
             alert("Payment system error: " + e.message)
+            setLoading(false)
         }
     }
 
@@ -169,7 +166,7 @@ export default function Subscription() {
                     alignItems: 'start'
                 }}>
 
-                    {/* Free Plan */}
+                    {/* Basic Plan */}
                     <div className="glass-panel" style={{ padding: '2rem', border: '1px solid rgba(255,255,255,0.1)' }}>
                         <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>Basic</h3>
                         <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '2rem' }}>
@@ -197,14 +194,13 @@ export default function Subscription() {
                             <li>✅ Priority support</li>
                         </ul>
                         <button
-                            onClick={() => sdkError ? loadYoco() : handleUpgrade('pro')}
-                            disabled={loading || (!sdkReady && !sdkError)}
-                            className={sdkError ? "btn btn-danger" : "btn btn-outline"}
-                            style={{ width: '100%', opacity: (!sdkReady && !sdkError) ? 0.7 : 1 }}
+                            onClick={() => handleUpgrade('pro')}
+                            disabled={loading}
+                            className="btn btn-outline"
+                            style={{ width: '100%' }}
                         >
-                            {sdkError ? 'Retry Connection' : (!sdkReady ? 'Loading...' : 'Pay Now')}
+                            {loading ? 'Processing...' : 'Pay Now'}
                         </button>
-                        {sdkError && <div style={{ fontSize: '0.8rem', color: 'var(--color-danger)', marginTop: '0.5rem', textAlign: 'center' }}>Payment system blocked. Please disable adblockers.</div>}
                     </div>
 
                     {/* Elite Plan */}
@@ -232,17 +228,16 @@ export default function Subscription() {
                             <li>⚡ <strong>Fastest Execution</strong></li>
                         </ul>
                         <button
-                            onClick={() => sdkError ? loadYoco() : handleUpgrade('elite')}
-                            disabled={loading || (!sdkReady && !sdkError)}
+                            onClick={() => handleUpgrade('elite')}
+                            disabled={loading}
                             className="btn btn-primary"
-                            style={{ width: '100%', padding: '1rem', opacity: (!sdkReady && !sdkError) ? 0.7 : 1 }}
+                            style={{ width: '100%', padding: '1rem' }}
                         >
-                            {sdkError ? 'Retry Connection' : (!sdkReady ? 'Loading...' : 'Pay Now')}
+                            {loading ? 'Processing...' : 'Pay Now'}
                         </button>
-                        {sdkError && <div style={{ fontSize: '0.8rem', color: '#f87171', marginTop: '0.5rem', textAlign: 'center' }}>Payment system blocked. Please disable adblockers.</div>}
                     </div>
 
-                    {/* Custom Plan (Slider) */}
+                    {/* Custom Plan */}
                     <div className="glass-panel" style={{ padding: '2rem', border: '1px solid rgba(255,255,255,0.1)', gridColumn: '1 / -1', maxWidth: '100%' }}>
                         <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>Custom Enterprise</h3>
                         <div style={{ display: 'flex', alignItems: 'flex-end', gap: '1rem', marginBottom: '1rem' }}>
@@ -288,12 +283,12 @@ export default function Subscription() {
                             <li>✅ <strong>Custom Integration</strong></li>
                         </ul>
                         <button
-                            onClick={() => sdkError ? loadYoco() : handleUpgrade('custom')}
-                            disabled={loading || (!sdkReady && !sdkError)}
+                            onClick={() => handleUpgrade('custom')}
+                            disabled={loading}
                             className="btn btn-outline"
-                            style={{ width: '100%', maxWidth: '300px', opacity: (!sdkReady && !sdkError) ? 0.7 : 1 }}
+                            style={{ width: '100%', maxWidth: '300px' }}
                         >
-                            {sdkError ? 'Retry Connection' : (!sdkReady ? 'Loading...' : 'Pay Now')}
+                            {loading ? 'Processing...' : 'Pay Now'}
                         </button>
                     </div>
 
