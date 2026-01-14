@@ -111,11 +111,12 @@ export default function Home() {
           />
           <Tile
             title="Developer API"
-            icon="⚡"
+            icon={(!user || (user.tier !== 'elite' && user.tier !== 'custom' && user.tier !== 'enterprise')) ? "🔒" : "⚡"}
             desc="Integrate our verification engine directly into your app."
-            href="/dashboard/developer"
+            href={(!user || (user.tier !== 'elite' && user.tier !== 'custom' && user.tier !== 'enterprise')) ? "/subscription" : "/dashboard/developer"}
             color="#FBBF24"
-            badge="Enterprise"
+            badge={(!user || (user.tier !== 'elite' && user.tier !== 'custom' && user.tier !== 'enterprise')) ? "Elite Only" : "Enterprise"}
+            opacity={(!user || (user.tier !== 'elite' && user.tier !== 'custom' && user.tier !== 'enterprise')) ? 0.7 : 1}
           />
         </div>
       </section>
@@ -200,7 +201,7 @@ export default function Home() {
   )
 }
 
-function Tile({ title, icon, desc, href, color, badge }) {
+function Tile({ title, icon, desc, href, color, badge, opacity = 1 }) {
   return (
     <Link href={href} className="glass-panel hover-card" style={{
       padding: '2rem',
@@ -212,7 +213,8 @@ function Tile({ title, icon, desc, href, color, badge }) {
       height: '100%',
       justifyContent: 'space-between',
       border: '1px solid rgba(255, 255, 255, 0.05)',
-      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%)'
+      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%)',
+      opacity: opacity
     }}>
       {badge && (
         <div style={{
