@@ -74,11 +74,12 @@ export async function POST(req) {
             return NextResponse.json({ message: 'Missing fields' }, { status: 400 })
         }
 
-        const { success } = await db.prepare(
+        const { success, meta } = await db.prepare(
             `INSERT INTO business_reviews (business_name, business_email, rating, title, content, reviewer_name, reviewer_email, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'verified')`
         ).bind(businessName, businessEmail || null, rating, title, content, reviewerName || 'Anonymous', reviewerEmail || null).run()
 
         if (success && businessEmail) {
+            const newReviewId = meta.last_row_id
             const brevoApiKey = process.env.BREVO_API_KEY
             const resendApiKey = process.env.RESEND_API_KEY
             const baseUrl = 'https://checkitsa.co.za'
@@ -102,7 +103,7 @@ export async function POST(req) {
                         <p>Transparent feedback helps build a safer community in South Africa. You can view this review and respond to the customer using the button below:</p>
                         
                         <div style="text-align: center; margin-top: 30px;">
-                            <a href="${baseUrl}/reviews" style="display: inline-block; background: #6366f1; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                            <a href="${baseUrl}/reviews/respond?id=${newReviewId}" style="display: inline-block; background: #6366f1; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
                                 Respond to Review →
                             </a>
                         </div>
@@ -118,7 +119,7 @@ export async function POST(req) {
                     </div>
                 </div>
             `
-            const emailText = `New Business Review: ${businessName}\n\nYou've received a ${rating}-star review on CheckItSA.\n\nTitle: ${title}\n"${content}"\n\nRespond to this review here: ${baseUrl}/reviews\n\nCheckItSA - Verified South African Business Intelligence`
+            const emailText = `New Business Review: ${businessName}\n\nYou've received a ${rating}-star review on CheckItSA.\n\nTitle: ${title}\n"${content}"\n\nRespond to this review here: ${baseUrl}/reviews/respond?id=${newReviewId}\n\nCheckItSA - Verified South African Business Intelligence`
 
             let sentEmail = false
 

@@ -100,7 +100,7 @@ export default function BusinessReviews() {
                                 <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', lineHeight: '1.6' }}>"{r.content}"</p>
                             </div>
 
-                            {r.response_content && (
+                            {r.response_content ? (
                                 <div style={{
                                     padding: '1rem',
                                     background: 'rgba(255,255,255,0.03)',
@@ -110,6 +110,24 @@ export default function BusinessReviews() {
                                 }}>
                                     <div style={{ color: 'var(--color-primary)', fontWeight: 'bold', marginBottom: '0.25rem' }}>Business Response:</div>
                                     <p style={{ margin: 0, fontStyle: 'italic', color: 'var(--color-text-muted)' }}>"{r.response_content}"</p>
+                                </div>
+                            ) : (
+                                <div style={{ textAlign: 'right' }}>
+                                    <Link
+                                        href={`/reviews/respond?id=${r.id}`}
+                                        style={{
+                                            fontSize: '0.75rem',
+                                            color: 'var(--color-text-muted)',
+                                            textDecoration: 'none',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            padding: '0.25rem 0.5rem',
+                                            borderRadius: '0.25rem',
+                                            display: 'inline-block'
+                                        }}
+                                        className="hover:bg-white/5"
+                                    >
+                                        🏢 I am the business owner (Respond)
+                                    </Link>
                                 </div>
                             )}
 

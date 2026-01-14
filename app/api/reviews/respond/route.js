@@ -38,12 +38,27 @@ async function ensureSchema(db) {
 
 export async function POST(req) {
     try {
-        const { reviewId, responseContent } = await req.json()
+        const { reviewId, responseContent, businessEmail } = await req.json()
         const db = getRequestContext().env.DB
         await ensureSchema(db)
 
-        if (!reviewId || !responseContent) {
+        if (!reviewId || !responseContent || !businessEmail) {
             return NextResponse.json({ message: 'Missing fields' }, { status: 400 })
+        }
+
+        // 1. Verify the business email matches the review
+        const review = await db.prepare("SELECT business_email FROM business_reviews WHERE id = ?").bind(reviewId).first()
+
+        if (!review) {
+            return NextResponse.json({ message: 'Review not found' }, { status: 404 })
+        }
+
+        // normalize emails for comparison
+        const storedEmail = (review.business_email || '').toLowerCase().trim()
+        const providedEmail = (businessEmail || '').toLowerCase().trim()
+
+        if (storedEmail !== providedEmail) {
+            return NextResponse.json({ message: 'Email does not match our records for this business.' }, { status: 403 })
         }
 
         const { success } = await db.prepare(
