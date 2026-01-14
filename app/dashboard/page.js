@@ -27,6 +27,11 @@ export default function Dashboard() {
             // Fetch reviews
             fetchMyReviews(userData.email)
 
+            // Fetch Preferences
+            fetch(`/api/user/preferences?email=${encodeURIComponent(userData.email)}`)
+                .then(res => res.json())
+                .then(data => setEmailNotifications(!!data.receive_security_intel))
+
             // Perform Cloud Sync
             syncFromCloud(userData.email).then(() => {
                 // After cloud sync, update UI state with fresh data
@@ -47,6 +52,24 @@ export default function Dashboard() {
             setHistory(getHistory())
         }
     }, [])
+
+    const [emailNotifications, setEmailNotifications] = useState(false)
+
+    const toggleNotifications = async () => {
+        const newState = !emailNotifications
+        setEmailNotifications(newState)
+        try {
+            await fetch('/api/user/preferences', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: user.email, receive_security_intel: newState })
+            })
+        } catch (e) {
+            console.error("Failed to update preference", e)
+            alert("Failed to update setting")
+            setEmailNotifications(!newState) // Revert on error
+        }
+    }
 
     const handleDeleteReview = async (reviewId) => {
         if (!confirm('Are you sure you want to delete this review?')) return
@@ -178,6 +201,46 @@ export default function Dashboard() {
                                 <ul style={{ listStyle: 'none', padding: 0 }}>
                                     <IntelFeed />
                                 </ul>
+
+                                {/* Email Toggle for Pro/Elite */}
+                                <div style={{
+                                    marginTop: '1.5rem',
+                                    paddingTop: '1rem',
+                                    borderTop: '1px solid rgba(255,255,255,0.1)',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <div>
+                                        <div style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Daily Intel Brief</div>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Get alerts sent to {user?.email}</div>
+                                    </div>
+                                    <button
+                                        onClick={toggleNotifications}
+                                        style={{
+                                            background: emailNotifications ? 'var(--color-primary)' : 'rgba(255,255,255,0.1)',
+                                            border: 'none',
+                                            borderRadius: '1rem',
+                                            width: '3rem',
+                                            height: '1.5rem',
+                                            position: 'relative',
+                                            cursor: 'pointer',
+                                            transition: 'background 0.3s'
+                                        }}
+                                    >
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '0.15rem',
+                                            left: emailNotifications ? '1.6rem' : '0.15rem',
+                                            width: '1.2rem',
+                                            height: '1.2rem',
+                                            borderRadius: '50%',
+                                            background: 'white',
+                                            transition: 'left 0.3s'
+                                        }}></div>
+                                    </button>
+                                </div>
+
                                 <CommunitySources />
                             </>
                         )}
