@@ -9,7 +9,7 @@ export default function ScamReportForm() {
     const [status, setStatus] = useState(null)
     const [formData, setFormData] = useState({
         name: '', email: '', phone: '',
-        scammer_details: '', description: '', evidence: ''
+        scammer_details: '', description: '', evidence: []
     })
 
     const handleSubmit = async (e) => {
@@ -29,7 +29,7 @@ export default function ScamReportForm() {
                     type: type + ' Scam',
                     details: formData.scammer_details
                 })
-                setFormData({ name: '', email: '', phone: '', scammer_details: '', description: '', evidence: '' })
+                setFormData({ name: '', email: '', phone: '', scammer_details: '', description: '', evidence: [] })
             } else {
                 throw new Error('Failed to submit')
             }
@@ -197,89 +197,129 @@ export default function ScamReportForm() {
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
                                 />
                             </div>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
-                                    Upload Evidence (Optional)
-                                </label>
-                                <div style={{
-                                    border: '2px dashed var(--color-border)',
-                                    padding: '2rem',
-                                    borderRadius: '0.5rem',
-                                    textAlign: 'center',
-                                    cursor: 'pointer',
-                                    background: 'rgba(255,255,255,0.02)',
-                                    transition: 'border-color 0.2s'
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+                                Upload Evidence (Optional - Max 4)
+                            </label>
+                            <div style={{
+                                border: '2px dashed var(--color-border)',
+                                padding: '2rem',
+                                borderRadius: '0.5rem',
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                background: 'rgba(255,255,255,0.02)',
+                                transition: 'border-color 0.2s',
+                                position: 'relative'
+                            }}
+                                onClick={() => {
+                                    if (formData.evidence.length < 4) {
+                                        document.getElementById('evidence-upload').click()
+                                    } else {
+                                        alert("Maximum 4 images allowed.")
+                                    }
                                 }}
-                                    onClick={() => document.getElementById('evidence-upload').click()}
-                                >
-                                    <input
-                                        id="evidence-upload"
-                                        type="file"
-                                        accept="image/*"
-                                        style={{ display: 'none' }}
-                                        onChange={(e) => {
-                                            const file = e.target.files[0]
-                                            if (file) {
-                                                // Compression Logic
-                                                const reader = new FileReader()
-                                                reader.onload = (event) => {
-                                                    const img = new Image()
-                                                    img.onload = () => {
-                                                        const canvas = document.createElement('canvas')
-                                                        const MAX_WIDTH = 800 // Resize to reasonable max width
-                                                        const MAX_HEIGHT = 800
-                                                        let width = img.width
-                                                        let height = img.height
-
-                                                        if (width > height) {
-                                                            if (width > MAX_WIDTH) {
-                                                                height *= MAX_WIDTH / width
-                                                                width = MAX_WIDTH
-                                                            }
-                                                        } else {
-                                                            if (height > MAX_HEIGHT) {
-                                                                width *= MAX_HEIGHT / height
-                                                                height = MAX_HEIGHT
-                                                            }
-                                                        }
-
-                                                        canvas.width = width
-                                                        canvas.height = height
-                                                        const ctx = canvas.getContext('2d')
-                                                        ctx.drawImage(img, 0, 0, width, height)
-
-                                                        // Compress to JPEG at 70% quality
-                                                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7)
-                                                        setFormData({ ...formData, evidence: dataUrl })
-                                                    }
-                                                    img.src = event.target.result
-                                                }
-                                                reader.readAsDataURL(file)
+                            >
+                                <input
+                                    id="evidence-upload"
+                                    type="file"
+                                    accept="image/*"
+                                    // multiple // Single add for better compression control
+                                    style={{ display: 'none' }}
+                                    onChange={(e) => {
+                                        const file = e.target.files[0]
+                                        if (file) {
+                                            if (formData.evidence.length >= 4) {
+                                                alert("Maximum 4 images allowed.")
+                                                return
                                             }
-                                        }}
-                                    />
-                                    {formData.evidence ? (
-                                        <div>
-                                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✅</div>
-                                            <p style={{ color: 'var(--color-success)' }}>Image Attached</p>
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    setFormData({ ...formData, evidence: '' })
+                                            // Compression Logic
+                                            const reader = new FileReader()
+                                            reader.onload = (event) => {
+                                                const img = new Image()
+                                                img.onload = () => {
+                                                    const canvas = document.createElement('canvas')
+                                                    const MAX_WIDTH = 800
+                                                    const MAX_HEIGHT = 800
+                                                    let width = img.width
+                                                    let height = img.height
+
+                                                    if (width > height) {
+                                                        if (width > MAX_WIDTH) {
+                                                            height *= MAX_WIDTH / width
+                                                            width = MAX_WIDTH
+                                                        }
+                                                    } else {
+                                                        if (height > MAX_HEIGHT) {
+                                                            width *= MAX_HEIGHT / height
+                                                            height = MAX_HEIGHT
+                                                        }
+                                                    }
+
+                                                    canvas.width = width
+                                                    canvas.height = height
+                                                    const ctx = canvas.getContext('2d')
+                                                    ctx.drawImage(img, 0, 0, width, height)
+
+                                                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7)
+                                                    // Append to array
+                                                    setFormData(prev => ({ ...prev, evidence: [...(prev.evidence || []), dataUrl] }))
+                                                    // Reset input value to allow adding same file twice if needed? Nah, just to clear it
+                                                    e.target.value = ''
+                                                }
+                                                img.src = event.target.result
+                                            }
+                                            reader.readAsDataURL(file)
+                                        }
+                                    }}
+                                />
+
+                                {(!formData.evidence || formData.evidence.length === 0) ? (
+                                    <div>
+                                        <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📎</div>
+                                        <p style={{ color: 'var(--color-text-muted)' }}>Click to upload screenshot (Max 4)</p>
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', marginTop: '1rem' }} onClick={(e) => e.stopPropagation()}>
+                                        {/* Thumbnails */}
+                                        {formData.evidence.map((imgSrc, idx) => (
+                                            <div key={idx} style={{ position: 'relative', aspectRatio: '1', borderRadius: '0.25rem', overflow: 'hidden', border: '1px solid var(--color-border)' }}>
+                                                <img src={imgSrc} alt={`Evidence ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            evidence: prev.evidence.filter((_, i) => i !== idx)
+                                                        }))
+                                                    }}
+                                                    style={{
+                                                        position: 'absolute', top: '2px', right: '2px',
+                                                        background: 'rgba(220, 38, 38, 0.9)', color: 'white',
+                                                        border: 'none', borderRadius: '50%', width: '20px', height: '20px',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        cursor: 'pointer', fontSize: '10px'
+                                                    }}
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {formData.evidence.length < 4 && (
+                                            <div
+                                                onClick={() => document.getElementById('evidence-upload').click()}
+                                                style={{
+                                                    border: '2px dashed var(--color-border)',
+                                                    borderRadius: '0.25rem',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    fontSize: '1.5rem',
+                                                    color: 'var(--color-text-muted)',
+                                                    cursor: 'pointer'
                                                 }}
-                                                style={{ marginTop: '0.5rem', color: 'var(--color-danger)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
                                             >
-                                                Remove
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div>
-                                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📎</div>
-                                            <p style={{ color: 'var(--color-text-muted)' }}>Click to upload screenshot (Max 1MB)</p>
-                                        </div>
-                                    )}
-                                </div>
+                                                +
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

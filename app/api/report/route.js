@@ -56,7 +56,7 @@ export async function POST(req) {
                 type || 'General',
                 description || reason || 'No description',
                 scammer_details || url || 'N/A',
-                evidence || null,
+                (Array.isArray(evidence) && evidence.length > 0) ? JSON.stringify(evidence) : (typeof evidence === 'string' ? evidence : null),
                 new Date().toISOString()
             )
             .run()
