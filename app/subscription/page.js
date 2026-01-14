@@ -202,7 +202,7 @@ export default function Subscription() {
                             className={sdkError ? "btn btn-danger" : "btn btn-outline"}
                             style={{ width: '100%', opacity: (!sdkReady && !sdkError) ? 0.7 : 1 }}
                         >
-                            {sdkError ? 'Retry Connection' : (!sdkReady ? 'Loading...' : 'Get Pro')}
+                            {sdkError ? 'Retry Connection' : (!sdkReady ? 'Loading...' : 'Pay Now')}
                         </button>
                         {sdkError && <div style={{ fontSize: '0.8rem', color: 'var(--color-danger)', marginTop: '0.5rem', textAlign: 'center' }}>Payment system blocked. Please disable adblockers.</div>}
                     </div>
@@ -237,7 +237,7 @@ export default function Subscription() {
                             className="btn btn-primary"
                             style={{ width: '100%', padding: '1rem', opacity: (!sdkReady && !sdkError) ? 0.7 : 1 }}
                         >
-                            {sdkError ? 'Retry Connection' : (!sdkReady ? 'Loading...' : 'Get Elite')}
+                            {sdkError ? 'Retry Connection' : (!sdkReady ? 'Loading...' : 'Pay Now')}
                         </button>
                         {sdkError && <div style={{ fontSize: '0.8rem', color: '#f87171', marginTop: '0.5rem', textAlign: 'center' }}>Payment system blocked. Please disable adblockers.</div>}
                     </div>
@@ -293,7 +293,7 @@ export default function Subscription() {
                             className="btn btn-outline"
                             style={{ width: '100%', maxWidth: '300px', opacity: (!sdkReady && !sdkError) ? 0.7 : 1 }}
                         >
-                            {sdkError ? 'Retry Connection' : (!sdkReady ? 'Loading...' : 'Upgrade to Enterprise')}
+                            {sdkError ? 'Retry Connection' : (!sdkReady ? 'Loading...' : 'Pay Now')}
                         </button>
                     </div>
 
