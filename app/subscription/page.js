@@ -168,11 +168,12 @@ export default function Subscription() {
 
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-                    gap: '1.5rem',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                    gap: '2rem',
                     maxWidth: '1200px',
                     margin: '0 auto',
-                    alignItems: 'start'
+                    alignItems: 'stretch',
+                    justifyContent: 'center'
                 }}>
                     {/* Basic Plan */}
                     <div className="glass-panel hover-card" style={{
@@ -184,12 +185,12 @@ export default function Subscription() {
                         justifyContent: 'space-between',
                         background: 'linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.01) 100%)'
                     }}>
-                        <div>
+                        <div style={{ textAlign: 'center' }}>
                             <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', fontWeight: 600 }}>Basic</h3>
                             <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '2rem', letterSpacing: '-1px' }}>
                                 R0 <span style={{ fontSize: '1rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>/ forever</span>
                             </div>
-                            <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2.5rem', color: 'var(--color-text-muted)', lineHeight: '2', fontSize: '1rem' }}>
+                            <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2.5rem', color: 'var(--color-text-muted)', lineHeight: '2', fontSize: '1rem', textAlign: 'left' }}>
                                 <li>✅ 5 Searches Total</li>
                                 <li>✅ Basic Scanning</li>
                                 <li>✅ Community Reports</li>
@@ -223,12 +224,12 @@ export default function Subscription() {
                         justifyContent: 'space-between',
                         boxShadow: '0 10px 30px -10px rgba(99, 102, 241, 0.2)'
                     }}>
-                        <div>
+                        <div style={{ textAlign: 'center' }}>
                             <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--color-primary-light)', fontWeight: 600 }}>Pro</h3>
                             <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '2rem', letterSpacing: '-1px' }}>
                                 R79 <span style={{ fontSize: '1rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>/ month</span>
                             </div>
-                            <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2.5rem', lineHeight: '2', fontSize: '1rem' }}>
+                            <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2.5rem', lineHeight: '2', fontSize: '1rem', textAlign: 'left' }}>
                                 <li>⚡ <strong>100 Searches / mo</strong></li>
                                 <li>🛡️ <strong>Security Intel Access</strong></li>
                                 <li>✅ Advanced Scanning</li>
@@ -264,7 +265,7 @@ export default function Subscription() {
                         justifyContent: 'space-between',
                         boxShadow: '0 20px 40px -10px rgba(99, 102, 241, 0.3)'
                     }}>
-                        <div>
+                        <div style={{ textAlign: 'center' }}>
                             <div style={{
                                 position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)',
                                 background: 'var(--color-primary)', color: 'white', padding: '0.4rem 1.2rem',
@@ -277,7 +278,7 @@ export default function Subscription() {
                             </div>
                             <div style={{ fontSize: '0.9rem', color: '#86efac', marginBottom: '2.5rem', fontWeight: 600 }}>🚀 Massive Capability</div>
 
-                            <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2.5rem', lineHeight: '2', fontSize: '1rem' }}>
+                            <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2.5rem', lineHeight: '2', fontSize: '1rem', textAlign: 'left' }}>
                                 <li>🚀 <strong>1,000 Searches / mo</strong></li>
                                 <li>🌍 <strong>Full Global Intel</strong></li>
                                 <li>⚡ <strong>Fastest Execution</strong></li>
