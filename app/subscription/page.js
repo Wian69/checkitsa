@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 export default function Subscription() {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(false)
+    const [sdkReady, setSdkReady] = useState(false)
     const router = useRouter()
 
     useEffect(() => {
@@ -18,13 +19,21 @@ export default function Subscription() {
         }
 
         // Load Yoco SDK
-        const script = document.createElement('script')
-        script.src = "https://js.yoco.com/sdk/v1/yoco-sdk-web.js"
-        script.async = true
-        document.body.appendChild(script)
+        if (window.YocoSDK) {
+            setSdkReady(true)
+        } else {
+            const script = document.createElement('script')
+            script.src = "https://js.yoco.com/sdk/v1/yoco-sdk-web.js"
+            script.async = true
+            script.onload = () => setSdkReady(true)
+            document.body.appendChild(script)
 
-        return () => {
-            document.body.removeChild(script)
+            return () => {
+                // optional: don't necessarily remove it if other pages might use it, but safe here
+                if (document.body.contains(script)) {
+                    document.body.removeChild(script)
+                }
+            }
         }
     }, [])
 
@@ -42,8 +51,8 @@ export default function Subscription() {
 
 
     const handleUpgrade = (plan) => {
-        if (!window.YocoSDK) {
-            alert("Payment system loading... please try again in a moment.")
+        if (!sdkReady || !window.YocoSDK) {
+            alert("Payment system is still initializing. Please wait a second.")
             return
         }
 
