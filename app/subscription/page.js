@@ -303,63 +303,75 @@ export default function Subscription() {
                     </div>
 
                     {/* Custom Plan */}
-                    <div className="glass-panel" style={{ padding: '2rem', border: '1px solid rgba(255,255,255,0.1)', gridColumn: '1 / -1', maxWidth: '100%' }}>
-                        <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>Custom Enterprise</h3>
-                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '1rem', marginBottom: '1rem' }}>
-                            <div style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>
-                                R{customPrice} <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>/ month</span>
-                            </div>
-                            <div style={{ paddingBottom: '0.5rem', color: 'var(--color-success)', fontWeight: 'bold' }}>
-                                {customScans.toLocaleString()} Scans
-                            </div>
+                    <div className="glass-panel hover-card" style={{ padding: '3rem', border: '1px solid rgba(255,255,255,0.1)', gridColumn: '1 / -1', maxWidth: '100%', marginTop: '1rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'center', marginBottom: '3rem' }}>
+                            <h3 style={{ fontSize: '1.8rem', marginBottom: '0.5rem', fontWeight: 600 }}>Custom Enterprise</h3>
+                            <p style={{ color: 'var(--color-text-muted)' }}>Tailored volume for growing agencies.</p>
                         </div>
 
-                        <div style={{ marginBottom: '2rem' }}>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-muted)' }}>Adjust Verification Volume:</label>
-                            <input
-                                type="range"
-                                min="1100"
-                                max="50000"
-                                step="100"
-                                value={customScans}
-                                onChange={(e) => setCustomScans(Number(e.target.value))}
-                                style={{ width: '100%', height: '8px', borderRadius: '4px', accentColor: 'var(--color-primary)' }}
-                            />
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
-                                <span>1.1k</span>
-                                <span>50k+</span>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '3rem', alignItems: 'center' }}>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                                    <div style={{ fontSize: '3.5rem', fontWeight: 'bold' }}>
+                                        R{customPrice} <span style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>/ mo</span>
+                                    </div>
+                                    <div style={{ padding: '0.5rem 1rem', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--color-success)', fontWeight: 'bold', borderRadius: '1rem' }}>
+                                        {customScans.toLocaleString()} Scans
+                                    </div>
+                                </div>
+
+                                <div style={{ marginBottom: '2rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--color-text-muted)' }}>Adjust Verification Volume:</label>
+                                    <input
+                                        type="range"
+                                        min="1100"
+                                        max="50000"
+                                        step="100"
+                                        value={customScans}
+                                        onChange={(e) => setCustomScans(Number(e.target.value))}
+                                        style={{ width: '100%', height: '8px', borderRadius: '4px', accentColor: 'var(--color-primary)' }}
+                                    />
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
+                                        <span>1.1k</span>
+                                        <span>50k+</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ flex: 1 }}>
+                                <ul style={{
+                                    listStyle: 'none',
+                                    padding: 0,
+                                    margin: 0,
+                                    color: 'var(--color-text-muted)',
+                                    lineHeight: '2',
+                                    fontSize: '1rem',
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 1fr',
+                                    gap: '1rem'
+                                }}>
+                                    <li>✅ <strong>Volume-based Discount</strong></li>
+                                    <li>✅ <strong>Dedicated API Keys</strong></li>
+                                    <li>✅ <strong>Priority 24/7 Support</strong></li>
+                                    <li>✅ <strong>Custom Integration</strong></li>
+                                </ul>
+                                <button
+                                    onClick={() => handleUpgrade('custom')}
+                                    disabled={loading || isCurrentPlan('enterprise')}
+                                    className="btn btn-outline"
+                                    style={{
+                                        width: '100%',
+                                        marginTop: '2rem',
+                                        padding: '1rem',
+                                        borderRadius: '2rem',
+                                        borderColor: isCurrentPlan('enterprise') ? 'var(--color-success)' : 'rgba(255,255,255,0.1)',
+                                        color: isCurrentPlan('enterprise') ? 'var(--color-success)' : 'inherit'
+                                    }}
+                                >
+                                    {loading ? 'Processing...' : (isCurrentPlan('enterprise') ? '✅ Current Plan' : 'Pay Now')}
+                                </button>
                             </div>
                         </div>
-
-                        <ul style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                            gap: '1rem',
-                            listStyle: 'none',
-                            padding: 0,
-                            marginBottom: '2rem',
-                            color: 'var(--color-text-muted)',
-                            lineHeight: '1.8',
-                            fontSize: '0.95rem'
-                        }}>
-                            <li>✅ <strong>Volume-based Discount</strong></li>
-                            <li>✅ <strong>Dedicated API Keys</strong></li>
-                            <li>✅ <strong>Priority 24/7 Support</strong></li>
-                            <li>✅ <strong>Custom Integration</strong></li>
-                        </ul>
-                        <button
-                            onClick={() => handleUpgrade('custom')}
-                            disabled={loading || isCurrentPlan('enterprise')}
-                            className="btn btn-outline"
-                            style={{
-                                width: '100%',
-                                maxWidth: '300px',
-                                borderColor: isCurrentPlan('enterprise') ? 'var(--color-success)' : 'rgba(255,255,255,0.1)',
-                                color: isCurrentPlan('enterprise') ? 'var(--color-success)' : 'inherit'
-                            }}
-                        >
-                            {loading ? 'Processing...' : (isCurrentPlan('enterprise') ? '✅ Current Plan' : 'Pay Now')}
-                        </button>
                     </div>
 
                 </div>
