@@ -175,24 +175,36 @@ export default function Subscription() {
                     alignItems: 'start'
                 }}>
                     {/* Basic Plan */}
-                    <div className="glass-panel" style={{ padding: '2rem', border: '1px solid rgba(255,255,255,0.1)' }}>
-                        <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>Basic</h3>
-                        <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '2rem' }}>
-                            R0 <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>/ forever</span>
+                    <div className="glass-panel hover-card" style={{
+                        padding: '2.5rem',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        height: '100%',
+                        justifyContent: 'space-between',
+                        background: 'linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.01) 100%)'
+                    }}>
+                        <div>
+                            <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', fontWeight: 600 }}>Basic</h3>
+                            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '2rem', letterSpacing: '-1px' }}>
+                                R0 <span style={{ fontSize: '1rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>/ forever</span>
+                            </div>
+                            <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2.5rem', color: 'var(--color-text-muted)', lineHeight: '2', fontSize: '1rem' }}>
+                                <li>✅ 5 Searches Total</li>
+                                <li>✅ Basic Scanning</li>
+                                <li>✅ Community Reports</li>
+                                <li style={{ opacity: 0.5 }}>❌ Advanced Analysis</li>
+                            </ul>
                         </div>
-                        <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2rem', color: 'var(--color-text-muted)', lineHeight: '1.8', fontSize: '0.95rem' }}>
-                            <li>✅ 5 Searches Total</li>
-                            <li>✅ Basic Scanning</li>
-                            <li>✅ Community Reports</li>
-                            <li>❌ Advanced Analysis</li>
-                        </ul>
                         <button
                             disabled
                             className="btn btn-outline"
                             style={{
                                 width: '100%',
-                                opacity: isCurrentPlan('basic') ? 0.5 : 1,
+                                opacity: isCurrentPlan('basic') ? 0.5 : 0.7,
                                 cursor: 'not-allowed',
+                                borderRadius: '2rem',
+                                padding: '1rem',
                                 borderColor: isCurrentPlan('basic') ? 'var(--color-success)' : 'rgba(255,255,255,0.1)',
                                 color: isCurrentPlan('basic') ? 'var(--color-success)' : 'inherit'
                             }}
@@ -202,23 +214,35 @@ export default function Subscription() {
                     </div>
 
                     {/* Pro Plan */}
-                    <div className="glass-panel" style={{ padding: '2rem', border: '1px solid var(--color-primary)' }}>
-                        <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem', color: 'var(--color-primary-light)' }}>Pro</h3>
-                        <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '2rem' }}>
-                            R79 <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>/ month</span>
+                    <div className="glass-panel hover-card" style={{
+                        padding: '2.5rem',
+                        border: '1px solid var(--color-primary)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        height: '100%',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 10px 30px -10px rgba(99, 102, 241, 0.2)'
+                    }}>
+                        <div>
+                            <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--color-primary-light)', fontWeight: 600 }}>Pro</h3>
+                            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '2rem', letterSpacing: '-1px' }}>
+                                R79 <span style={{ fontSize: '1rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>/ month</span>
+                            </div>
+                            <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2.5rem', lineHeight: '2', fontSize: '1rem' }}>
+                                <li>⚡ <strong>100 Searches / mo</strong></li>
+                                <li>🛡️ <strong>Security Intel Access</strong></li>
+                                <li>✅ Advanced Scanning</li>
+                                <li>✅ Priority support</li>
+                            </ul>
                         </div>
-                        <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2rem', lineHeight: '1.8', fontSize: '0.95rem' }}>
-                            <li>⚡ <strong>100 Searches / mo</strong></li>
-                            <li>🛡️ <strong>Security Intel Access</strong></li>
-                            <li>✅ Advanced Scanning</li>
-                            <li>✅ Priority support</li>
-                        </ul>
                         <button
                             onClick={() => handleUpgrade('pro')}
                             disabled={loading || isCurrentPlan('pro')}
                             className={isCurrentPlan('pro') ? "btn btn-outline" : "btn btn-outline"}
                             style={{
                                 width: '100%',
+                                borderRadius: '2rem',
+                                padding: '1rem',
                                 opacity: isCurrentPlan('pro') ? 1 : 1,
                                 borderColor: isCurrentPlan('pro') ? 'var(--color-success)' : 'var(--color-primary)',
                                 color: isCurrentPlan('pro') ? 'var(--color-success)' : 'white'
@@ -229,29 +253,36 @@ export default function Subscription() {
                     </div>
 
                     {/* Elite Plan */}
-                    <div className="glass-panel" style={{
-                        padding: '2rem',
+                    <div className="glass-panel hover-card" style={{
+                        padding: '2.5rem',
                         border: '2px solid var(--color-primary)',
-                        background: 'linear-gradient(145deg, rgba(99, 102, 241, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%)',
-                        position: 'relative'
+                        background: 'linear-gradient(145deg, rgba(99, 102, 241, 0.15) 0%, rgba(167, 139, 250, 0.1) 100%)',
+                        position: 'relative',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        height: '100%',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 20px 40px -10px rgba(99, 102, 241, 0.3)'
                     }}>
-                        <div style={{
-                            position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)',
-                            background: 'var(--color-primary)', color: 'white', padding: '0.25rem 1rem',
-                            borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 'bold'
-                        }}>BEST VALUE</div>
+                        <div>
+                            <div style={{
+                                position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)',
+                                background: 'var(--color-primary)', color: 'white', padding: '0.4rem 1.2rem',
+                                borderRadius: '2rem', fontSize: '0.8rem', fontWeight: 'bold', letterSpacing: '0.5px'
+                            }}>BEST VALUE</div>
 
-                        <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem', color: 'white' }}>Elite</h3>
-                        <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                            R119 <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>/ month</span>
+                            <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'white', fontWeight: 600 }}>Elite</h3>
+                            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem', letterSpacing: '-1px' }}>
+                                R119 <span style={{ fontSize: '1rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>/ month</span>
+                            </div>
+                            <div style={{ fontSize: '0.9rem', color: '#86efac', marginBottom: '2.5rem', fontWeight: 600 }}>🚀 Massive Capability</div>
+
+                            <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2.5rem', lineHeight: '2', fontSize: '1rem' }}>
+                                <li>🚀 <strong>1,000 Searches / mo</strong></li>
+                                <li>🌍 <strong>Full Global Intel</strong></li>
+                                <li>⚡ <strong>Fastest Execution</strong></li>
+                            </ul>
                         </div>
-                        <div style={{ fontSize: '0.85rem', color: '#86efac', marginBottom: '2rem' }}>Massive Capability</div>
-
-                        <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2rem', lineHeight: '1.8', fontSize: '0.95rem' }}>
-                            <li>🚀 <strong>1,000 Searches / mo</strong></li>
-                            <li>🌍 <strong>Full Global Intel</strong></li>
-                            <li>⚡ <strong>Fastest Execution</strong></li>
-                        </ul>
                         <button
                             onClick={() => handleUpgrade('elite')}
                             disabled={loading || isCurrentPlan('elite')}
@@ -259,10 +290,12 @@ export default function Subscription() {
                             style={{
                                 width: '100%',
                                 padding: '1rem',
+                                borderRadius: '2rem',
                                 background: isCurrentPlan('elite') ? 'transparent' : 'var(--color-primary)',
                                 border: isCurrentPlan('elite') ? '1px solid var(--color-success)' : 'none',
                                 color: isCurrentPlan('elite') ? 'var(--color-success)' : 'white',
-                                cursor: isCurrentPlan('elite') ? 'default' : 'pointer'
+                                cursor: isCurrentPlan('elite') ? 'default' : 'pointer',
+                                fontWeight: 'bold'
                             }}
                         >
                             {loading ? 'Processing...' : (isCurrentPlan('elite') ? '✅ Current Plan' : 'Pay Now')}
