@@ -108,7 +108,7 @@ export default function BusinessReviews() {
                                     fontSize: '0.85rem',
                                     border: '1px solid rgba(255,255,255,0.05)'
                                 }}>
-                                    <div style={{ color: 'var(--color-primary)', fontWeight: 'bold', marginBottom: '0.25rem' }}>Business Response:</div>
+                                    <div style={{ color: 'var(--color-primary)', fontWeight: 'bold', marginBottom: '0.25rem' }}>{r.business_name} Response:</div>
                                     <p style={{ margin: 0, fontStyle: 'italic', color: 'var(--color-text-muted)' }}>"{r.response_content}"</p>
                                 </div>
                             ) : (
