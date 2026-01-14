@@ -2,6 +2,7 @@
 import Navbar from '@/components/Navbar'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Script from 'next/script'
 
 export default function Subscription() {
     const [user, setUser] = useState(null)
@@ -9,70 +10,61 @@ export default function Subscription() {
     const [sdkReady, setSdkReady] = useState(false)
     const router = useRouter()
 
-    const loadYoco = () => {
-        if (typeof window === 'undefined') return Promise.resolve(false)
-        if (window.YocoSDK) {
-            setSdkReady(true)
-            return Promise.resolve(true)
-        }
-
-        return new Promise((resolve) => {
-            const existingScript = document.querySelector('script[src="https://js.yoco.com/sdk/v1/yoco-sdk-web.js"]')
-            if (existingScript) existingScript.remove()
-
-            const script = document.createElement('script')
-            script.src = "https://js.yoco.com/sdk/v1/yoco-sdk-web.js"
-            script.async = true
-            script.onload = () => {
-                console.log("Yoco SDK Loaded")
-                setSdkReady(true)
-                resolve(true)
-            }
-            script.onerror = () => {
-                console.error("Failed to load Yoco SDK")
-                resolve(false)
-            }
-            document.body.appendChild(script)
-        })
-    }
-
     useEffect(() => {
-        // Load User
         const u = localStorage.getItem('checkitsa_user')
         if (u) {
             setUser(JSON.parse(u))
         } else {
             router.push('/login')
         }
-
-        // Initial Background Load Attempt (Best Effort)
-        loadYoco()
     }, [])
 
     // State for Custom Slider
     const [customScans, setCustomScans] = useState(1100)
-    const [customPrice, setCustomPrice] = useState(138) // Initial calculation
+    const [customPrice, setCustomPrice] = useState(138)
 
-    // Update price when slider moves
     useEffect(() => {
         const price = Math.round(50 + (customScans * 0.08))
         setCustomPrice(price)
     }, [customScans])
 
+    // Manual Fallback Loader
+    const loadYocoManual = () => {
+        return new Promise((resolve) => {
+            if (window.YocoSDK) {
+                setSdkReady(true)
+                resolve(true)
+                return
+            }
+            console.log("Attempting manual Yoco load...")
+            const script = document.createElement('script')
+            script.src = "https://js.yoco.com/sdk/v1/yoco-sdk-web.js"
+            script.async = true
+            script.onload = () => {
+                setSdkReady(true)
+                resolve(true)
+            }
+            script.onerror = () => {
+                console.error("Manual Yoco load failed")
+                resolve(false)
+            }
+            document.body.appendChild(script)
+        })
+    }
 
     const handleUpgrade = async (plan) => {
-        // 1. Check/Load SDK
+        // Optimistic Check
         if (!window.YocoSDK) {
             setLoading(true)
-            const loaded = await loadYoco()
-            if (!loaded) {
+            // Attempt manual fallback if Next/Script failed
+            const success = await loadYocoManual()
+            if (!success) {
                 setLoading(false)
-                alert("Payment System Error: Unable to connect to Yoco security. Please disable ad-blockers for this site and try again.")
+                alert("Unable to initialize secure payment connection. Please check your internet connection and refresh the page.")
                 return
             }
         }
 
-        // Pricing Logic
         let amount = 0
         let desc = ''
         let limit = 0
@@ -119,7 +111,6 @@ export default function Subscription() {
                                     customLimit: limit
                                 })
                             })
-
                             const data = await res.json()
                             if (!res.ok) throw new Error(data.message)
 
@@ -139,14 +130,25 @@ export default function Subscription() {
                 }
             })
         } catch (e) {
-            console.error("Yoco Initialization Error", e)
-            alert("Payment system error: " + e.message)
+            console.error("Yoco Error", e)
+            alert("Payment system error. Please try again.")
             setLoading(false)
         }
     }
 
     return (
         <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+            {/* Primary Loader via Next.js Script */}
+            <Script
+                src="https://js.yoco.com/sdk/v1/yoco-sdk-web.js"
+                strategy="lazyOnload"
+                onLoad={() => {
+                    console.log("Yoco SDK Ready via Script")
+                    setSdkReady(true)
+                }}
+                onError={(e) => console.warn("Yoco Script Load Failed", e)}
+            />
+
             <Navbar />
 
             <div className="container" style={{ paddingTop: '8rem', paddingBottom: '4rem' }}>
@@ -165,7 +167,6 @@ export default function Subscription() {
                     margin: '0 auto',
                     alignItems: 'start'
                 }}>
-
                     {/* Basic Plan */}
                     <div className="glass-panel" style={{ padding: '2rem', border: '1px solid rgba(255,255,255,0.1)' }}>
                         <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>Basic</h3>
