@@ -69,7 +69,7 @@ export default function Home() {
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
           gap: '1.5rem',
           maxWidth: '1200px',
           margin: '0 auto'
@@ -108,6 +108,14 @@ export default function Home() {
             desc="Verify if a betting site is legally licensed in SA."
             href="/verify/gambling"
             color="#F87171"
+          />
+          <Tile
+            title="Developer API"
+            icon="⚡"
+            desc="Integrate our verification engine directly into your app."
+            href="/dashboard/developer"
+            color="#FBBF24"
+            badge="Enterprise"
           />
         </div>
       </section>
@@ -194,52 +202,74 @@ export default function Home() {
 
 function Tile({ title, icon, desc, href, color, badge }) {
   return (
-    <Link href={href} className="glass-panel" style={{
+    <Link href={href} className="glass-panel hover-card" style={{
       padding: '2rem',
       textAlign: 'left',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      justifyContent: 'space-between',
+      border: '1px solid rgba(255, 255, 255, 0.05)',
+      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%)'
     }}>
       {badge && (
         <div style={{
           position: 'absolute',
           top: '1rem',
           right: '1rem',
-          background: 'rgba(255,255,255,0.1)',
+          background: `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, 0.2)`,
           padding: '0.25rem 0.75rem',
-          borderRadius: '1rem',
-          fontSize: '0.75rem',
+          borderRadius: '2rem',
+          fontSize: '0.7rem',
           fontWeight: 'bold',
-          color: 'var(--color-text-muted)',
-          border: '1px solid var(--color-border)'
+          color: color,
+          border: `1px solid ${color}44`,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em'
         }}>
           {badge}
         </div>
       )}
+
+      <div>
+        <div style={{
+          width: '3.5rem',
+          height: '3.5rem',
+          background: `rgba(${parseInt(color.slice(1, 3), 16) || 99}, ${parseInt(color.slice(3, 5), 16) || 102}, ${parseInt(color.slice(5, 7), 16) || 241}, 0.1)`,
+          borderRadius: '1rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '1.5rem',
+          marginBottom: '1.5rem',
+          border: `1px solid ${color}33`,
+          boxShadow: `0 4px 20px -5px ${color}22`
+        }}>{icon}</div>
+
+        <h3 style={{ fontSize: '1.25rem', marginBottom: '0.75rem', fontWeight: 600 }}>{title}</h3>
+        <p style={{ fontSize: '0.95rem', color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: '2rem' }}>{desc}</p>
+      </div>
+
       <div style={{
-        width: '3.5rem',
-        height: '3.5rem',
-        background: `rgba(${parseInt(color.slice(1, 3), 16) || 99}, ${parseInt(color.slice(3, 5), 16) || 102}, ${parseInt(color.slice(5, 7), 16) || 241}, 0.1)`,
-        borderRadius: '1rem',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '1.5rem',
-        marginBottom: '1.5rem',
-        border: `1px solid ${color}33`
-      }}>{icon}</div>
-      <h3 style={{ fontSize: '1.25rem', marginBottom: '0.75rem' }}>{title}</h3>
-      <p style={{ fontSize: '0.9375rem', color: 'var(--color-text-muted)', lineHeight: 1.5 }}>{desc}</p>
+        color: color,
+        fontSize: '0.9rem',
+        fontWeight: 600
+      }}>
+        Access Tool <span style={{ marginLeft: '0.5rem', transition: 'transform 0.2s' }}>→</span>
+      </div>
 
       <div style={{
         position: 'absolute',
         bottom: '0',
         left: '0',
         width: '100%',
-        height: '2px',
-        background: color,
-        opacity: 0.3
+        height: '3px',
+        background: `linear-gradient(90deg, ${color} 0%, transparent 100%)`,
+        opacity: 0.5
       }}></div>
     </Link>
   )
