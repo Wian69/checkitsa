@@ -7,6 +7,7 @@ export default function Subscription() {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(false)
     const [sdkReady, setSdkReady] = useState(false)
+    const [sdkError, setSdkError] = useState(false)
     const router = useRouter()
 
     useEffect(() => {
