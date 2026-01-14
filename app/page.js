@@ -236,7 +236,7 @@ function Tile({ title, icon, desc, href, color, badge, opacity = 1 }) {
       )}
 
       <div>
-        <div style={{
+        <div className="icon-container" style={{
           width: '3.5rem',
           height: '3.5rem',
           background: `rgba(${parseInt(color.slice(1, 3), 16) || 99}, ${parseInt(color.slice(3, 5), 16) || 102}, ${parseInt(color.slice(5, 7), 16) || 241}, 0.1)`,
@@ -261,7 +261,7 @@ function Tile({ title, icon, desc, href, color, badge, opacity = 1 }) {
         fontSize: '0.9rem',
         fontWeight: 600
       }}>
-        Access Tool <span style={{ marginLeft: '0.5rem', transition: 'transform 0.2s' }}>→</span>
+        Access Tool <span className="arrow-icon" style={{ marginLeft: '0.5rem' }}>→</span>
       </div>
 
       <div style={{
