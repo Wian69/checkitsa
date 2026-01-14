@@ -18,23 +18,37 @@ export default function Subscription() {
             router.push('/login')
         }
 
-        // Load Yoco SDK
+        // Load Yoco SDK Robustly
         if (window.YocoSDK) {
             setSdkReady(true)
         } else {
-            const script = document.createElement('script')
-            script.src = "https://js.yoco.com/sdk/v1/yoco-sdk-web.js"
-            script.async = true
-            script.onload = () => setSdkReady(true)
-            document.body.appendChild(script)
+            // Check if script already exists to avoid duplicates/race conditions
+            const existingScript = document.querySelector('script[src="https://js.yoco.com/sdk/v1/yoco-sdk-web.js"]')
 
-            return () => {
-                // optional: don't necessarily remove it if other pages might use it, but safe here
-                if (document.body.contains(script)) {
-                    document.body.removeChild(script)
+            if (existingScript) {
+                // If it exists but sdkReady is false, check if it's loaded
+                if (window.YocoSDK) {
+                    setSdkReady(true)
+                } else {
+                    // Attach listener to existing script just in case
+                    existingScript.addEventListener('load', () => setSdkReady(true))
                 }
+            } else {
+                const script = document.createElement('script')
+                script.src = "https://js.yoco.com/sdk/v1/yoco-sdk-web.js"
+                script.async = true
+                script.onload = () => {
+                    console.log("Yoco SDK Loaded")
+                    setSdkReady(true)
+                }
+                script.onerror = () => {
+                    console.error("Failed to load Yoco SDK")
+                    alert("Failed to load payment system. Please disable ad-blockers and refresh.")
+                }
+                document.body.appendChild(script)
             }
         }
+        // Verification: Intentionally NOT determining cleanup of script to ensure it stays loaded
     }, [])
 
     // State for Custom Slider
@@ -49,10 +63,9 @@ export default function Subscription() {
     }, [customScans])
 
 
-
     const handleUpgrade = (plan) => {
         if (!sdkReady || !window.YocoSDK) {
-            alert("Payment system is still initializing. Please wait a second.")
+            console.warn("Attempted upgrade before SDK ready")
             return
         }
 
@@ -78,50 +91,55 @@ export default function Subscription() {
             limit = customScans
         }
 
-        const yoco = new window.YocoSDK({
-            publicKey: process.env.NEXT_PUBLIC_YOCO_PUBLIC_KEY || 'pk_live_535be7d6Ld0qG9711634'
-        })
+        try {
+            const yoco = new window.YocoSDK({
+                publicKey: process.env.NEXT_PUBLIC_YOCO_PUBLIC_KEY || 'pk_live_535be7d6Ld0qG9711634'
+            })
 
-        yoco.showPopup({
-            amountInCents: amount,
-            currency: 'ZAR',
-            name: planName,
-            description: desc,
-            callback: async (result) => {
-                if (result.error) {
-                    alert("Payment Failed: " + result.error.message)
-                } else {
-                    setLoading(true)
-                    try {
-                        const res = await fetch('/api/checkout', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                token: result.id,
-                                email: user.email,
-                                amount: amount,
-                                customLimit: limit // Pass the custom limit
+            yoco.showPopup({
+                amountInCents: amount,
+                currency: 'ZAR',
+                name: planName,
+                description: desc,
+                callback: async (result) => {
+                    if (result.error) {
+                        alert("Payment Failed: " + result.error.message)
+                    } else {
+                        setLoading(true)
+                        try {
+                            const res = await fetch('/api/checkout', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    token: result.id,
+                                    email: user.email,
+                                    amount: amount,
+                                    customLimit: limit // Pass the custom limit
+                                })
                             })
-                        })
 
-                        const data = await res.json()
-                        if (!res.ok) throw new Error(data.message)
+                            const data = await res.json()
+                            if (!res.ok) throw new Error(data.message)
 
-                        localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
-                        localStorage.setItem('checkitsa_tier', data.user.tier)
-                        if (limit > 0) localStorage.setItem('checkitsa_custom_limit', limit)
+                            localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
+                            localStorage.setItem('checkitsa_tier', data.user.tier)
+                            if (limit > 0) localStorage.setItem('checkitsa_custom_limit', limit)
 
-                        alert(`Upgrade Successful! You are now on the ${plan === 'custom' ? 'Enterprise' : plan} plan.`)
-                        router.push('/dashboard')
-                    } catch (err) {
-                        alert("Verification Failed: " + err.message)
-                        console.error(err)
-                    } finally {
-                        setLoading(false)
+                            alert(`Upgrade Successful! You are now on the ${plan === 'custom' ? 'Enterprise' : plan} plan.`)
+                            router.push('/dashboard')
+                        } catch (err) {
+                            alert("Verification Failed: " + err.message)
+                            console.error(err)
+                        } finally {
+                            setLoading(false)
+                        }
                     }
                 }
-            }
-        })
+            })
+        } catch (e) {
+            console.error("Yoco Initialization Error", e)
+            alert("Payment system error: " + e.message)
+        }
     }
 
     return (
@@ -172,7 +190,14 @@ export default function Subscription() {
                             <li>✅ Advanced Scanning</li>
                             <li>✅ Priority support</li>
                         </ul>
-                        <button onClick={() => handleUpgrade('pro')} disabled={loading} className="btn btn-outline" style={{ width: '100%' }}>Get Pro</button>
+                        <button
+                            onClick={() => handleUpgrade('pro')}
+                            disabled={loading || !sdkReady}
+                            className="btn btn-outline"
+                            style={{ width: '100%', opacity: !sdkReady ? 0.7 : 1 }}
+                        >
+                            {!sdkReady ? 'Loading...' : 'Get Pro'}
+                        </button>
                     </div>
 
                     {/* Elite Plan */}
@@ -199,7 +224,14 @@ export default function Subscription() {
                             <li>🌍 <strong>Full Global Intel</strong></li>
                             <li>⚡ <strong>Fastest Execution</strong></li>
                         </ul>
-                        <button onClick={() => handleUpgrade('elite')} disabled={loading} className="btn btn-primary" style={{ width: '100%', padding: '1rem' }}>Get Elite</button>
+                        <button
+                            onClick={() => handleUpgrade('elite')}
+                            disabled={loading || !sdkReady}
+                            className="btn btn-primary"
+                            style={{ width: '100%', padding: '1rem', opacity: !sdkReady ? 0.7 : 1 }}
+                        >
+                            {!sdkReady ? 'Loading...' : 'Get Elite'}
+                        </button>
                     </div>
 
                     {/* Custom Plan (Slider) */}
@@ -247,8 +279,13 @@ export default function Subscription() {
                             <li>✅ <strong>Priority 24/7 Support</strong></li>
                             <li>✅ <strong>Custom Integration</strong></li>
                         </ul>
-                        <button onClick={() => handleUpgrade('custom')} disabled={loading} className="btn btn-outline" style={{ width: '100%', maxWidth: '300px' }}>
-                            Upgrade to Enterprise
+                        <button
+                            onClick={() => handleUpgrade('custom')}
+                            disabled={loading || !sdkReady}
+                            className="btn btn-outline"
+                            style={{ width: '100%', maxWidth: '300px', opacity: !sdkReady ? 0.7 : 1 }}
+                        >
+                            {!sdkReady ? 'Loading...' : 'Upgrade to Enterprise'}
                         </button>
                     </div>
 
