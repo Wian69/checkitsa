@@ -81,8 +81,9 @@ export async function POST(req) {
         }
         */
 
-        const authorities = AUTHORITY_MAP[type] || ['crimestop@saps.gov.za'] // Default fallback
-        const recipients = [...new Set(['wiandurandt69@gmail.com', ...authorities])] // Unique list
+        const authorities = AUTHORITY_MAP[type] || ['crimestop@saps.gov.za'] // Maybe fix default fallback for prod later
+        const authoritiesList = [...new Set(authorities)] // Just authorities
+        const adminEmail = 'wiandurandt69@gmail.com'
 
         // 4. Prepare Attachments
         let attachments = []
@@ -118,7 +119,6 @@ export async function POST(req) {
         // 5. Send Email Notification (Provider Agnostic)
         const resendApiKey = process.env.RESEND_API_KEY
         const brevoApiKey = process.env.BREVO_API_KEY
-        // const adminSecret = process.env.ADMIN_SECRET || 'secret' // Moved below to reuse
 
         let sentEmail = false
         const adminSecret = process.env.ADMIN_SECRET || 'secret'
@@ -128,75 +128,107 @@ export async function POST(req) {
 
         const emailSubject = `[TEST MODE] 🚨 Scam Report [${type}]: ${scammer_details.substring(0, 30)}...`
 
-        // Admin & Authority View
-        const emailHtml = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; border: 1px solid #ddd; padding: 20px;">
+        // Template Shared Styles
+        const styleContainer = "font-family: Arial, sans-serif; max-width: 600px; border: 1px solid #ddd; padding: 20px;"
+        const styleIncident = "background: #f9f9f9; padding: 10px; border-left: 3px solid #d32f2f;"
+
+        // A. ADMIN TEMPLATE (With Verify/Reject Buttons)
+        const adminHtml = `
+            <div style="${styleContainer}">
                 <h2 style="color: #d32f2f;">New Scam Report - Action Required</h2>
+                <div style="background: #fee; padding: 10px; margin-bottom: 10px; border: 1px solid #fcc; font-size: 0.9em;">
+                    <strong>ADMIN CONTROL PANEL</strong><br/>
+                    This section is only visible to site administrators.
+                </div>
                 <p><strong>Type:</strong> ${type}</p>
                 <p><strong>Reported By:</strong> ${name} (${email})</p>
                 <hr />
                 <h3>Incident Details</h3>
                 <p><strong>Scammer/Suspect:</strong> ${scammer_details}</p>
                 <p><strong>Description:</strong></p>
-                <div style="background: #f9f9f9; padding: 10px; border-left: 3px solid #d32f2f;">
+                <div style="${styleIncident}">
                     ${description}
                 </div>
                 <br />
-                <p><em>This report has been automatically forwarded to relevant authorities including: ${authorities.slice(0, 3).join(', ')}...</em></p>
+                <p><em>Autoforwarded to: ${authoritiesList.slice(0, 3).join(', ')}...</em></p>
                 
                 <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
-                    <a href="${baseUrl}/api/admin/moderate?id=${displayId}&action=verify&token=${adminSecret}" style="background: green; color: white; padding: 10px 20px; text-decoration: none; margin-right: 10px;">Verify</a>
+                    <a href="${baseUrl}/api/admin/moderate?id=${displayId}&action=verify&token=${adminSecret}" style="background: green; color: white; padding: 10px 20px; text-decoration: none; margin-right: 10px;">Verify (Public)</a>
                     <a href="${baseUrl}/api/admin/moderate?id=${displayId}&action=reject&token=${adminSecret}" style="background: grey; color: white; padding: 10px 20px; text-decoration: none;">Reject</a>
                 </div>
             </div>
         `
 
-        if (reportId) {
-            // TRY BREVO (Supports attachments easily)
-            if (brevoApiKey) {
-                try {
-                    const toList = recipients.map(email => ({ email, name: email.split('@')[0] }))
+        // B. AUTHORITY TEMPLATE (Clean - No Buttons)
+        const authorityHtml = `
+            <div style="${styleContainer}">
+                 <h2 style="color: #d32f2f;">Automated Scam Report</h2>
+                 <p>This report was submitted via <strong>CheckItSA.co.za</strong> - South Africa's Verification Platform.</p>
+                 <hr />
+                 <p><strong>Report Type:</strong> ${type}</p>
+                 <p><strong>Reporter Contact:</strong> ${name} (${email})</p>
+                 <br />
+                 <h3>Incident Report</h3>
+                 <p><strong>Suspect / Scammer Details:</strong><br/> ${scammer_details}</p>
+                 <p><strong>Incident Description:</strong></p>
+                 <div style="${styleIncident}">
+                     ${description}
+                 </div>
+                 <br />
+                 <p style="font-size: 0.85em; color: #666; border-top: 1px solid #eee; padding-top: 10px;">
+                    This is an automated notification sent to relevant authorities for intelligence purposes. 
+                    Evidence attachments (if any) are included below.
+                 </p>
+            </div>
+        `
 
-                    await fetch('https://api.brevo.com/v3/smtp/email', {
-                        method: 'POST',
-                        headers: {
-                            'api-key': brevoApiKey,
-                            'Content-Type': 'application/json',
-                            'accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            sender: { name: 'CheckItSA Automated Reporting', email: 'no-reply@checkitsa.co.za' },
-                            to: toList,
-                            subject: emailSubject,
-                            htmlContent: emailHtml,
-                            attachment: attachments.length > 0 ? attachments : undefined
+        if (reportId) {
+            // Function to send email
+            const sendEmail = async (to, subject, html) => {
+                let sent = false;
+                // Brevo
+                if (brevoApiKey) {
+                    try {
+                        const toList = Array.isArray(to) ? to.map(e => ({ email: e, name: e.split('@')[0] })) : [{ email: to, name: 'Recipient' }]
+                        await fetch('https://api.brevo.com/v3/smtp/email', {
+                            method: 'POST',
+                            headers: { 'api-key': brevoApiKey, 'Content-Type': 'application/json', 'accept': 'application/json' },
+                            body: JSON.stringify({
+                                sender: { name: 'CheckItSA Automated Reporting', email: 'no-reply@checkitsa.co.za' },
+                                to: toList, subject, htmlContent: html,
+                                attachment: attachments.length > 0 ? attachments : undefined
+                            })
                         })
-                    })
-                    sentEmail = true
-                    console.log(`[Email] Jailed report sent to ${recipients.length} recipients via Brevo`)
-                } catch (e) { console.error('Brevo Error:', e) }
+                        sent = true
+                        console.log(`[Email] Sent to ${JSON.stringify(to)}`)
+                    } catch (e) { console.error('Brevo Error:', e) }
+                }
+                // Resend Fallback
+                if (!sent && resendApiKey) {
+                    try {
+                        await fetch('https://api.resend.com/emails', {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                from: 'CheckItSA Reports <info@checkitsa.co.za>',
+                                bcc: Array.isArray(to) ? to : [to], // BCC for mass
+                                reply_to: 'no-reply@checkitsa.co.za',
+                                subject, html,
+                                attachments: attachments.map(a => ({ filename: a.name, content: a.content }))
+                            })
+                        })
+                        console.log(`[Email] Sent via Resend`)
+                    } catch (e) { console.error('Resend Error:', e) }
+                }
             }
 
-            // FALLBACK TO RESEND (Note: free tier limitations might apply to attachments/recipients)
-            if (!sentEmail && resendApiKey) {
-                try {
-                    await fetch('https://api.resend.com/emails', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${resendApiKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            from: 'CheckItSA Reports <info@checkitsa.co.za>',
-                            bcc: recipients, // Use BCC for mass send via Resend to avoid privacy issues
-                            reply_to: 'no-reply@checkitsa.co.za',
-                            subject: emailSubject,
-                            html: emailHtml,
-                            attachments: attachments.map(a => ({ filename: a.name, content: a.content })) // Resend requires 'filename', Brevo 'name'
-                        })
-                    })
-                    console.log(`[Email] Report sent via Resend fallback`)
-                } catch (e) { console.error('Resend Error:', e) }
+            // 1. Send Admin Email (With Buttons)
+            await sendEmail(adminEmail, emailSubject + " [ADMIN ALERT]", adminHtml)
+
+            // 2. Send Authority Emails (Clean) - Only if list is not empty
+            if (authoritiesList.length > 0) {
+                // In Test Mode, this might duplicate to admin if the map points there, which is fine for testing.
+                await sendEmail(authoritiesList, emailSubject, authorityHtml)
             }
         }
 
