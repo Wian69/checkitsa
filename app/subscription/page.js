@@ -146,8 +146,7 @@ export default function Subscription() {
                             <li>✅ 5 Searches Total</li>
                             <li>✅ Basic Scanning</li>
                             <li>✅ Community Reports</li>
-                            <li>❌ Image Analysis</li>
-                            <li>❌ Business Verification</li>
+                            <li>❌ Advanced Analysis</li>
                         </ul>
                         <button disabled className="btn btn-outline" style={{ width: '100%', opacity: 0.5, cursor: 'not-allowed' }}>Current Plan</button>
                     </div>
@@ -162,7 +161,6 @@ export default function Subscription() {
                             <li>⚡ <strong>100 Searches / mo</strong></li>
                             <li>🛡️ <strong>Security Intel Access</strong></li>
                             <li>✅ Advanced Scanning</li>
-                            <li>✅ <strong>Business Verification</strong></li>
                             <li>✅ Priority support</li>
                         </ul>
                         <button onClick={() => handleUpgrade('pro')} disabled={loading} className="btn btn-outline" style={{ width: '100%' }}>Get Pro</button>
@@ -190,8 +188,6 @@ export default function Subscription() {
                         <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2rem', lineHeight: '1.8', fontSize: '0.95rem' }}>
                             <li>🚀 <strong>1,000 Searches / mo</strong></li>
                             <li>🌍 <strong>Full Global Intel</strong></li>
-                            <li>🔍 <strong>Deep Image Analysis</strong></li>
-                            <li>✅ <strong>Business Verification</strong></li>
                             <li>⚡ <strong>Fastest Execution</strong></li>
                         </ul>
                         <button onClick={() => handleUpgrade('elite')} disabled={loading} className="btn btn-primary" style={{ width: '100%', padding: '1rem' }}>Get Elite</button>
@@ -240,7 +236,6 @@ export default function Subscription() {
                             <li>✅ <strong>Volume-based Discount</strong></li>
                             <li>✅ <strong>Dedicated API Keys</strong></li>
                             <li>✅ <strong>Priority 24/7 Support</strong></li>
-                            <li>✅ <strong>Business Verification</strong></li>
                             <li>✅ <strong>Custom Integration</strong></li>
                         </ul>
                         <button onClick={() => handleUpgrade('custom')} disabled={loading} className="btn btn-outline" style={{ width: '100%', maxWidth: '300px' }}>

@@ -96,13 +96,6 @@ export default function Home() {
             color="#F472B6"
           />
           <Tile
-            title="Business Verify"
-            icon="🏢"
-            desc="Cross-reference CIPC and external data for legitimacy."
-            href="/verify/business"
-            color="#FBBF24"
-          />
-          <Tile
             title="Phone Lookup"
             icon="📱"
             desc="Identify carrier, location, and check spam reports."
@@ -110,26 +103,11 @@ export default function Home() {
             color="#34D399"
           />
           <Tile
-            title="Image Analysis"
-            icon="🖼️"
-            desc="Scan screenshots for hidden scam text and patterns."
-            href="/verify/image"
-            color="#ec4899"
-          />
-          <Tile
             title="Gambling Check"
             icon="🎰"
             desc="Verify if a betting site is legally licensed in SA."
             href="/verify/gambling"
             color="#F87171"
-          />
-          <Tile
-            title="Traffic Fines"
-            icon="🚔"
-            desc="Search and check for outstanding traffic violations."
-            href="/verify/fines"
-            color="#6366f1"
-            badge="Coming Soon"
           />
         </div>
       </section>
