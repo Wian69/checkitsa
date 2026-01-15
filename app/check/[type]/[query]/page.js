@@ -1,6 +1,7 @@
 import { getRequestContext } from '@cloudflare/next-on-pages'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
+import EvidenceViewer from '@/components/EvidenceViewer'
 
 export const runtime = 'edge'
 
@@ -111,17 +112,13 @@ export default async function CheckPage({ params }) {
                                         </span>
                                     )}
                                 </div>
+                                {/* Content (Description) */}
                                 <p className="text-white/80 mb-4 font-mono text-sm bg-black/20 p-3 rounded">
                                     "{report.description}"
                                 </p>
-                                <div className="flex gap-2">
-                                    {/* Placeholder for Viral Gate (Blur) */}
-                                    {report.evidence_image && (
-                                        <div className="text-xs px-2 py-1 rounded bg-white/10 text-white/60">
-                                            📎 Evidence Attached
-                                        </div>
-                                    )}
-                                </div>
+
+                                {/* Evidence Viewer */}
+                                <EvidenceViewer image={report.evidence_image} />
                             </div>
                         ))
                     )}
