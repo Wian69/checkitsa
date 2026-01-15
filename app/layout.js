@@ -9,6 +9,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 export const metadata = {
   title: 'CheckItSA - Verify Scams, Gambling & ID',
   description: 'South Africa\'s most trusted verification platform. Scan websites, phone numbers, and businesses for scams in real-time.',
+  manifest: '/manifest.json',
   openGraph: {
     title: 'CheckItSA - Stop Scams in South Africa',
     description: 'Verify anything before you trust. The #1 platform to combat fraud in SA.',
