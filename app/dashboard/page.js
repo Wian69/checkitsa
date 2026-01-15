@@ -82,6 +82,50 @@ export default function Dashboard() {
         }
     }
 
+    // Payout Handler
+    const handlePayout = async () => {
+        if (!user || user.wallet_balance < 100) {
+            alert("Minimum payout amount is R100.")
+            return
+        }
+
+        const bankName = prompt("Enter your Bank Name (e.g., FNB):")
+        if (!bankName) return
+
+        const accNum = prompt("Enter your Account Number:")
+        if (!accNum) return
+
+        const accType = prompt("Enter Account Type (Savings/Cheque):", "Savings")
+
+        if (confirm(`Request payout of R${user.wallet_balance} to ${bankName} - ${accNum}? This cannot be undone.`)) {
+            try {
+                const res = await fetch('/api/user/payout', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        email: user.email,
+                        bankName: bankName,
+                        accountNumber: accNum,
+                        accountType: accType
+                    })
+                })
+                const data = await res.json()
+                if (res.ok) {
+                    alert("Success! Payout requested. Admin will process within 48 hours.")
+                    // Optmistic Update
+                    setUser(prev => ({ ...prev, wallet_balance: 0 }))
+                    // Also update localStorage
+                    const local = JSON.parse(localStorage.getItem('checkitsa_user'))
+                    local.wallet_balance = 0
+                    localStorage.setItem('checkitsa_user', JSON.stringify(local))
+                } else {
+                    alert("Error: " + data.message)
+                }
+            } catch (e) {
+                alert("Network error processing payout.")
+            }
+        }
+    }
+
     const handleDeleteReview = async (reviewId) => {
         if (!confirm('Are you sure you want to delete this review?')) return
         try {
@@ -146,7 +190,7 @@ export default function Dashboard() {
                                     <div style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>
                                         R{user?.wallet_balance || 0}
                                     </div>
-                                    <button className="btn btn-outline" style={{ marginTop: '1rem', fontSize: '0.8rem', padding: '0.5rem 1rem' }}>Request Payout</button>
+                                    <button onClick={handlePayout} className="btn btn-outline" style={{ marginTop: '1rem', fontSize: '0.8rem', padding: '0.5rem 1rem' }}>Request Payout</button>
                                 </div>
                                 <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: '1rem', flex: 1, minWidth: '300px' }}>
                                     <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>Your Referral Link (Earn 5% Commission)</div>
