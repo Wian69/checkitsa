@@ -27,6 +27,14 @@ export default function About() {
                     <p style={{ lineHeight: 1.6 }}>
                         While our AI does much of the work, our community is our greatest strength. Every report submitted by a user helps train our models and warns thousands of others about new threats before they can do damage.
                     </p>
+
+                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', marginTop: '2rem', color: 'var(--color-primary)' }}>Why Trust Us?</h2>
+                    <ul style={{ lineHeight: 1.6, paddingLeft: '1.5rem' }}>
+                        <li style={{ marginBottom: '0.5rem' }}><strong>Local Presence:</strong> We are proudly South African, focused purely on local threats (SAPS, local banks).</li>
+                        <li style={{ marginBottom: '0.5rem' }}><strong>Transparency:</strong> We do not ask for your banking passwords or PINs. Ever.</li>
+                        <li style={{ marginBottom: '0.5rem' }}><strong>Verified Tech:</strong> Our scans use Google's Safe Browsing API and official CIPC data.</li>
+                        <li><strong>Data Privacy:</strong> We are POPIA compliant and do not sell your personal data to spammers.</li>
+                    </ul>
                 </div>
 
                 <div style={{ textAlign: 'center', marginTop: '4rem' }}>

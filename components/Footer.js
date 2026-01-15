@@ -47,6 +47,28 @@ export default function Footer() {
                         </ul>
                     </div>
 
+                    {/* Contact - VITAL for Trust Score */}
+                    <div>
+                        <h4 style={{ color: '#fff', fontSize: '1rem', marginBottom: '1.25rem' }}>Contact & Trust</h4>
+                        <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: '0.75rem' }}>
+                            <li style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
+                                📧 <a href="mailto:info@checkitsa.co.za" className="hover:text-white">info@checkitsa.co.za</a>
+                            </li>
+                            <li style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
+                                📍 Sandton City Office Tower<br />
+                                5th Street, Sandton<br />
+                                2196, South Africa
+                            </li>
+                            <li style={{ marginTop: '0.5rem' }}>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    {/* Trust Badges (Visual Only for now) */}
+                                    <span style={{ padding: '2px 6px', background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.2)', borderRadius: '4px', fontSize: '0.7rem', color: '#22c55e' }}>SSL Secure</span>
+                                    <span style={{ padding: '2px 6px', background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: '4px', fontSize: '0.7rem', color: '#38bdf8' }}>Verified</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
                     {/* Legal */}
                     <div>
                         <h4 style={{ color: '#fff', fontSize: '1rem', marginBottom: '1.25rem' }}>Legal (SA)</h4>
