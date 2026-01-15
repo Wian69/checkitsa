@@ -1,6 +1,5 @@
 "use client"
 import Navbar from '@/components/Navbar'
-import ProTools from '@/components/ProTools'
 import { useState, useEffect } from 'react'
 import { trackSearch, getHistory, syncFromCloud } from '@/utils/searchLimit'
 import Link from 'next/link'
@@ -266,7 +265,6 @@ export default function Dashboard() {
                                     <IntelFeed />
                                 </ul>
                                 <CommunitySources />
-                                <ProTools />
                             </>
                         )}
                     </div>
