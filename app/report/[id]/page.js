@@ -79,7 +79,7 @@ export default async function ReportDetails({ params }) {
                                 }}>
                                     {report.type} Scam
                                 </span>
-                                <h1 style={{ fontSize: '2rem', marginTop: '1rem', overflowWrap: 'break-word', color: 'var(--color-primary-light)' }}>
+                                <h1 style={{ fontSize: '2rem', marginTop: '1rem', overflowWrap: 'break-word', wordBreak: 'break-all', color: 'var(--color-primary-light)' }}>
                                     {report.url}
                                 </h1>
                             </div>
