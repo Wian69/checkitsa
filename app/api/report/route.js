@@ -62,16 +62,7 @@ export async function POST(req) {
             .run()
 
         // 3. Authority Mapping
-        // [TEST MODE ACTIVE] - Redirecting all reports to Admin for verification
-        const AUTHORITY_MAP = {
-            'WhatsApp': ['wiandurandt69@gmail.com'],
-            'Social Media': ['wiandurandt69@gmail.com'],
-            'SMS': ['wiandurandt69@gmail.com'],
-            'Email': ['wiandurandt69@gmail.com'],
-            'Gambling': ['wiandurandt69@gmail.com']
-        }
-
-        /* PRODUCTION MAPPING (Uncomment to go live)
+        // [PRODUCTION MAPPING]
         const AUTHORITY_MAP = {
             'WhatsApp': ['support@whatsapp.com', 'crimestop@saps.gov.za', 'fraud@safps.org.za'],
             'Social Media': ['phish@fb.com', 'abuse@facebook.com', 'support@instagram.com', 'support@x.com', 'support@tiktok.com', 'phishing@google.com', 'crimestop@saps.gov.za'],
@@ -79,10 +70,10 @@ export async function POST(req) {
             'Email': ['crimestop@saps.gov.za', 'fraud@safps.org.za', 'reportphishing@apwg.org', 'phishing@google.com', 'phish@office365.microsoft.com'],
             'Gambling': ['crimestop@saps.gov.za']
         }
-        */
-
-        const authorities = AUTHORITY_MAP[type] || ['crimestop@saps.gov.za'] // Maybe fix default fallback for prod later
-        const authoritiesList = [...new Set(authorities)] // Just authorities
+        
+        // Define fallback
+        const authorities = AUTHORITY_MAP[type] || ['crimestop@saps.gov.za'] 
+        const authoritiesList = [...new Set(authorities)] 
         const adminEmail = 'wiandurandt69@gmail.com'
 
         // 4. Prepare Attachments
@@ -126,19 +117,22 @@ export async function POST(req) {
         const reportId = success ? await db.prepare('SELECT id FROM scam_reports WHERE reporter_email = ? ORDER BY created_at DESC LIMIT 1').bind(email || 'N/A').first('id') : null
         const displayId = reportId || 'PENDING'
 
-        const emailSubject = `[TEST MODE] 🚨 Scam Report [${type}]: ${scammer_details.substring(0, 30)}...`
+        // [MODIFIED] Removed [TEST MODE] prefix
+        const emailSubject = `🚨 Scam Report [${type}]: ${scammer_details.substring(0, 30)}...`
 
         // Template Shared Styles
         const styleContainer = "font-family: Arial, sans-serif; max-width: 600px; border: 1px solid #ddd; padding: 20px;"
         const styleIncident = "background: #f9f9f9; padding: 10px; border-left: 3px solid #d32f2f;"
 
         // A. ADMIN TEMPLATE (With Verify/Reject Buttons)
+        // [MODIFIED] Added note about email flow
         const adminHtml = `
             <div style="${styleContainer}">
                 <h2 style="color: #d32f2f;">New Scam Report - Action Required</h2>
-                <div style="background: #fee; padding: 10px; margin-bottom: 10px; border: 1px solid #fcc; font-size: 0.9em;">
+                <div style="background: #eef; padding: 10px; margin-bottom: 10px; border: 1px solid #ccf; font-size: 0.9em;">
                     <strong>ADMIN CONTROL PANEL</strong><br/>
-                    This section is only visible to site administrators.
+                    This is an internal notification. Authorities have NOT been notified yet.<br/>
+                    <strong>Click VERIFY below to send the automated report to authorities.</strong>
                 </div>
                 <p><strong>Type:</strong> ${type}</p>
                 <p><strong>Reported By:</strong> ${name} (${email})</p>
@@ -150,38 +144,16 @@ export async function POST(req) {
                     ${description}
                 </div>
                 <br />
-                <p><em>Autoforwarded to: ${authoritiesList.slice(0, 3).join(', ')}...</em></p>
+                <p><em>Pending Forwarding to: ${authoritiesList.slice(0, 3).join(', ')}...</em></p>
                 
                 <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
-                    <a href="${baseUrl}/api/admin/moderate?id=${displayId}&action=verify&token=${adminSecret}" style="background: green; color: white; padding: 10px 20px; text-decoration: none; margin-right: 10px;">Verify (Public)</a>
+                    <a href="${baseUrl}/api/admin/moderate?id=${displayId}&action=verify&token=${adminSecret}" style="background: green; color: white; padding: 10px 20px; text-decoration: none; margin-right: 10px;">Verify (Send to Authorities)</a>
                     <a href="${baseUrl}/api/admin/moderate?id=${displayId}&action=reject&token=${adminSecret}" style="background: grey; color: white; padding: 10px 20px; text-decoration: none;">Reject</a>
                 </div>
             </div>
         `
 
-        // B. AUTHORITY TEMPLATE (Clean - No Buttons)
-        const authorityHtml = `
-            <div style="${styleContainer}">
-                 <h2 style="color: #d32f2f;">Automated Scam Report</h2>
-                 <p>This report was submitted via <strong>CheckItSA.co.za</strong> - South Africa's Verification Platform.</p>
-                 <hr />
-                 <p><strong>Report Type:</strong> ${type}</p>
-                 <p><strong>Reporter Contact:</strong> ${name} (${email})</p>
-                 <br />
-                 <h3>Incident Report</h3>
-                 <p><strong>Suspect / Scammer Details:</strong><br/> ${scammer_details}</p>
-                 <p><strong>Incident Description:</strong></p>
-                 <div style="${styleIncident}">
-                     ${description}
-                 </div>
-                 <br />
-                 <p style="font-size: 0.85em; color: #666; border-top: 1px solid #eee; padding-top: 10px;">
-                    This is an automated notification sent to relevant authorities for intelligence purposes. 
-                    Evidence attachments (if any) are included below.
-                 </p>
-            </div>
-        `
-
+        // C. SEND LOGIC
         if (reportId) {
             // Function to send email
             const sendEmail = async (to, subject, html) => {
@@ -222,14 +194,10 @@ export async function POST(req) {
                 }
             }
 
-            // 1. Send Admin Email (With Buttons)
-            await sendEmail(adminEmail, emailSubject + " [ADMIN ALERT]", adminHtml)
+            // 1. Send Admin Email ONLY
+            await sendEmail(adminEmail, emailSubject + " [ADMIN ACTION REQUIRED]", adminHtml)
 
-            // 2. Send Authority Emails (Clean) - Only if list is not empty
-            if (authoritiesList.length > 0) {
-                // In Test Mode, this might duplicate to admin if the map points there, which is fine for testing.
-                await sendEmail(authoritiesList, emailSubject, authorityHtml)
-            }
+            // 2. [REMOVED] Authorities are NOT emailed here anymore. See /api/admin/moderate
         }
 
         if (!success) throw new Error('D1 Insert Failed')

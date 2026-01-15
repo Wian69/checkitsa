@@ -380,7 +380,17 @@ export default function Dashboard() {
                                 <tbody>
                                     {history.reports.map(r => (
                                         <tr key={r.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <td style={{ padding: '1rem' }}>{r.type}</td>
+                                            <td style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <span>
+                                                    {r.type.includes('WhatsApp') && '💬'}
+                                                    {r.type.includes('Social Media') && '🌐'}
+                                                    {r.type.includes('SMS') && '📱'}
+                                                    {r.type.includes('Email') && '📧'}
+                                                    {r.type.includes('Gambling') && '🎰'}
+                                                    {r.type.includes('Bank') && '🏦'}
+                                                </span>
+                                                {r.type}
+                                            </td>
                                             <td style={{ padding: '1rem', fontFamily: 'monospace' }}>{r.details}</td>
                                             <td style={{ padding: '1rem' }}>{r.evidence ? '📎 Attached' : '-'}</td>
                                             <td style={{ padding: '1rem' }}>

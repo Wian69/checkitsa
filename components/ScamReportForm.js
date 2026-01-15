@@ -5,6 +5,7 @@ import LoadingOverlay from '@/components/LoadingOverlay'
 
 export default function ScamReportForm() {
     const [type, setType] = useState('WhatsApp')
+    const [selectedBank, setSelectedBank] = useState('FNB') // Default bank
     const [loading, setLoading] = useState(false)
     const [status, setStatus] = useState(null)
     const [formData, setFormData] = useState({
@@ -17,16 +18,19 @@ export default function ScamReportForm() {
         setLoading(true)
         setStatus(null)
 
+        // Construct Type String
+        const finalType = type === 'Bank' ? `Bank: ${selectedBank}` : type
+
         try {
             const res = await fetch('/api/report', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...formData, type })
+                body: JSON.stringify({ ...formData, type: finalType })
             })
             if (res.ok) {
                 setStatus('success')
                 addToReportHistory({
-                    type: type + ' Scam',
+                    type: finalType + ' Scam',
                     details: formData.scammer_details
                 })
                 setFormData({ name: '', email: '', phone: '', scammer_details: '', description: '', evidence: [] })
@@ -40,7 +44,8 @@ export default function ScamReportForm() {
         }
     }
 
-    const types = ['WhatsApp', 'Social Media', 'SMS', 'Email', 'Gambling']
+    const types = ['WhatsApp', 'Social Media', 'SMS', 'Email', 'Gambling', 'Bank']
+    const banks = ['FNB', 'Standard Bank', 'Absa', 'Nedbank', 'Capitec', 'TymeBank', 'Discovery Bank', 'Investec', 'Other']
 
     const inputStyle = {
         width: '100%',
@@ -73,33 +78,63 @@ export default function ScamReportForm() {
             </div>
 
             {/* Type Selector */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
-                {types.map(t => (
-                    <button
-                        key={t}
-                        onClick={() => setType(t)}
-                        style={{
-                            padding: '0.75rem 1.5rem',
-                            borderRadius: '2rem',
-                            fontWeight: 600,
-                            letterSpacing: '0.025em',
-                            border: type === t ? 'none' : '1px solid var(--color-border)',
-                            background: type === t ? 'var(--color-primary)' : 'transparent',
-                            color: type === t ? 'white' : 'var(--color-text-muted)',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            transform: type === t ? 'scale(1.05)' : 'scale(1)',
-                            boxShadow: type === t ? '0 4px 14px rgba(99, 102, 241, 0.4)' : 'none'
-                        }}
-                    >
-                        {t === 'WhatsApp' && '💬 '}
-                        {t === 'Social Media' && '🌐 '}
-                        {t === 'SMS' && '📱 '}
-                        {t === 'Email' && '📧 '}
-                        {t === 'Gambling' && '🎰 '}
-                        {t} Scam
-                    </button>
-                ))}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', marginBottom: '3rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                    {types.map(t => (
+                        <button
+                            key={t}
+                            onClick={() => setType(t)}
+                            style={{
+                                padding: '0.75rem 1.5rem',
+                                borderRadius: '2rem',
+                                fontWeight: 600,
+                                letterSpacing: '0.025em',
+                                border: type === t ? 'none' : '1px solid var(--color-border)',
+                                background: type === t ? 'var(--color-primary)' : 'transparent',
+                                color: type === t ? 'white' : 'var(--color-text-muted)',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                transform: type === t ? 'scale(1.05)' : 'scale(1)',
+                                boxShadow: type === t ? '0 4px 14px rgba(99, 102, 241, 0.4)' : 'none'
+                            }}
+                        >
+                            {t === 'WhatsApp' && '💬 '}
+                            {t === 'Social Media' && '🌐 '}
+                            {t === 'SMS' && '📱 '}
+                            {t === 'Email' && '📧 '}
+                            {t === 'Gambling' && '🎰 '}
+                            {t === 'Bank' && '🏦 '}
+                            {t} Scam
+                        </button>
+                    ))}
+                </div>
+
+                {/* Bank Selector Dropdown */}
+                {type === 'Bank' && (
+                    <div style={{ animation: 'fadeIn 0.3s ease' }}>
+                        <select
+                            value={selectedBank}
+                            onChange={(e) => setSelectedBank(e.target.value)}
+                            style={{
+                                padding: '0.8rem 1.5rem',
+                                borderRadius: '0.5rem',
+                                background: 'rgba(255,255,255,0.1)',
+                                border: '1px solid var(--color-primary)',
+                                color: 'white',
+                                fontSize: '1rem',
+                                outline: 'none',
+                                cursor: 'pointer',
+                                minWidth: '200px'
+                            }}
+                        >
+                            {banks.map(bank => (
+                                <option key={bank} value={bank} style={{ background: '#111', color: 'white' }}>
+                                    {bank}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
             </div>
 
             {status === 'success' ? (
