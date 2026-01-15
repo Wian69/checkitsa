@@ -31,6 +31,9 @@ export const metadata = {
     description: 'Verify anything before you trust. The #1 platform to combat fraud in SA.',
     images: ['/og-image.png'],
   },
+  verification: {
+    google: 'googlea70a4df600e41289',
+  },
 }
 
 export default function RootLayout({ children }) {
