@@ -6,7 +6,8 @@ export const runtime = 'edge'
 export async function POST(req) {
     try {
         const { token, email, amount, customLimit } = await req.json()
-        const db = getRequestContext().env.DB
+        const { env, ctx } = getRequestContext()
+        const db = env.DB
 
         if (!token || !email || !amount) {
             return NextResponse.json({ message: 'Missing token, email, or amount' }, { status: 400 })
@@ -75,18 +76,79 @@ export async function POST(req) {
 
             if (referrerCode) {
                 // Find referrer
-                const referrer = await db.prepare('SELECT id, tier, wallet_balance FROM users WHERE referral_code = ?').bind(referrerCode).first()
+                const referrer = await db.prepare('SELECT id, tier, wallet_balance, email, fullName FROM users WHERE referral_code = ?').bind(referrerCode).first()
 
-                // Only pay commission to Paid Tiers (Pro/Elite/Custom)
-                if (referrer && referrer.tier !== 'free') {
+                // Pay commission to any referrer who exists
+                if (referrer) {
                     const commission = amount * 0.05 // 5% of transaction (cents)
                     const commissionRand = commission / 100 // Convert to Rand for easier display/payout
+                    const newBalance = (referrer.wallet_balance || 0) + commissionRand
 
                     await db.prepare('UPDATE users SET wallet_balance = wallet_balance + ? WHERE id = ?')
                         .bind(commissionRand, referrer.id)
                         .run()
 
                     console.log(`[Affiliate] Credited R${commissionRand} to referrer ${referrer.id} for user ${email}`)
+
+                    // --- Email Notification Logic ---
+                    const sendEmail = async (toEmail, toName, subj, htmlBody) => {
+                        const brevoApiKey = process.env.BREVO_API_KEY
+                        const resendApiKey = process.env.RESEND_API_KEY
+
+                        if (brevoApiKey) {
+                            try {
+                                const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+                                    method: 'POST',
+                                    headers: { 'api-key': brevoApiKey, 'Content-Type': 'application/json', 'accept': 'application/json' },
+                                    body: JSON.stringify({
+                                        sender: { name: 'CheckItSA Rewards', email: 'no-reply@checkitsa.co.za' },
+                                        to: [{ email: toEmail, name: toName }],
+                                        subject: subj,
+                                        htmlContent: htmlBody
+                                    })
+                                })
+                                if (res.ok) return true
+                            } catch (e) { console.error("Brevo Email Error:", e) }
+                        }
+
+                        // Fallback to Resend
+                        if (resendApiKey) {
+                            try {
+                                const res = await fetch('https://api.resend.com/emails', {
+                                    method: 'POST',
+                                    headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        from: 'CheckItSA Rewards <onboarding@resend.dev>',
+                                        to: toEmail,
+                                        subject: subj,
+                                        html: htmlBody
+                                    })
+                                })
+                                if (res.ok) return true
+                            } catch (e) { console.error("Resend Email Error:", e) }
+                        }
+                        return false
+                    }
+
+                    const emailSubject = `💰 You earned a commission!`
+                    const emailHtml = `
+                        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                            <h2 style="color: #10b981;">Commission Earned!</h2>
+                            <p>Hi ${referrer.fullName ? referrer.fullName.split(' ')[0] : 'Partner'},</p>
+                            <p><strong>Great news!</strong> Someone you referred just upgraded.</p>
+                            <p>We've added <strong>R${commissionRand.toFixed(2)}</strong> to your wallet.</p>
+                            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                            <p>Keep sharing to earn more!</p>
+                            <p style="font-size: 0.9em; color: #666;">Team CheckItSA</p>
+                        </div>
+                    `
+
+                    // Send without awaiting to not block checkout response
+                    if (ctx && ctx.waitUntil) {
+                        ctx.waitUntil(sendEmail(referrer.email, referrer.fullName, emailSubject, emailHtml))
+                    } else {
+                        await sendEmail(referrer.email, referrer.fullName, emailSubject, emailHtml)
+                    }
                 }
             }
         } catch (affError) {

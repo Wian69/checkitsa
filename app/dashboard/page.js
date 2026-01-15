@@ -542,15 +542,19 @@ export default function Dashboard() {
 
 function PayoutModal({ user, onClose, setUser }) {
     const [loading, setLoading] = useState(false)
+    const [success, setSuccess] = useState(false)
+    const [error, setError] = useState('')
     const [formData, setFormData] = useState({
         bankName: '',
         accountNumber: '',
-        accountType: 'Savings'
+        accountType: 'Savings',
+        branchCode: ''
     })
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         setLoading(true)
+        setError('')
 
         try {
             const res = await fetch('/api/user/payout', {
@@ -563,102 +567,172 @@ function PayoutModal({ user, onClose, setUser }) {
             })
             const data = await res.json()
             if (res.ok) {
-                alert("Success! Payout requested. Admin will process within 48 hours.")
+                setSuccess(true)
+                // Update local state immediately
                 setUser(prev => ({ ...prev, wallet_balance: 0 }))
                 const local = JSON.parse(localStorage.getItem('checkitsa_user'))
                 local.wallet_balance = 0
                 localStorage.setItem('checkitsa_user', JSON.stringify(local))
-                onClose()
             } else {
-                alert("Error: " + data.message)
+                setError(data.message || "Failed to process payout.")
             }
         } catch (e) {
-            alert("Network error processing payout.")
+            setError("Network error. Please try again.")
         } finally {
             setLoading(false)
         }
     }
 
+    if (success) {
+        return (
+            <div style={{
+                position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                background: 'rgba(3, 7, 18, 0.8)', backdropFilter: 'blur(8px)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                zIndex: 1000, animation: 'fadeIn 0.3s ease-out'
+            }}>
+                <div className="glass-panel" style={{
+                    width: '100%', maxWidth: '450px',
+                    padding: '3rem 2rem',
+                    textAlign: 'center',
+                    border: '1px solid var(--color-success)',
+                    background: 'linear-gradient(145deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 78, 59, 0.2) 100%)'
+                }}>
+                    <div style={{
+                        width: '80px', height: '80px', background: 'var(--color-success)',
+                        borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        margin: '0 auto 1.5rem', boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)'
+                    }}>
+                        <span style={{ fontSize: '2.5rem', color: 'white' }}>✓</span>
+                    </div>
+                    <h2 style={{ fontSize: '1.8rem', marginBottom: '0.5rem', color: 'white' }}>Payout Requested!</h2>
+                    <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>
+                        Your funds are on the way. Please allow up to 48 hours for admin approval (usually faster!).
+                    </p>
+                    <button onClick={onClose} className="btn btn-primary" style={{ width: '100%' }}>
+                        Return to Dashboard
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div style={{
             position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)',
+            background: 'rgba(3, 7, 18, 0.8)', backdropFilter: 'blur(8px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 1000
+            zIndex: 1000, animation: 'fadeIn 0.3s ease-out'
         }}>
-            <div className="glass-panel" style={{
-                width: '100%', maxWidth: '450px',
-                padding: '2rem',
-                border: '1px solid rgba(255,255,255,0.1)',
+            <div className="glass-panel hover-card" style={{
+                width: '100%', maxWidth: '500px',
+                padding: '2.5rem',
+                border: '1px solid var(--color-border)',
+                background: 'linear-gradient(145deg, rgba(31, 41, 55, 0.7) 0%, rgba(17, 24, 39, 0.9) 100%)',
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Request Payout 💸</h2>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: '1.5rem' }}>&times;</button>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ color: 'var(--color-primary)' }}>💸</span> Withdraw Funds
+                    </h2>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: '1.5rem', padding: '0.5rem', lineHeight: 1 }}>&times;</button>
                 </div>
 
-                <div style={{ marginBottom: '2rem', padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '0.5rem', textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.9rem', color: '#6ee7b7' }}>Available Balance</div>
-                    <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'white' }}>R{user.wallet_balance}</div>
+                <div style={{ marginBottom: '2rem', padding: '1.5rem', background: 'linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%)', borderRadius: '1rem', color: 'white', position: 'relative', overflow: 'hidden', boxShadow: '0 10px 15px -3px rgba(79, 70, 229, 0.3)' }}>
+                    <div style={{ position: 'relative', zIndex: 1 }}>
+                        <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '0.25rem' }}>Available Balance</div>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>R{user.wallet_balance?.toFixed(2)}</div>
+                        <div style={{ fontSize: '0.8rem', opacity: 0.7, marginTop: '1rem' }}>CheckItSA Affiliate Program</div>
+                    </div>
+                    {/* Decorative Circles */}
+                    <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }}></div>
+                    <div style={{ position: 'absolute', bottom: '-40px', left: '-20px', width: '150px', height: '150px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }}></div>
                 </div>
+
+                {error && (
+                    <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(220, 38, 38, 0.1)', border: '1px solid var(--color-danger)', borderRadius: '0.5rem', color: '#fca5a5', fontSize: '0.9rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        ⚠️ {error}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit}>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Bank Name</label>
-                        <select
-                            required
-                            className="input"
-                            style={{ width: '100%' }}
-                            value={formData.bankName}
-                            onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
-                        >
-                            <option value="">Select Bank...</option>
-                            <option value="FNB">FNB</option>
-                            <option value="Capitec">Capitec</option>
-                            <option value="Standard Bank">Standard Bank</option>
-                            <option value="Absa">Absa</option>
-                            <option value="Nedbank">Nedbank</option>
-                            <option value="TymeBank">TymeBank</option>
-                            <option value="Discovery Bank">Discovery Bank</option>
-                            <option value="Investec">Investec</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
+                    <div style={{ display: 'grid', gap: '1.25rem' }}>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Bank Name</label>
+                            <div style={{ position: 'relative' }}>
+                                <select
+                                    required
+                                    className="input"
+                                    style={{
+                                        width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem',
+                                        background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border)',
+                                        color: 'white', fontSize: '1rem', outline: 'none'
+                                    }}
+                                    value={formData.bankName}
+                                    onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                                >
+                                    <option value="" style={{ color: 'black' }}>Select Bank...</option>
+                                    <option value="FNB" style={{ color: 'black' }}>FNB</option>
+                                    <option value="Capitec" style={{ color: 'black' }}>Capitec</option>
+                                    <option value="Standard Bank" style={{ color: 'black' }}>Standard Bank</option>
+                                    <option value="Absa" style={{ color: 'black' }}>Absa</option>
+                                    <option value="Nedbank" style={{ color: 'black' }}>Nedbank</option>
+                                    <option value="TymeBank" style={{ color: 'black' }}>TymeBank</option>
+                                    <option value="Discovery Bank" style={{ color: 'black' }}>Discovery Bank</option>
+                                    <option value="Investec" style={{ color: 'black' }}>Investec</option>
+                                    <option value="Other" style={{ color: 'black' }}>Other</option>
+                                </select>
+                            </div>
+                        </div>
 
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Account Number</label>
-                        <input
-                            type="text"
-                            required
-                            className="input"
-                            style={{ width: '100%' }}
-                            placeholder="e.g. 1234567890"
-                            value={formData.accountNumber}
-                            onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
-                        />
-                    </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Account Number</label>
+                            <input
+                                type="text"
+                                required
+                                style={{
+                                    width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem',
+                                    background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border)',
+                                    color: 'white', fontSize: '1rem', outline: 'none', transition: 'border-color 0.2s'
+                                }}
+                                placeholder="e.g. 1234567890"
+                                value={formData.accountNumber}
+                                onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
+                            />
+                        </div>
 
-                    <div style={{ marginBottom: '2rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Account Type</label>
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Branch Code (Optional)</label>
                                 <input
-                                    type="radio"
-                                    name="accType"
-                                    value="Savings"
-                                    checked={formData.accountType === 'Savings'}
+                                    type="text"
+                                    style={{
+                                        width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem',
+                                        background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border)',
+                                        color: 'white', fontSize: '1rem', outline: 'none'
+                                    }}
+                                    placeholder="Universal"
+                                    value={formData.branchCode}
+                                    onChange={(e) => setFormData({ ...formData, branchCode: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Account Type</label>
+                                <select
+                                    className="input"
+                                    style={{
+                                        width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem',
+                                        background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border)',
+                                        color: 'white', fontSize: '1rem', outline: 'none'
+                                    }}
+                                    value={formData.accountType}
                                     onChange={(e) => setFormData({ ...formData, accountType: e.target.value })}
-                                /> Savings
-                            </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                                <input
-                                    type="radio"
-                                    name="accType"
-                                    value="Current/Cheque"
-                                    checked={formData.accountType === 'Current/Cheque'}
-                                    onChange={(e) => setFormData({ ...formData, accountType: e.target.value })}
-                                /> Current/Cheque
-                            </label>
+                                >
+                                    <option value="Savings" style={{ color: 'black' }}>Savings</option>
+                                    <option value="Current/Cheque" style={{ color: 'black' }}>Current/Cheque</option>
+                                    <option value="Transmission" style={{ color: 'black' }}>Transmission</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -666,10 +740,18 @@ function PayoutModal({ user, onClose, setUser }) {
                         type="submit"
                         disabled={loading}
                         className="btn btn-primary"
-                        style={{ width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '1rem' }}
+                        style={{ width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '1rem', marginTop: '2rem' }}
                     >
-                        {loading ? 'Processing...' : 'Confirm Withdrawal'}
+                        {loading ? (
+                            <>Processing...</>
+                        ) : (
+                            <>Confirm Withdrawal</>
+                        )}
                     </button>
+
+                    <p style={{ marginTop: '1rem', textAlign: 'center', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                        🔒 Securely processed via manual EFT.
+                    </p>
                 </form>
             </div>
         </div>
