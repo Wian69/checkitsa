@@ -75,6 +75,9 @@ export default function ScamReportForm() {
                 <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>
                     Help the community by reporting recent scam attempts. Your report could save someone else.
                 </p>
+                <p style={{ color: '#f59e0b', fontSize: '0.95rem', marginTop: '0.5rem', fontWeight: 500 }}>
+                    ⚠️ If you paid someone money, please use the <strong>Bank Scam</strong> tab below.
+                </p>
             </div>
 
             {/* Type Selector */}
