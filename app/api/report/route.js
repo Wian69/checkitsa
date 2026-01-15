@@ -65,15 +65,35 @@ export async function POST(req) {
         // 3. Authority Mapping
         // [PRODUCTION MAPPING]
         const AUTHORITY_MAP = {
-            'WhatsApp': ['support@whatsapp.com', 'crimestop@saps.gov.za', 'fraud@safps.org.za'],
-            'Social Media': ['phish@fb.com', 'abuse@facebook.com', 'support@instagram.com', 'support@x.com', 'support@tiktok.com', 'phishing@google.com', 'crimestop@saps.gov.za'],
-            'SMS': ['complaints@waspa.org.za', 'crimestop@saps.gov.za'],
-            'Email': ['crimestop@saps.gov.za', 'fraud@safps.org.za', 'reportphishing@apwg.org', 'phishing@google.com', 'phish@office365.microsoft.com'],
-            'Gambling': ['crimestop@saps.gov.za']
+            'WhatsApp': ['support@whatsapp.com', 'fraud@safps.org.za'],
+            'Social Media': ['phish@fb.com', 'abuse@facebook.com', 'support@instagram.com', 'support@x.com', 'support@tiktok.com', 'phishing@google.com'],
+            'SMS': ['complaints@waspa.org.za'],
+            'Email': ['fraud@safps.org.za', 'reportphishing@apwg.org', 'phishing@google.com', 'phish@office365.microsoft.com'],
+            'Gambling': ['info@ngb.org.za'], // National Gambling Board
+            // Bank Fraud Departments
+            'Bank: FNB': ['phishing@fnb.co.za'],
+            'Bank: Standard Bank': ['phishing@standardbank.co.za', 'fraud@standardbank.co.za'],
+            'Bank: Absa': ['secmon@absa.co.za', 'fraud@absa.co.za'],
+            'Bank: Nedbank': ['phishing@nedbank.co.za'],
+            'Bank: Capitec': ['tipline@capitecbank.co.za'],
+            'Bank: TymeBank': ['fraud@tymebank.co.za'],
+            'Bank: Discovery Bank': ['phishing@discovery.co.za'],
+            'Bank: Investec': ['fraud@investec.co.za']
         }
 
         // Define fallback
-        const authorities = AUTHORITY_MAP[type] || ['crimestop@saps.gov.za']
+        let authorities = AUTHORITY_MAP[type]
+        if (!authorities) {
+            if (type && type.startsWith('Bank:')) {
+                authorities = ['fraud@safps.org.za']
+            } else {
+                authorities = []
+            }
+        }
+
+        // ALWAYS Include SAPS Crime Stop
+        authorities.push('crimestop@saps.gov.za')
+
         const authoritiesList = [...new Set(authorities)]
         const adminEmail = 'wiandurandt69@gmail.com'
 

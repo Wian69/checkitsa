@@ -31,11 +31,11 @@ export async function GET(req) {
 
                 if (report) {
                     const AUTHORITY_MAP = {
-                        'WhatsApp': ['support@whatsapp.com', 'crimestop@saps.gov.za', 'fraud@safps.org.za'],
-                        'Social Media': ['phish@fb.com', 'abuse@facebook.com', 'support@instagram.com', 'support@x.com', 'support@tiktok.com', 'phishing@google.com', 'crimestop@saps.gov.za'],
-                        'SMS': ['complaints@waspa.org.za', 'crimestop@saps.gov.za'],
-                        'Email': ['crimestop@saps.gov.za', 'fraud@safps.org.za', 'reportphishing@apwg.org', 'phishing@google.com', 'phish@office365.microsoft.com'],
-                        'Gambling': ['crimestop@saps.gov.za'],
+                        'WhatsApp': ['support@whatsapp.com', 'fraud@safps.org.za'],
+                        'Social Media': ['phish@fb.com', 'abuse@facebook.com', 'support@instagram.com', 'support@x.com', 'support@tiktok.com', 'phishing@google.com'],
+                        'SMS': ['complaints@waspa.org.za'],
+                        'Email': ['fraud@safps.org.za', 'reportphishing@apwg.org', 'phishing@google.com', 'phish@office365.microsoft.com'],
+                        'Gambling': ['info@ngb.org.za'],
                         // Bank Fraud Departments
                         'Bank: FNB': ['phishing@fnb.co.za'],
                         'Bank: Standard Bank': ['phishing@standardbank.co.za', 'fraud@standardbank.co.za'],
@@ -49,21 +49,20 @@ export async function GET(req) {
 
                     const type = report.scam_type || 'General'
 
-                    // Logic to find authority:
-                    // 1. Direct match (e.g. 'Bank: FNB')
-                    // 2. Default fallback ['crimestop@saps.gov.za']
-
                     let authorities = AUTHORITY_MAP[type]
 
                     // Fallback for "Bank: Other" or unknown types
                     if (!authorities) {
-                        if (type.startsWith('Bank:')) {
-                            // Generic bank fraud + SABRIC?
-                            authorities = ['fraud@safps.org.za', 'crimestop@saps.gov.za']
+                        if (type && type.startsWith('Bank:')) {
+                            // Generic bank fraud + SAFPS
+                            authorities = ['fraud@safps.org.za']
                         } else {
-                            authorities = ['crimestop@saps.gov.za']
+                            authorities = []
                         }
                     }
+
+                    // ALWAYS Include SAPS Crime Stop
+                    authorities.push('crimestop@saps.gov.za')
 
                     const authoritiesList = [...new Set(authorities)]
 
