@@ -37,17 +37,44 @@ export async function POST(req) {
             })
         }
 
-        // 2. Calculate Market Average
+        // 2. Intelligent Price Analysis
+        // Noise words that indicate accessories, not the main product
+        const noiseWords = ['case', 'cover', 'glass', 'screen protector', 'cable', 'charger', 'repair', 'replacement', 'skin', 'pouch', 'battery']
+
+        let validItems = items.filter(item => {
+            const title = (item.title || '').toLowerCase()
+            return !noiseWords.some(word => title.includes(word))
+        })
+
+        // If filtering removed everything (e.g. user searched for a cable), fallback to original items
+        if (validItems.length === 0) validItems = items
+
         // Extract numbers from "R 10,999.00" strings
-        const prices = items.map(item => {
+        let prices = validItems.map(item => {
             const clean = item.price.replace(/[^0-9.]/g, '')
             return parseFloat(clean)
         }).filter(p => !isNaN(p) && p > 0)
 
         if (prices.length === 0) return NextResponse.json({ status: 'UNKNOWN', message: 'No price data found.' })
 
-        const sum = prices.reduce((a, b) => a + b, 0)
-        const avg = sum / prices.length
+        // Outlier Removal (The "Accessory" trap)
+        // If we have a mix of Phones (R5000) and Covers (R200), the covers destroy the average.
+        // Heuristic: Remove any price that is less than 20% of the HIGHEST price found.
+        const maxPrice = Math.max(...prices)
+        const threshold = maxPrice * 0.20
+
+        const cleanPrices = prices.filter(p => p > threshold)
+
+        // Use Median for stability, or Average of clean prices
+        const sum = cleanPrices.reduce((a, b) => a + b, 0)
+        let avg = sum / cleanPrices.length
+
+        // If we have enough data, Median is safer against one high outlier
+        if (cleanPrices.length > 2) {
+            cleanPrices.sort((a, b) => a - b)
+            const mid = Math.floor(cleanPrices.length / 2)
+            avg = cleanPrices[mid]
+        }
 
         // 3. Analyze Risk
         // If offered price is < 50% of average => CRITICAL RISK
