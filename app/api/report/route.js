@@ -159,7 +159,7 @@ export async function POST(req) {
                 ${description}
             </div>
             
-            <p style="font-size: 0.9em; color: #6b7280; font-style: italic; margin-bottom: 20px;">Pending Forwarding to: ${authoritiesList.slice(0, 3).join(', ')}...</p>
+            <p style="font-size: 0.9em; color: #6b7280; font-style: italic; margin-bottom: 20px;">Pending Forwarding to: ${authoritiesList.slice(0, 5).join(', ')}</p>
         `
 
         const adminActions = `
