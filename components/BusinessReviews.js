@@ -169,20 +169,20 @@ export default function BusinessReviews() {
                                     <button
                                         onClick={() => setReviewType('business')}
                                         className="glass-panel hover-card"
-                                        style={{ padding: '2rem', textAlign: 'left', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }}
+                                        style={{ padding: '2rem', textAlign: 'left', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
                                     >
                                         <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🏢</div>
-                                        <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '0.25rem' }}>Review a Business</div>
+                                        <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '0.25rem', color: 'white' }}>Review a Business</div>
                                         <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Share your expirience with a company or service provider.</div>
                                     </button>
 
                                     <button
                                         onClick={() => setReviewType('ccma')}
                                         className="glass-panel hover-card"
-                                        style={{ padding: '2rem', textAlign: 'left', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }}
+                                        style={{ padding: '2rem', textAlign: 'left', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
                                     >
                                         <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>⚖️</div>
-                                        <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '0.25rem' }}>Report CCMA Case</div>
+                                        <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '0.25rem', color: 'white' }}>Report CCMA Case</div>
                                         <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Detail labor disputes and CCMA outcomes.</div>
                                     </button>
                                 </div>

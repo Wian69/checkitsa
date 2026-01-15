@@ -81,11 +81,19 @@ export async function POST(req) {
             `INSERT INTO business_reviews (business_name, business_email, rating, title, content, reviewer_name, reviewer_email, status, type) VALUES (?, ?, ?, ?, ?, ?, ?, 'verified', ?)`
         ).bind(businessName, businessEmail || null, rating, title, content, reviewerName || 'Anonymous', reviewerEmail || null, type).run()
 
-        if (success && businessEmail) {
+        if (success && (businessEmail || type === 'ccma')) {
             const newReviewId = meta.last_row_id
             const brevoApiKey = process.env.BREVO_API_KEY
             const resendApiKey = process.env.RESEND_API_KEY
             const baseUrl = 'https://checkitsa.co.za'
+
+            // Determine Recipients
+            let recipients = []
+            if (businessEmail) recipients.push(businessEmail)
+            if (type === 'ccma') recipients.push('complaints@ccma.org.za')
+
+            // If no recipients (e.g. businessEmail empty and type != ccma), skip
+            if (recipients.length === 0) return NextResponse.json({ message: 'Review submitted (no notifications sent)' })
 
             const emailSubject = `⭐ New Business Review: ${businessName}`
             const emailHtml = `
@@ -138,11 +146,11 @@ export async function POST(req) {
                         },
                         body: JSON.stringify({
                             sender: { name: 'CheckItSA Reviews', email: 'info@checkitsa.co.za' },
-                            to: [{ email: businessEmail }],
+                            to: recipients.map(email => ({ email })),
                             replyTo: { email: 'info@checkitsa.co.za' },
-                            subject: emailSubject,
-                            htmlContent: emailHtml,
-                            textContent: emailText
+                            subject: type === 'ccma' ? `⚖️ New CCMA Case Report: ${businessName}` : emailSubject,
+                            htmlContent: type === 'ccma' ? emailHtml.replace('You\'ve received a new review!', 'New CCMA Case Reported') : emailHtml,
+                            textContent: emailText.replace('New Business Review:', type === 'ccma' ? 'New CCMA Case Report:' : 'New Business Review:')
                         })
                     })
                     sentEmail = true
@@ -160,11 +168,11 @@ export async function POST(req) {
                         },
                         body: JSON.stringify({
                             from: 'CheckItSA Reviews <info@checkitsa.co.za>',
-                            to: businessEmail,
+                            to: recipients,
                             reply_to: 'info@checkitsa.co.za',
-                            subject: emailSubject,
-                            html: emailHtml,
-                            text: emailText
+                            subject: type === 'ccma' ? `⚖️ New CCMA Case Report: ${businessName}` : emailSubject,
+                            html: type === 'ccma' ? emailHtml.replace('You\'ve received a new review!', 'New CCMA Case Reported') : emailHtml,
+                            text: emailText.replace('New Business Review:', type === 'ccma' ? 'New CCMA Case Report:' : 'New Business Review:')
                         })
                     })
                 } catch (e) { console.error('Resend Error:', e) }
