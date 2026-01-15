@@ -102,7 +102,7 @@ export default async function ReportDetails({ params }) {
                     {report.evidence_image && (
                         <div>
                             <h3 style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)', marginBottom: '1rem' }}>Attached Evidence</h3>
-                            <EvidenceViewer image={report.evidence_image} />
+                            <EvidenceViewer image={report.evidence_image} defaultOpen={true} />
                         </div>
                     )}
 

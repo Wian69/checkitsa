@@ -1,8 +1,8 @@
 'use client'
 import { useState } from 'react'
 
-export default function EvidenceViewer({ image }) {
-    const [isOpen, setIsOpen] = useState(false)
+export default function EvidenceViewer({ image, defaultOpen = false }) {
+    const [isOpen, setIsOpen] = useState(defaultOpen)
 
     if (!image) return null
 

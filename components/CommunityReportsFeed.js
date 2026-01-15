@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import EvidenceViewer from './EvidenceViewer'
+
 
 export default function CommunityReportsFeed() {
     const [reports, setReports] = useState([])
@@ -103,13 +103,7 @@ export default function CommunityReportsFeed() {
                         {report.reason}
                     </div>
 
-                    {/* Visual indicator if evidence exists */}
-                    {/* Visual indicator / Viewer if evidence exists */}
-                    {report.has_evidence && (
-                        <div style={{ marginTop: '0.8rem' }} onClick={(e) => e.stopPropagation()}>
-                            <EvidenceViewer image={report.evidence_image} />
-                        </div>
-                    )}
+
                 </div>
             ))}
         </div>
