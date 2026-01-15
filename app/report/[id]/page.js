@@ -1,6 +1,7 @@
 import { getRequestContext } from '@cloudflare/next-on-pages'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
+import EvidenceViewer from '@/components/EvidenceViewer'
 
 export const runtime = 'edge'
 
@@ -101,18 +102,7 @@ export default async function ReportDetails({ params }) {
                     {report.evidence_image && (
                         <div>
                             <h3 style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)', marginBottom: '1rem' }}>Attached Evidence</h3>
-                            <div style={{
-                                background: 'rgba(0,0,0,0.3)',
-                                padding: '1rem',
-                                borderRadius: '0.5rem',
-                                border: '1px solid var(--color-border)'
-                            }}>
-                                <img
-                                    src={report.evidence_image}
-                                    alt="Scam Evidence"
-                                    style={{ width: '100%', height: 'auto', borderRadius: '0.25rem' }}
-                                />
-                            </div>
+                            <EvidenceViewer image={report.evidence_image} />
                         </div>
                     )}
 
