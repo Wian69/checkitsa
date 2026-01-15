@@ -544,6 +544,8 @@ function PayoutModal({ user, onClose, setUser }) {
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
     const [error, setError] = useState('')
+    const [step, setStep] = useState(1) // 1: Input, 2: Confirm
+    const [agreed, setAgreed] = useState(false)
     const [formData, setFormData] = useState({
         bankName: '',
         accountNumber: '',
@@ -551,8 +553,23 @@ function PayoutModal({ user, onClose, setUser }) {
         branchCode: ''
     })
 
+    const handleNext = (e) => {
+        e.preventDefault()
+        if (!formData.bankName || !formData.accountNumber) {
+            setError('Please fill in required fields.')
+            return
+        }
+        setError('')
+        setStep(2)
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault()
+        if (!agreed) {
+            setError('You must confirm your details to proceed.')
+            return
+        }
+
         setLoading(true)
         setError('')
 
@@ -562,7 +579,8 @@ function PayoutModal({ user, onClose, setUser }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email: user.email,
-                    ...formData
+                    ...formData,
+                    confirmedByUser: true
                 })
             })
             const data = await res.json()

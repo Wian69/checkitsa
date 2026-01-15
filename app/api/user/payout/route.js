@@ -41,6 +41,9 @@ export async function POST(req) {
                 <li style="padding: 8px 0; border-bottom: 1px solid #374151;"><strong>Account Type:</strong> ${accountType}</li>
                 <li style="padding: 8px 0;"><strong>Branch Code:</strong> ${branchCode || 'N/A'}</li>
             </ul>
+            <p style="margin-top: 20px; font-size: 0.85em; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 10px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                ✅ User explicitly confirmed these details and accepted liability for any errors.
+            </p>
         `
         const adminHtml = EMAIL_TEMPLATE(`💸 Payout Request: R${amount}`, adminHtmlContent, `<a href="mailto:${user.email}" style="display: inline-block; padding: 12px 24px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">Contact User</a>`)
         const adminSubject = `PCT_ADMIN: Payout Request R${amount} - ${user.fullName}`
@@ -57,7 +60,12 @@ export async function POST(req) {
             </div>
 
             <p style="margin-bottom: 16px;">Our team will review your request. Once approved, funds typically reflect within <strong>48 hours</strong>.</p>
-            <p style="color: #6b7280; font-size: 0.9em; margin: 0;">If you did not request this, please contact support immediately.</p>
+            
+            <div style="margin-top: 24px; padding: 16px; background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 6px; font-size: 0.85em; color: #fca5a5;">
+                <strong>Important:</strong> You have confirmed these details are correct. CheckItSA is not liable for funds lost due to incorrect banking details provided.
+            </div>
+            
+            <p style="color: #6b7280; font-size: 0.9em; margin-top: 20px;">If you did not request this, please contact support immediately.</p>
         `
         const userHtml = EMAIL_TEMPLATE('Payout Request Received', userHtmlContent)
         const userSubject = `✅ Payout Request Received: R${amount}`
