@@ -61,8 +61,8 @@ export async function GET(req) {
                         }
                     }
 
-                    // ALWAYS Include SAPS Crime Stop
-                    authorities.push('crimestop@saps.gov.za')
+                    // ALWAYS Include SAPS Crime Stop and SAFPS
+                    authorities.push('crimestop@saps.gov.za', 'fraud@safps.org.za')
 
                     const authoritiesList = [...new Set(authorities)]
 
