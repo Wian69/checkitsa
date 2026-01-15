@@ -1,3 +1,5 @@
+export const runtime = 'edge'
+
 export default function sitemap() {
     const baseUrl = 'https://checkitsa.co.za'
 
