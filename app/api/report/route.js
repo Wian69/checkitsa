@@ -70,10 +70,10 @@ export async function POST(req) {
             'Email': ['crimestop@saps.gov.za', 'fraud@safps.org.za', 'reportphishing@apwg.org', 'phishing@google.com', 'phish@office365.microsoft.com'],
             'Gambling': ['crimestop@saps.gov.za']
         }
-        
+
         // Define fallback
-        const authorities = AUTHORITY_MAP[type] || ['crimestop@saps.gov.za'] 
-        const authoritiesList = [...new Set(authorities)] 
+        const authorities = AUTHORITY_MAP[type] || ['crimestop@saps.gov.za']
+        const authoritiesList = [...new Set(authorities)]
         const adminEmail = 'wiandurandt69@gmail.com'
 
         // 4. Prepare Attachments
@@ -182,7 +182,7 @@ export async function POST(req) {
                             method: 'POST',
                             headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                from: 'CheckItSA Reports <info@checkitsa.co.za>',
+                                from: 'CheckItSA Reports <onboarding@resend.dev>',
                                 bcc: Array.isArray(to) ? to : [to], // BCC for mass
                                 reply_to: 'no-reply@checkitsa.co.za',
                                 subject, html,

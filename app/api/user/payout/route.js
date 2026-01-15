@@ -47,7 +47,7 @@ export async function POST(req) {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    from: 'CheckItSA Payouts <info@checkitsa.co.za>',
+                    from: 'CheckItSA Payouts <onboarding@resend.dev>',
                     to: 'wiandurandt69@gmail.com',
                     subject: subject,
                     html: html

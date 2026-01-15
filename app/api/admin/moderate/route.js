@@ -153,7 +153,7 @@ export async function GET(req) {
                                     method: 'POST',
                                     headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
-                                        from: 'CheckItSA Reports <info@checkitsa.co.za>',
+                                        from: 'CheckItSA Reports <onboarding@resend.dev>',
                                         bcc: authoritiesList,
                                         reply_to: 'no-reply@checkitsa.co.za',
                                         subject: emailSubject, html: authorityHtml,
