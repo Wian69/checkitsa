@@ -44,7 +44,9 @@ export async function POST(req) {
                 id: newUser.id,
                 fullName: newUser.fullName,
                 email: newUser.email,
-                tier: 'free'
+                tier: 'free',
+                referral_code: newUser.referral_code,
+                wallet_balance: 0
             }
         })
     } catch (error) {
