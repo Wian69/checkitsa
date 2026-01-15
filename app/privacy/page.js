@@ -30,6 +30,7 @@ export default function PrivacyPolicy() {
                             <li><strong>Personal Identity:</strong> Your full name and email address provided during signup.</li>
                             <li><strong>Search History:</strong> Queries performed through our Website, Phone, and Business verification tools (synced to your account).</li>
                             <li><strong>Incident Reports:</strong> Information provided when reporting a scam, including names, phone numbers, and evidence of the scam.</li>
+                            <li><strong>Business Reviews:</strong> Content, ratings, and optional reviewer details submitted when reviewing a business.</li>
                             <li><strong>Technical Data:</strong> IP addresses and cookie identifiers for security and usage tracking.</li>
                         </ul>
                     </section>
@@ -41,12 +42,27 @@ export default function PrivacyPolicy() {
                             <li>To provide fraud detection and verification services.</li>
                             <li>To synchronize your security history across your devices.</li>
                             <li>To investigate and moderate community-reported scams.</li>
+                            <li>To facilitate business reputation management and verified reviews.</li>
+                            <li>To assist in reporting verified crimes to relevant authorities (SAPS, SAFPS, CCMA).</li>
                             <li>To prevent abuse of our search limits and API.</li>
                         </ul>
                     </section>
 
+                    <section style={{ marginBottom: '3rem' }}>
+                        <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>4. Data Sharing & Third Parties</h2>
+                        <p>
+                            We value your privacy, but clearly identified fraudulent activity requires action. We may share specific report data with:
+                        </p>
+                        <ul style={{ paddingLeft: '1.5rem', marginTop: '1rem' }}>
+                            <li><strong>South African Police Service (SAPS):</strong> For "Verified" criminal cases.</li>
+                            <li><strong>SA Fraud Prevention Service (SAFPS):</strong> To prevent financial fraud.</li>
+                            <li><strong>CCMA (Commission for Conciliation, Mediation and Arbitration):</strong> When you explicitly choose to lodge a labor dispute.</li>
+                            <li><strong>Verified Businesses:</strong> Business owners receive notification of user reviews (without exposing your email unless authorized).</li>
+                        </ul>
+                    </section>
+
                     <section style={{ marginBottom: '3rem' }} id="cookies">
-                        <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>4. Cookie Policy</h2>
+                        <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>5. Cookie Policy</h2>
                         <p>
                             We use functional cookies to remember your login session and your search history.
                             These cookies are essential for the performance of the dashboard and cross-device sync.
@@ -55,7 +71,7 @@ export default function PrivacyPolicy() {
                     </section>
 
                     <section style={{ marginBottom: '3rem' }}>
-                        <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>5. Data Security</h2>
+                        <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>6. Data Security</h2>
                         <p>
                             We implement industry-standard security measures, including HTTPS encryption and secure database protocols on Cloudflare,
                             to protect your data from unauthorized access or disclosure.
@@ -63,7 +79,7 @@ export default function PrivacyPolicy() {
                     </section>
 
                     <section style={{ marginBottom: '3rem' }}>
-                        <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>6. Your Rights (POPIA)</h2>
+                        <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>7. Your Rights (POPIA)</h2>
                         <p>As a data subject in South Africa, you have the right to:</p>
                         <ul style={{ paddingLeft: '1.5rem', marginTop: '1rem' }}>
                             <li>Request access to the personal information we hold about you.</li>
@@ -74,7 +90,7 @@ export default function PrivacyPolicy() {
                     </section>
 
                     <section>
-                        <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>7. Contact Us</h2>
+                        <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>8. Contact Us</h2>
                         <p>
                             If you have any questions about this Privacy Policy or wish to exercise your rights, please contact our Information Officer at:<br />
                             <strong>Email:</strong> info@checkitsa.co.za

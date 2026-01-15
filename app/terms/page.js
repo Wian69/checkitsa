@@ -39,21 +39,34 @@ export default function TermsOfService() {
                     </section>
 
                     <section style={{ marginBottom: '3rem' }}>
-                        <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>4. Community Reporting</h2>
+                        <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>4. Reviews & Community Reporting</h2>
                         <p>
-                            Information submitted through our "Report Incident" feature may be made public if verified by our moderation team. By submitting a report, you grant CheckItSA a license to display and use the information to warn others.
+                            Information submitted through our "Report Incident" or "Write a Review" features may be made public.
+                        </p>
+                        <ul style={{ paddingLeft: '1.5rem', marginTop: '1rem' }}>
+                            <li><strong>Accuracy:</strong> You warrant that your reviews and reports are based on genuine, first-hand experiences.</li>
+                            <li><strong>Defamation:</strong> You may not submit content that is libelous, harassing, or knowingly false. CheckItSA reserves the right to remove such content.</li>
+                            <li><strong>License:</strong> By submitting, you grant CheckItSA a license to display and use the information to warn others.</li>
+                        </ul>
+                    </section>
+
+                    <section style={{ marginBottom: '3rem' }}>
+                        <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>5. CCMA & Legal Disputes</h2>
+                        <p>
+                            CheckItSA provides a redirection service to the official CCMA Case Management System. We are not the CCMA, nor do we offer legal advice.
+                            We are not responsible for the outcome of any disputes lodged through third-party portals linked from our site.
                         </p>
                     </section>
 
                     <section style={{ marginBottom: '3rem' }}>
-                        <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>5. Modifications</h2>
+                        <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>6. Modifications</h2>
                         <p>
                             We reserve the right to modify these terms at any time. Significant changes will be announced on the dashboard or via email.
                         </p>
                     </section>
 
                     <section>
-                        <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>6. Governing Law</h2>
+                        <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '1rem' }}>7. Governing Law</h2>
                         <p>
                             These terms are governed by the laws of the Republic of South Africa.
                         </p>
