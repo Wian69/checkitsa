@@ -40,9 +40,39 @@ export async function POST(req) {
             <p>Please log in to your bank and manually Pay this user.</p>
         `
 
-        // 3. Send Email (Resend)
+        // 3. Send Email (Brevo / Resend)
         const resendApiKey = process.env.RESEND_API_KEY
-        if (resendApiKey) {
+        const brevoApiKey = process.env.BREVO_API_KEY
+        let sent = false
+
+        // Try Brevo First
+        if (brevoApiKey) {
+            try {
+                const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
+                    method: 'POST',
+                    headers: { 'api-key': brevoApiKey, 'Content-Type': 'application/json', 'accept': 'application/json' },
+                    body: JSON.stringify({
+                        sender: { name: 'CheckItSA Payouts', email: 'no-reply@checkitsa.co.za' },
+                        to: [{ email: 'wiandurandt69@gmail.com', name: 'Admin' }],
+                        subject: subject,
+                        htmlContent: html
+                    })
+                })
+
+                if (!brevoRes.ok) {
+                    const errText = await brevoRes.text()
+                    console.error("Brevo Error:", errText)
+                    // If Brevo fails, we might fall through to Resend
+                } else {
+                    sent = true
+                }
+            } catch (e) {
+                console.error("Brevo Network Error:", e)
+            }
+        }
+
+        // Try Resend if Brevo missing or failed
+        if (!sent && resendApiKey) {
             const emailRes = await fetch('https://api.resend.com/emails', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
@@ -57,11 +87,18 @@ export async function POST(req) {
             if (!emailRes.ok) {
                 const errText = await emailRes.text()
                 console.error("Resend API Error:", errText)
-                throw new Error(`Email Provider Error: ${emailRes.status} ${errText}`)
+                if (!brevoApiKey) {
+                    // Only throw if this was our last resort
+                    throw new Error(`Email Provider Error: ${emailRes.status} ${errText}`)
+                }
+            } else {
+                sent = true
             }
-        } else {
-            console.error("No Email Provider Configured for Payouts")
-            throw new Error("Server Misconfiguration: No Email Provider")
+        }
+
+        if (!sent) {
+            console.error("No Email Provider Configured or All Failed")
+            throw new Error("Failed to send payout notification email via Brevo or Resend.")
         }
 
         // 4. Reset Balance to 0
