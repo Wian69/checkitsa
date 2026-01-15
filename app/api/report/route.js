@@ -212,8 +212,28 @@ export async function POST(req) {
                 }
             }
 
-            // 1. Send Admin Email ONLY
+            // 1. Send Admin Email (Action Required)
             await sendEmail(adminEmail, emailSubject + " [ADMIN ACTION REQUIRED]", adminHtml)
+
+            // 2. Send User Confirmation (Receipt)
+            const userReceiptHtml = EMAIL_TEMPLATE(
+                `Report Received`,
+                `
+                <p>Dear ${name || 'User'},</p>
+                <p>Thank you for submitting a fraud report to CheckItSA. We have received your details regarding <strong>${scammer_details}</strong>.</p>
+                <p>Your report is currently <strong>Pending Verification</strong>. Once our team verifies the evidence, it will be:</p>
+                <ul>
+                    <li>Added to the National Scam Database to warn others.</li>
+                    <li>Forwarded to relevant authorities (SAPS, Banks, ISPs).</li>
+                </ul>
+                <p>You do not need to take any further action on our platform. We will notify you if we need more information.</p>
+                `,
+                `<a href="https://checkitsa.co.za/dashboard" style="background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Your Reports</a>`
+            )
+
+            if (email && email.includes('@')) {
+                await sendEmail(email, `Report Received: ${scammer_details}`, userReceiptHtml)
+            }
 
             // 2. [REMOVED] Authorities are NOT emailed here anymore. See /api/admin/moderate
         }
