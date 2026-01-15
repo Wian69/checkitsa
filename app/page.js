@@ -179,83 +179,84 @@ export default function Home() {
             </p>
           </div>
         </div>
+      </section>
 
-        {/* Report CTA Section */}
-        <section className="container content-section" style={{ textAlign: 'center' }}>
-          <div className="glass-panel" style={{ padding: '4rem 2rem', background: 'linear-gradient(to right, rgba(99, 102, 241, 0.1), rgba(167, 139, 250, 0.1))' }}>
-            <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Have you been targeted?</h2>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '1.2rem', marginBottom: '2rem', maxWidth: '600px', margin: '0 auto 2rem' }}>
-              Help protect the community. Report scam numbers, profiles, and websites anonymously.
-            </p>
-            <Link href="/report" className="btn btn-primary" style={{ padding: '1rem 3rem', fontSize: '1.2rem', borderRadius: '2rem' }}>
-              🚨 Report an Incident
-            </Link>
+      {/* Report CTA Section */}
+      <section className="container content-section" style={{ textAlign: 'center' }}>
+        <div className="glass-panel" style={{ padding: '4rem 2rem', background: 'linear-gradient(to right, rgba(99, 102, 241, 0.1), rgba(167, 139, 250, 0.1))' }}>
+          <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Have you been targeted?</h2>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '1.2rem', marginBottom: '2rem', maxWidth: '600px', margin: '0 auto 2rem' }}>
+            Help protect the community. Report scam numbers, profiles, and websites anonymously.
+          </p>
+          <Link href="/report" className="btn btn-primary" style={{ padding: '1rem 3rem', fontSize: '1.2rem', borderRadius: '2rem' }}>
+            🚨 Report an Incident
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer Ad */}
+      <div className="container" style={{ marginBottom: '2rem' }}>
+        <AdBanner format="leaderboard" />
+      </div>
+
+      {/* Community Reports Section */}
+      <section className="container content-section">
+        <div className="glass-panel" style={{ padding: '3rem', borderLeft: '4px solid var(--color-danger)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2.5rem' }}>
+            <div style={{
+              width: '3.5rem',
+              height: '3.5rem',
+              background: 'rgba(239, 68, 68, 0.1)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: '1.25rem',
+              fontSize: '1.5rem'
+            }}>🚨</div>
+            <div>
+              <h2 style={{ fontSize: '2rem', color: '#fff' }}>Latest Community Reports</h2>
+              <p style={{ color: 'var(--color-text-muted)' }}>Real-time threats reported by users like you.</p>
+            </div>
           </div>
-        </section>
+          <CommunityReportsFeed />
+        </div>
+      </section>
 
-        {/* Footer Ad */}
-        <div className="container" style={{ marginBottom: '2rem' }}>
-          <AdBanner format="leaderboard" />
+      {/* Business Reviews Section (HelloPeter Style) */}
+      <BusinessReviews />
+
+      {/* Global Intel Section */}
+      <section className="container">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
+          <div>
+            <h2 style={{ fontSize: '2rem' }}>Global Security Intel</h2>
+            <p style={{ color: 'var(--color-text-muted)' }}>The latest cybersecurity news from around the world.</p>
+          </div>
         </div>
 
-        {/* Community Reports Section */}
-        <section className="container content-section">
-          <div className="glass-panel" style={{ padding: '3rem', borderLeft: '4px solid var(--color-danger)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2.5rem' }}>
-              <div style={{
-                width: '3.5rem',
-                height: '3.5rem',
-                background: 'rgba(239, 68, 68, 0.1)',
-                borderRadius: '50%',
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+          {rssItems.length === 0 ? (
+            [1, 2, 3, 4].map(i => (
+              <div key={i} className="glass-panel" style={{ height: '200px', animation: 'pulse 2s infinite' }}></div>
+            ))
+          ) : (
+            rssItems.map((item, i) => (
+              <Link key={i} href={item.link} className="glass-panel" style={{
+                padding: '1.5rem',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginRight: '1.25rem',
-                fontSize: '1.5rem'
-              }}>🚨</div>
-              <div>
-                <h2 style={{ fontSize: '2rem', color: '#fff' }}>Latest Community Reports</h2>
-                <p style={{ color: 'var(--color-text-muted)' }}>Real-time threats reported by users like you.</p>
-              </div>
-            </div>
-            <CommunityReportsFeed />
-          </div>
-        </section>
-
-        {/* Business Reviews Section (HelloPeter Style) */}
-        <BusinessReviews />
-
-        {/* Global Intel Section */}
-        <section className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
-            <div>
-              <h2 style={{ fontSize: '2rem' }}>Global Security Intel</h2>
-              <p style={{ color: 'var(--color-text-muted)' }}>The latest cybersecurity news from around the world.</p>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
-            {rssItems.length === 0 ? (
-              [1, 2, 3, 4].map(i => (
-                <div key={i} className="glass-panel" style={{ height: '200px', animation: 'pulse 2s infinite' }}></div>
-              ))
-            ) : (
-              rssItems.map((item, i) => (
-                <Link key={i} href={item.link} className="glass-panel" style={{
-                  padding: '1.5rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'transform 0.3s',
-                  textDecoration: 'none',
-                  color: 'inherit'
-                }}>
-                  <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', lineHeight: 1.4, flex: 1 }}>{item.title}</h3>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--color-primary)', fontWeight: 600 }}>Read Article →</div>
-                </Link>
-              ))
-            )}
-          </div>
-        </section>
+                flexDirection: 'column',
+                transition: 'transform 0.3s',
+                textDecoration: 'none',
+                color: 'inherit'
+              }}>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', lineHeight: 1.4, flex: 1 }}>{item.title}</h3>
+                <div style={{ fontSize: '0.8rem', color: 'var(--color-primary)', fontWeight: 600 }}>Read Article →</div>
+              </Link>
+            ))
+          )}
+        </div>
+      </section>
     </main>
   )
 }
