@@ -153,7 +153,7 @@ export async function POST(request) {
                 const repRes = await fetch('https://google.serper.dev/search', {
                     method: 'POST',
                     headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ q: `"${senderDomain}" scam reviews complaints`, num: 3 })
+                    body: JSON.stringify({ q: `"${senderDomain}" scam reviews complaints`, num: 3, gl: 'za' })
                 })
                 const repData = await repRes.json()
                 const repItems = repData.organic || []

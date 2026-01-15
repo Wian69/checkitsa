@@ -160,7 +160,7 @@ export async function POST(request) {
                 const privRes = await fetch('https://google.serper.dev/search', {
                     method: 'POST',
                     headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ q: `site:${domain} "privacy policy"`, num: 1 })
+                    body: JSON.stringify({ q: `site:${domain} "privacy policy"`, num: 1, gl: 'za' })
                 })
                 const privData = await privRes.json()
                 if (privData.organic && privData.organic.length > 0) policies.privacy = true
@@ -169,7 +169,7 @@ export async function POST(request) {
                 const termsRes = await fetch('https://google.serper.dev/search', {
                     method: 'POST',
                     headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ q: `site:${domain} "terms"`, num: 1 })
+                    body: JSON.stringify({ q: `site:${domain} "terms"`, num: 1, gl: 'za' })
                 })
                 const termsData = await termsRes.json()
                 if (termsData.organic && termsData.organic.length > 0) policies.terms = true
@@ -227,7 +227,7 @@ export async function POST(request) {
                 const whoisRes = await fetch('https://google.serper.dev/search', {
                     method: 'POST',
                     headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ q: `"${domain}" whois registration date`, num: 1 })
+                    body: JSON.stringify({ q: `"${domain}" whois registration date`, num: 1, gl: 'za' })
                 })
                 const whoisData = await whoisRes.json()
                 if (whoisData.organic && whoisData.organic.length > 0) {
