@@ -110,44 +110,72 @@ export async function POST(request) {
             }
         } catch (e) { console.log('Google CSE error:', e) }
 
-        // Try Direct Fetch for specifically looking for Policy Links
+        // White-list Own Domain & Trusted Giants
+        const TRUSTED = ['checkitsa.co.za', 'google.com', 'microsoft.com', 'apple.com', 'fnb.co.za', 'standardbank.co.za', 'absa.co.za', 'capitec.co.za', 'nedbank.co.za']
+        if (TRUSTED.some(t => domain.includes(t))) {
+            return NextResponse.json({
+                safe: true,
+                riskScore: 0,
+                verdict: 'Verified Safe',
+                details: {
+                    url: finalUrl,
+                    domain: domain,
+                    summary: 'Verified Trusted Entity',
+                    domain_age: 'Verified',
+                    registrar: 'Verified Identity',
+                    policies: { privacy: true, terms: true, ssl: true },
+                    reputation_flags: [],
+                    is_shortened: false
+                },
+                message: '✅ Verified Safe: Trusted Organization.'
+            })
+        }
+
+        const serperKey = process.env.SERPER_API_KEY
+
+        // Try Direct Fetch for basic metadata (Title/Desc) - keep this for summary
         try {
             const pageRes = await fetch(finalUrl, {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                },
+                headers: { 'User-Agent': 'Mozilla/5.0' },
                 signal: AbortSignal.timeout(4000)
             })
             if (pageRes.ok) {
                 const text = (await pageRes.text()).toLowerCase()
-                if (text.includes('privacy policy') || text.includes('privacy-policy')) policies.privacy = true
-                if (text.includes('terms') || text.includes('terms of service')) policies.terms = true
+                // Basic HTML check (optional fallback)
+                if (text.includes('privacy policy')) policies.privacy = true
+                if (text.includes('terms of service') || text.includes('terms and conditions')) policies.terms = true
 
-                // Dynamic Import Cheerio and parse
-                try {
-                    const cheerio = await import('cheerio')
-                    const $ = cheerio.load(text)
-                    const title = $('title').text()
-                    const metaDesc = $('meta[name="description"]').attr('content')
-                    if (title) siteSummary = title
-                    if (metaDesc) siteSummary = metaDesc
+                // Login form check
+                if (text.includes('type="password"')) score += 5
 
-                    // Check for login forms / password fields
-                    if ($('input[type="password"]').length > 0) {
-                        score += 5 // Slight risk bump
-                    }
-                } catch (parseEvt) { }
-
-                // Refine summary if metadata found (fallback regex)
-                const metaDesc = text.match(/<meta\s+name="description"\s+content="([^"]+)"/i)
-                if (metaDesc && siteSummary === 'Summary unavailable.') siteSummary = metaDesc[1]
+                const titleMatch = text.match(/<title>([^<]+)<\/title>/i)
+                if (titleMatch) siteSummary = titleMatch[1]
             }
-        } catch (e) {
-            // Fetch failed (Blocked). Fallback to searching Google Results for policy presence
-        }
+        } catch (e) { }
 
-        // Advanced Policy Search via Google - REMOVED to save API Quota (100/day limit)
-        // We rely on the Direct Fetch above. If that fails, we assume policies are missing (safer default).
+        // Superior Serper Policy Check
+        if (serperKey && (!policies.privacy || !policies.terms)) {
+            try {
+                // Check for Privacy Policy
+                const privRes = await fetch('https://google.serper.dev/search', {
+                    method: 'POST',
+                    headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ q: `site:${domain} "privacy policy"`, num: 1 })
+                })
+                const privData = await privRes.json()
+                if (privData.organic && privData.organic.length > 0) policies.privacy = true
+
+                // Check for Terms
+                const termsRes = await fetch('https://google.serper.dev/search', {
+                    method: 'POST',
+                    headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ q: `site:${domain} "terms"`, num: 1 })
+                })
+                const termsData = await termsRes.json()
+                if (termsData.organic && termsData.organic.length > 0) policies.terms = true
+
+            } catch (serpErr) { console.error(serpErr) }
+        }
 
         // 3. Domain Age & Registrar Strategy (RDAP + Fallback)
         let domainAge = 'Unknown'
@@ -193,29 +221,24 @@ export async function POST(request) {
             }
         }
 
-        // Strategy C: Google Search Intelligence (Last Resort)
-        if (!createdDate && cseKey && cx) {
+        // Strategy C: Serper Intelligence (Last Resort)
+        if (!createdDate && serperKey) {
             try {
-                const whoisQuery = `"${rootDomain}" whois registration date`
-                const whoisRes = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(whoisQuery)}`)
+                const whoisRes = await fetch('https://google.serper.dev/search', {
+                    method: 'POST',
+                    headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ q: `"${domain}" whois registration date`, num: 1 })
+                })
                 const whoisData = await whoisRes.json()
-                if (whoisData.items && whoisData.items.length > 0) {
-                    const snippet = (whoisData.items[0].snippet + whoisData.items[0].title).toLowerCase()
-                    // Look for 4-digit year (1990-2029)
-                    const yearMatch = snippet.match(/(199\d|20[0-2]\d)/)
+                if (whoisData.organic && whoisData.organic.length > 0) {
+                    const txt = (whoisData.organic[0].snippet + whoisData.organic[0].title).toLowerCase()
+                    const yearMatch = txt.match(/(199\d|20[0-2]\d)/)
                     if (yearMatch) {
-                        // Try to find full ISO date first
-                        const dateMatch = snippet.match(/(\d{4}-\d{2}-\d{2})/)
-                        if (dateMatch) {
-                            createdDate = new Date(dateMatch[0])
-                        } else {
-                            // Fallback to Jan 1st of the found year
-                            createdDate = new Date(`${yearMatch[0]}-01-01`)
-                        }
-                        if (registrar === 'Unknown') registrar = 'Found via Web Intelligence'
+                        createdDate = new Date(`${yearMatch[0]}-01-01`)
+                        if (registrar === 'Unknown') registrar = 'Verified via Web Web (Serper)'
                     }
                 }
-            } catch (e) { console.log('Google WHOIS fallback failed', e) }
+            } catch (e) { }
         }
 
         if (createdDate) {
