@@ -123,6 +123,39 @@ export default function Dashboard() {
 
                 <div className="grid-responsive" style={{ gap: '2rem' }}>
 
+                    {/* Affiliate Dashboard (Pro/Elite Only) */}
+                    {stats.tier !== 'free' && (
+                        <div className="glass-panel" style={{ padding: '2rem', gridColumn: 'span 2', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                            <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#34d399' }}>
+                                <span>💸</span> Affiliate Dashboard
+                            </h3>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
+                                <div>
+                                    <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>Your Wallet Balance</div>
+                                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>
+                                        R{user?.wallet_balance || 0}
+                                    </div>
+                                    <button className="btn btn-outline" style={{ marginTop: '1rem', fontSize: '0.8rem', padding: '0.5rem 1rem' }}>Request Payout</button>
+                                </div>
+                                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: '1rem', flex: 1, minWidth: '300px' }}>
+                                    <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>Your Referral Link (Earn 5% Commission)</div>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <code style={{ flex: 1, padding: '0.75rem', background: 'rgba(255,255,255,0.05)', borderRadius: '0.5rem', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                            https://checkitsa.co.za?ref={user?.referral_code || 'generate'}
+                                        </code>
+                                        <button
+                                            onClick={() => navigator.clipboard.writeText(`https://checkitsa.co.za?ref=${user?.referral_code}`)}
+                                            className="btn btn-primary"
+                                            style={{ padding: '0.75rem 1.5rem' }}
+                                        >
+                                            Copy
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Usage Card */}
                     <div className="glass-panel" style={{ padding: '2rem', gridColumn: 'span 1' }}>
                         <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

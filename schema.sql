@@ -12,6 +12,9 @@ CREATE TABLE IF NOT EXISTS users (
     custom_limit INTEGER DEFAULT 0,
     api_key TEXT UNIQUE,
     notifications_enabled BOOLEAN DEFAULT 1,
+    referral_code TEXT UNIQUE,
+    referred_by TEXT,
+    wallet_balance FLOAT DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

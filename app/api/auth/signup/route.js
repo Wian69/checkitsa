@@ -5,7 +5,7 @@ export const runtime = 'edge'
 
 export async function POST(req) {
     try {
-        const { fullName, email, password } = await req.json()
+        const { fullName, email, password, ref } = await req.json()
         const db = getRequestContext().env.DB
 
         if (!fullName || !email || !password) {
@@ -21,17 +21,14 @@ export async function POST(req) {
             return NextResponse.json({ message: 'User already exists' }, { status: 400 })
         }
 
-        // Create user
-        // Note: D1 ID generation usually happens in DB or uuid in JS. Assuming DB autoincrement or similar.
-        // If the schema expects a UUID, D1 doesn't auto-generate random UUIDs easily in SQL.
-        // Ideally we generate a UUID here if the table is set up for it, 
-        // OR we rely on AUTOINCREMENT integer.
-        // Safest is to try INSERT and expect the DB handles ID.
+        // Generate Referral Code (e.g., "Wian123" -> but random short string to avoid PII or collision)
+        // Simple random string: 4 chars + 3 numbers
+        const referralCode = Math.random().toString(36).substring(2, 9).toUpperCase()
 
         const { success } = await db.prepare(
-            'INSERT INTO users (fullName, email, password, tier, searches, createdAt) VALUES (?, ?, ?, ?, ?, ?)'
+            'INSERT INTO users (fullName, email, password, tier, searches, createdAt, referral_code, referred_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
         )
-            .bind(fullName, email, password, 'free', 0, new Date().toISOString())
+            .bind(fullName, email, password, 'free', 0, new Date().toISOString(), referralCode, ref || null)
             .run()
 
         if (!success) {

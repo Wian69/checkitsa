@@ -65,6 +65,36 @@ export async function POST(req) {
             .bind(newTier, expiryDate.toISOString(), limit, email)
             .run()
 
+        // ---------------------------------------------------------
+        // 4. Affiliate Logic: Credit Referrer (5% Comm) if eligible
+        // ---------------------------------------------------------
+        try {
+            // Get user's referred_by code
+            const currentUser = await db.prepare('SELECT referred_by FROM users WHERE email = ?').bind(email).first()
+            const referrerCode = currentUser?.referred_by
+
+            if (referrerCode) {
+                // Find referrer
+                const referrer = await db.prepare('SELECT id, tier, wallet_balance FROM users WHERE referral_code = ?').bind(referrerCode).first()
+
+                // Only pay commission to Paid Tiers (Pro/Elite/Custom)
+                if (referrer && referrer.tier !== 'free') {
+                    const commission = amount * 0.05 // 5% of transaction (cents)
+                    const commissionRand = commission / 100 // Convert to Rand for easier display/payout
+
+                    await db.prepare('UPDATE users SET wallet_balance = wallet_balance + ? WHERE id = ?')
+                        .bind(commissionRand, referrer.id)
+                        .run()
+
+                    console.log(`[Affiliate] Credited R${commissionRand} to referrer ${referrer.id} for user ${email}`)
+                }
+            }
+        } catch (affError) {
+            // Don't fail the checkout if affiliate logic errors
+            console.error('Affiliate Error:', affError)
+        }
+        // ---------------------------------------------------------
+
         // 4. Fetch Updated User
         const user = await db.prepare('SELECT * FROM users WHERE email = ?').bind(email).first()
 
