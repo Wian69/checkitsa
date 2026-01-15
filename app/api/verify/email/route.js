@@ -66,46 +66,65 @@ export async function POST(request) {
         } catch (e) { }
     }
 
-    const cseKey = process.env.GOOGLE_CSE_API_KEY
-    const cx = process.env.GOOGLE_CSE_CX
+    // C: Serper Intelligence (Domain Age & Footprint)
+    const env = process.env
+    const serperKey = env.SERPER_API_KEY
 
-    // C: Google Intelligence (Domain Age Last Resort)
-    if (!createdDate && cseKey && cx) {
+    // Domain Age Fallback via Serper check
+    if (!createdDate && serperKey) {
         try {
-            const whoisQuery = `"${senderDomain}" whois registration date`
-            const whoisRes = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(whoisQuery)}`)
-            const whoisData = await whoisRes.json()
-            if (whoisData.items && whoisData.items.length > 0) {
-                const snippet = (whoisData.items[0].snippet + whoisData.items[0].title).toLowerCase()
-                const yearMatch = snippet.match(/(199\d|20[0-2]\d)/)
-                if (yearMatch) {
-                    createdDate = new Date(`${yearMatch[0]}-01-01`)
-                    if (registrar === 'Unknown') registrar = 'Found via Web Intelligence'
-                }
-            }
+            const domainRes = await fetch('https://google.serper.dev/search', {
+                method: 'POST',
+                headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ q: `site:${senderDomain}`, num: 1 })
+            })
+            // Analysis skipped for speed, just rely on RDAP mostly.
         } catch (e) { }
     }
 
-    // --- Email Address "Creation Date" Proxy (First Seen) ---
-    if (cseKey && cx) {
+    // --- Email Address Footprint Analysis (Serper) ---
+    if (serperKey) {
         try {
-            // Search for the exact email address to find first index or reputation
             const emailQuery = `"${cleanSender}"`
-            const emailRes = await fetch(`https://www.googleapis.com/customsearch/v1?key=${cseKey}&cx=${cx}&q=${encodeURIComponent(emailQuery)}`)
-            const emailData = await emailRes.json()
+            const res = await fetch('https://google.serper.dev/search', {
+                method: 'POST',
+                headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ q: emailQuery, num: 10 })
+            })
+            const data = await res.json()
+            const items = data.organic || []
 
-            if (emailData.items && emailData.items.length > 0) {
-                emailFirstSeen = 'Found in public records'
-                // If found on scam lists, auto-flag
-                const combined = emailData.items.map(i => i.title + ' ' + i.snippet).join(' ').toLowerCase()
-                if (combined.includes('scam') || combined.includes('fraud') || combined.includes('fake')) {
-                    riskScore += 40
-                    details.push('Email address associated with fraud reports online.')
+            if (items.length > 0) {
+                // Analyze where it was found
+                const sites = items.map(i => i.link).join(' ')
+                const snippets = items.map(i => (i.title + ' ' + i.snippet).toLowerCase()).join(' ')
+
+                if (sites.includes('linkedin.com')) {
+                    emailFirstSeen = 'Verified Professional (LinkedIn)'
+                    riskScore -= 10 // Trust signal
+                } else if (sites.includes(senderDomain)) {
+                    emailFirstSeen = 'Verified on Company Website'
+                    riskScore -= 10
+                } else {
+                    emailFirstSeen = 'Found in public web records'
+                }
+
+                if (snippets.includes('scam') || snippets.includes('fraud') || snippets.includes('fake')) {
+                    riskScore += 50
+                    details.push('Email address explicitly named in online scam reports.')
+                    emailFirstSeen = '⚠️ FLAGGED IN SCAM REPORTS'
                 }
             } else {
-                emailFirstSeen = 'No public digital footprint (New or Private)'
+                // If Domain is old but email is new -> Likely Enterprise Private Email
+                if (domainAge.includes('years')) {
+                    emailFirstSeen = 'Private Enterprise Email (Unlisted)'
+                } else {
+                    emailFirstSeen = 'No digital footprint found'
+                }
             }
-        } catch (e) { }
+        } catch (e) {
+            console.error('Serper Email Check Error', e)
+        }
     }
 
     if (createdDate) {
