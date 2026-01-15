@@ -45,7 +45,7 @@ export default function ScamReportForm() {
     }
 
     const types = ['WhatsApp', 'Social Media', 'SMS', 'Email', 'Gambling', 'Bank']
-    const banks = ['FNB', 'Standard Bank', 'Absa', 'Nedbank', 'Capitec', 'TymeBank', 'Discovery Bank', 'Investec', 'Other']
+    const banks = ['FNB', 'Standard Bank', 'Absa', 'Nedbank', 'Capitec', 'TymeBank', 'Discovery Bank', 'Investec', 'African Bank', 'Other']
 
     const inputStyle = {
         width: '100%',

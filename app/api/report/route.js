@@ -71,14 +71,15 @@ export async function POST(req) {
             'Email': ['fraud@safps.org.za', 'reportphishing@apwg.org', 'phishing@google.com', 'phish@office365.microsoft.com'],
             'Gambling': ['info@ngb.org.za'], // National Gambling Board
             // Bank Fraud Departments
-            'Bank: FNB': ['phishing@fnb.co.za'],
-            'Bank: Standard Bank': ['phishing@standardbank.co.za', 'fraud@standardbank.co.za'],
-            'Bank: Absa': ['secmon@absa.co.za', 'fraud@absa.co.za'],
+            'Bank: FNB': ['phishing@fnb.co.za', 'fnbcard@fnb.co.za'],
+            'Bank: Standard Bank': ['reportfraud@standardbank.co.za', 'phishing@standardbank.co.za'],
+            'Bank: Absa': ['fraud@absa.co.za', 'secmon@absa.co.za'],
             'Bank: Nedbank': ['phishing@nedbank.co.za'],
-            'Bank: Capitec': ['tipline@capitecbank.co.za'],
-            'Bank: TymeBank': ['fraud@tymebank.co.za'],
-            'Bank: Discovery Bank': ['phishing@discovery.co.za'],
-            'Bank: Investec': ['fraud@investec.co.za']
+            'Bank: Capitec': ['tipline@capitecbank.co.za', 'phishing@capitecbank.co.za'],
+            'Bank: TymeBank': ['fraud@tymebank.co.za', 'service@tymebank.co.za'],
+            'Bank: Discovery Bank': ['discoveryforensics@whistleblowing.co.za', 'phishing@discovery.co.za'],
+            'Bank: Investec': ['investecfd@investec.co.za'],
+            'Bank: African Bank': ['fdetection@africanbank.co.za', 'africanbank@tip-offs.com']
         }
 
         // Define fallback
