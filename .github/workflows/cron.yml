@@ -1,0 +1,17 @@
+name: Daily Security Briefing
+
+on:
+  schedule:
+    # 06:00 UTC = 08:00 SAST
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Allow manual trigger for testing
+
+jobs:
+  trigger-cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call API Cron
+        run: |
+          curl -X GET https://checkitsa.co.za/api/cron/daily \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+          --fail

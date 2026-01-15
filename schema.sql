@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     subscription_end DATETIME,
     custom_limit INTEGER DEFAULT 0,
     api_key TEXT UNIQUE,
+    notifications_enabled BOOLEAN DEFAULT 1,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -198,314 +198,282 @@ export default function Dashboard() {
                             </div>
                         ) : (
                             <>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '0.5rem' }}>
+                                    <div>
+                                        <div style={{ fontWeight: '600' }}>Daily Briefing</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Get 8AM security updates</div>
+                                    </div>
+                                    <NotificationToggle email={user?.email} />
+                                </div>
                                 <ul style={{ listStyle: 'none', padding: 0 }}>
                                     <IntelFeed />
                                 </ul>
-
-                                {/* Email Toggle for Pro/Elite */}
-                                <div style={{
-                                    marginTop: '1.5rem',
-                                    paddingTop: '1rem',
-                                    borderTop: '1px solid rgba(255,255,255,0.1)',
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center'
-                                }}>
-                                    <div>
-                                        <div style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Daily Intel Brief</div>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Get alerts sent to {user?.email}</div>
-                                    </div>
-                                    <button
-                                        onClick={toggleNotifications}
-                                        style={{
-                                            background: emailNotifications ? 'var(--color-primary)' : 'rgba(255,255,255,0.1)',
-                                            border: 'none',
-                                            borderRadius: '1rem',
-                                            width: '3rem',
-                                            height: '1.5rem',
-                                            position: 'relative',
-                                            cursor: 'pointer',
-                                            transition: 'background 0.3s'
-                                        }}
-                                    >
-                                        <div style={{
-                                            position: 'absolute',
-                                            top: '0.15rem',
-                                            left: emailNotifications ? '1.6rem' : '0.15rem',
-                                            width: '1.2rem',
-                                            height: '1.2rem',
-                                            borderRadius: '50%',
-                                            background: 'white',
-                                            transition: 'left 0.3s'
-                                        }}></div>
-                                    </button>
-                                </div>
-
                                 <CommunitySources />
                             </>
                         )}
                     </div>
                 </div>
+            </div>
 
-                {/* Promotion & Growth Hub */}
-                <div style={{ marginTop: '3rem' }}>
-                    <div className="glass-panel" style={{
-                        padding: '2.5rem',
-                        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%)',
-                        border: '1px solid rgba(99, 102, 241, 0.2)'
-                    }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
-                            <div style={{ flex: '1', minWidth: '300px' }}>
-                                <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <span>🚀</span> Help Grow CheckItSA
-                                </h3>
-                                <p style={{ color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>
-                                    The more people use our platform, the safer South Africa becomes.
-                                    Share your experience and prevent more people from getting scammed.
-                                </p>
+            {/* Promotion & Growth Hub */}
+            <div style={{ marginTop: '3rem' }}>
+                <div className="glass-panel" style={{
+                    padding: '2.5rem',
+                    background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%)',
+                    border: '1px solid rgba(99, 102, 241, 0.2)'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
+                        <div style={{ flex: '1', minWidth: '300px' }}>
+                            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span>🚀</span> Help Grow CheckItSA
+                            </h3>
+                            <p style={{ color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>
+                                The more people use our platform, the safer South Africa becomes.
+                                Share your experience and prevent more people from getting scammed.
+                            </p>
+                        </div>
+                        <div style={{ minWidth: '250px' }}>
+                            <div style={{ fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--color-primary)' }}>📢 Spread the Word:</div>
+                            <div style={{
+                                background: 'rgba(0,0,0,0.2)',
+                                padding: '1rem',
+                                borderRadius: '0.5rem',
+                                border: '1px solid var(--color-border)',
+                                marginBottom: '1rem'
+                            }}>
+                                <code style={{ fontSize: '0.9rem', color: '#fff' }}>
+                                    https://checkitsa.co.za
+                                </code>
                             </div>
-                            <div style={{ minWidth: '250px' }}>
-                                <div style={{ fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--color-primary)' }}>📢 Spread the Word:</div>
-                                <div style={{
-                                    background: 'rgba(0,0,0,0.2)',
-                                    padding: '1rem',
-                                    borderRadius: '0.5rem',
-                                    border: '1px solid var(--color-border)',
-                                    marginBottom: '1rem'
-                                }}>
-                                    <code style={{ fontSize: '0.9rem', color: '#fff' }}>
-                                        https://checkitsa.co.za
-                                    </code>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        const msg = `⚠️ South Africans! Stop getting scammed. I use CheckItSA to verify everything before I trust it. Check it out: https://checkitsa.co.za`;
-                                        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank')
-                                    }}
-                                    className="btn btn-primary"
-                                    style={{ width: '100%', justifyContent: 'center' }}
-                                >
-                                    💬 Share to WhatsApp
-                                </button>
-                            </div>
+                            <button
+                                onClick={() => {
+                                    const msg = `⚠️ South Africans! Stop getting scammed. I use CheckItSA to verify everything before I trust it. Check it out: https://checkitsa.co.za`;
+                                    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank')
+                                }}
+                                className="btn btn-primary"
+                                style={{ width: '100%', justifyContent: 'center' }}
+                            >
+                                💬 Share to WhatsApp
+                            </button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Search History */}
-                <div style={{ marginTop: '3rem' }}>
-                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Search History</h2>
-                    <div className="glass-panel" style={{ overflow: 'hidden' }}>
-                        {history.searches.length === 0 ? (
-                            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                                No recent searches found.
-                            </div>
-                        ) : (
-                            <>
-                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                    <thead>
-                                        <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                                            <th style={{ padding: '1rem' }}>Type</th>
-                                            <th style={{ padding: '1rem' }}>Query</th>
-                                            <th style={{ padding: '1rem' }}>Status</th>
-                                            <th style={{ padding: '1rem' }}>Date</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {history.searches.slice((historyPage - 1) * 10, historyPage * 10).map(s => (
-                                            <tr key={s.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                                <td style={{ padding: '1rem' }}>{s.type}</td>
-                                                <td style={{ padding: '1rem', fontFamily: 'monospace' }}>{s.query}</td>
-                                                <td style={{ padding: '1rem' }}>
-                                                    <span style={{
-                                                        padding: '0.25rem 0.5rem',
-                                                        borderRadius: '1rem',
-                                                        fontSize: '0.8rem',
-                                                        background: s.status === 'Dangerous' ? 'rgba(220, 38, 38, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                                                        color: s.status === 'Dangerous' ? '#fca5a5' : '#6ee7b7'
-                                                    }}>
-                                                        {s.status}
-                                                    </span>
-                                                </td>
-                                                <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-                                                    {new Date(s.date).toLocaleDateString()}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                                <div style={{ padding: '1rem', display: 'flex', justifyContent: 'center', gap: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <button
-                                        onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
-                                        disabled={historyPage === 1}
-                                        className="btn btn-outline"
-                                        style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', opacity: historyPage === 1 ? 0.5 : 1 }}
-                                    >
-                                        Previous
-                                    </button>
-                                    <span style={{ display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)' }}>Page {historyPage}</span>
-                                    <button
-                                        onClick={() => setHistoryPage(p => p + 1)}
-                                        disabled={historyPage * 10 >= history.searches.length}
-                                        className="btn btn-outline"
-                                        style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', opacity: historyPage * 10 >= history.searches.length ? 0.5 : 1 }}
-                                    >
-                                        Next
-                                    </button>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                {/* Report History */}
-                <div style={{ marginTop: '3rem' }}>
-                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>My Reports</h2>
-                    <div className="glass-panel" style={{ overflow: 'hidden' }}>
-                        {history.reports.length === 0 ? (
-                            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                                You haven't submitted any reports yet.
-                            </div>
-                        ) : (
+            {/* Search History */}
+            <div style={{ marginTop: '3rem' }}>
+                <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Search History</h2>
+                <div className="glass-panel" style={{ overflow: 'hidden' }}>
+                    {history.searches.length === 0 ? (
+                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                            No recent searches found.
+                        </div>
+                    ) : (
+                        <>
                             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead>
                                     <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
                                         <th style={{ padding: '1rem' }}>Type</th>
-                                        <th style={{ padding: '1rem' }}>Details</th>
-                                        <th style={{ padding: '1rem' }}>Evidence</th>
+                                        <th style={{ padding: '1rem' }}>Query</th>
                                         <th style={{ padding: '1rem' }}>Status</th>
                                         <th style={{ padding: '1rem' }}>Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {history.reports.map(r => (
-                                        <tr key={r.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <td style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <span>
-                                                    {r.type.includes('WhatsApp') && '💬'}
-                                                    {r.type.includes('Social Media') && '🌐'}
-                                                    {r.type.includes('SMS') && '📱'}
-                                                    {r.type.includes('Email') && '📧'}
-                                                    {r.type.includes('Gambling') && '🎰'}
-                                                    {r.type.includes('Bank') && '🏦'}
-                                                </span>
-                                                {r.type}
-                                            </td>
-                                            <td style={{ padding: '1rem', fontFamily: 'monospace' }}>{r.details}</td>
-                                            <td style={{ padding: '1rem' }}>{r.evidence ? '📎 Attached' : '-'}</td>
+                                    {history.searches.slice((historyPage - 1) * 10, historyPage * 10).map(s => (
+                                        <tr key={s.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <td style={{ padding: '1rem' }}>{s.type}</td>
+                                            <td style={{ padding: '1rem', fontFamily: 'monospace' }}>{s.query}</td>
                                             <td style={{ padding: '1rem' }}>
                                                 <span style={{
                                                     padding: '0.25rem 0.5rem',
                                                     borderRadius: '1rem',
                                                     fontSize: '0.8rem',
-                                                    background: 'rgba(251, 191, 36, 0.1)',
-                                                    color: '#fcd34d'
+                                                    background: s.status === 'Dangerous' ? 'rgba(220, 38, 38, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                                                    color: s.status === 'Dangerous' ? '#fca5a5' : '#6ee7b7'
                                                 }}>
-                                                    {r.status}
+                                                    {s.status}
                                                 </span>
                                             </td>
                                             <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-                                                {new Date(r.date).toLocaleDateString()}
-                                            </td>
-                                            <td style={{ padding: '1rem', textAlign: 'right' }}>
-                                                <button
-                                                    onClick={async () => {
-                                                        if (confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
-                                                            try {
-                                                                const res = await fetch('/api/report', {
-                                                                    method: 'DELETE',
-                                                                    headers: { 'Content-Type': 'application/json' },
-                                                                    body: JSON.stringify({ id: r.id, email: user.email })
-                                                                })
-                                                                if (res.ok) {
-                                                                    setHistory(prev => ({ ...prev, reports: prev.reports.filter(item => item.id !== r.id) }))
-                                                                    alert('Report deleted.')
-                                                                } else {
-                                                                    alert('Failed to delete report.')
-                                                                }
-                                                            } catch (e) {
-                                                                console.error(e)
-                                                                alert('Error deleting report.')
-                                                            }
-                                                        }
-                                                    }}
-                                                    className="btn"
-                                                    style={{
-                                                        padding: '0.25rem 0.75rem',
-                                                        fontSize: '0.8rem',
-                                                        background: 'rgba(220, 38, 38, 0.1)',
-                                                        color: '#fca5a5',
-                                                        border: '1px solid var(--color-danger)',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                >
-                                                    🗑️ Delete
-                                                </button>
+                                                {new Date(s.date).toLocaleDateString()}
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
-                        )}
-                    </div>
-                </div>
-                {/* Business Review History */}
-                <div style={{ marginTop: '3rem' }}>
-                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>My Business Reviews</h2>
-                    <div className="glass-panel" style={{ overflow: 'hidden' }}>
-                        {myReviews.length === 0 ? (
-                            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                                You haven't submitted any business reviews yet.
+                            <div style={{ padding: '1rem', display: 'flex', justifyContent: 'center', gap: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                <button
+                                    onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
+                                    disabled={historyPage === 1}
+                                    className="btn btn-outline"
+                                    style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', opacity: historyPage === 1 ? 0.5 : 1 }}
+                                >
+                                    Previous
+                                </button>
+                                <span style={{ display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)' }}>Page {historyPage}</span>
+                                <button
+                                    onClick={() => setHistoryPage(p => p + 1)}
+                                    disabled={historyPage * 10 >= history.searches.length}
+                                    className="btn btn-outline"
+                                    style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', opacity: historyPage * 10 >= history.searches.length ? 0.5 : 1 }}
+                                >
+                                    Next
+                                </button>
                             </div>
-                        ) : (
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead>
-                                    <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                                        <th style={{ padding: '1rem' }}>Business</th>
-                                        <th style={{ padding: '1rem' }}>Rating</th>
-                                        <th style={{ padding: '1rem' }}>Title</th>
-                                        <th style={{ padding: '1rem' }}>Date</th>
-                                        <th style={{ padding: '1rem' }}>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {myReviews.map(r => (
-                                        <tr key={r.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <td style={{ padding: '1rem', fontWeight: 'bold' }}>{r.business_name}</td>
-                                            <td style={{ padding: '1rem' }}>
-                                                <span style={{ color: '#fbbf24' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
-                                            </td>
-                                            <td style={{ padding: '1rem' }}>{r.title}</td>
-                                            <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-                                                {new Date(r.created_at).toLocaleDateString()}
-                                            </td>
-                                            <td style={{ padding: '1rem' }}>
-                                                <button
-                                                    onClick={() => handleDeleteReview(r.id)}
-                                                    className="btn"
-                                                    style={{
-                                                        padding: '0.25rem 0.75rem',
-                                                        fontSize: '0.8rem',
-                                                        background: 'rgba(220, 38, 38, 0.1)',
-                                                        color: '#fca5a5',
-                                                        border: '1px solid var(--color-danger)',
-                                                        cursor: 'pointer',
-                                                        borderRadius: '0.5rem'
-                                                    }}
-                                                >
-                                                    🗑️ Delete
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
+                        </>
+                    )}
                 </div>
-
             </div>
-        </main>
+
+            {/* Report History */}
+            <div style={{ marginTop: '3rem' }}>
+                <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>My Reports</h2>
+                <div className="glass-panel" style={{ overflow: 'hidden' }}>
+                    {history.reports.length === 0 ? (
+                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                            You haven't submitted any reports yet.
+                        </div>
+                    ) : (
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
+                                    <th style={{ padding: '1rem' }}>Type</th>
+                                    <th style={{ padding: '1rem' }}>Details</th>
+                                    <th style={{ padding: '1rem' }}>Evidence</th>
+                                    <th style={{ padding: '1rem' }}>Status</th>
+                                    <th style={{ padding: '1rem' }}>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {history.reports.map(r => (
+                                    <tr key={r.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <td style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <span>
+                                                {r.type.includes('WhatsApp') && '💬'}
+                                                {r.type.includes('Social Media') && '🌐'}
+                                                {r.type.includes('SMS') && '📱'}
+                                                {r.type.includes('Email') && '📧'}
+                                                {r.type.includes('Gambling') && '🎰'}
+                                                {r.type.includes('Bank') && '🏦'}
+                                            </span>
+                                            {r.type}
+                                        </td>
+                                        <td style={{ padding: '1rem', fontFamily: 'monospace' }}>{r.details}</td>
+                                        <td style={{ padding: '1rem' }}>{r.evidence ? '📎 Attached' : '-'}</td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <span style={{
+                                                padding: '0.25rem 0.5rem',
+                                                borderRadius: '1rem',
+                                                fontSize: '0.8rem',
+                                                background: 'rgba(251, 191, 36, 0.1)',
+                                                color: '#fcd34d'
+                                            }}>
+                                                {r.status}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
+                                            {new Date(r.date).toLocaleDateString()}
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                            <button
+                                                onClick={async () => {
+                                                    if (confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+                                                        try {
+                                                            const res = await fetch('/api/report', {
+                                                                method: 'DELETE',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                                body: JSON.stringify({ id: r.id, email: user.email })
+                                                            })
+                                                            if (res.ok) {
+                                                                setHistory(prev => ({ ...prev, reports: prev.reports.filter(item => item.id !== r.id) }))
+                                                                alert('Report deleted.')
+                                                            } else {
+                                                                alert('Failed to delete report.')
+                                                            }
+                                                        } catch (e) {
+                                                            console.error(e)
+                                                            alert('Error deleting report.')
+                                                        }
+                                                    }
+                                                }}
+                                                className="btn"
+                                                style={{
+                                                    padding: '0.25rem 0.75rem',
+                                                    fontSize: '0.8rem',
+                                                    background: 'rgba(220, 38, 38, 0.1)',
+                                                    color: '#fca5a5',
+                                                    border: '1px solid var(--color-danger)',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                🗑️ Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </div>
+            {/* Business Review History */}
+            <div style={{ marginTop: '3rem' }}>
+                <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>My Business Reviews</h2>
+                <div className="glass-panel" style={{ overflow: 'hidden' }}>
+                    {myReviews.length === 0 ? (
+                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                            You haven't submitted any business reviews yet.
+                        </div>
+                    ) : (
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
+                                    <th style={{ padding: '1rem' }}>Business</th>
+                                    <th style={{ padding: '1rem' }}>Rating</th>
+                                    <th style={{ padding: '1rem' }}>Title</th>
+                                    <th style={{ padding: '1rem' }}>Date</th>
+                                    <th style={{ padding: '1rem' }}>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {myReviews.map(r => (
+                                    <tr key={r.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <td style={{ padding: '1rem', fontWeight: 'bold' }}>{r.business_name}</td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <span style={{ color: '#fbbf24' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>{r.title}</td>
+                                        <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
+                                            {new Date(r.created_at).toLocaleDateString()}
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <button
+                                                onClick={() => handleDeleteReview(r.id)}
+                                                className="btn"
+                                                style={{
+                                                    padding: '0.25rem 0.75rem',
+                                                    fontSize: '0.8rem',
+                                                    background: 'rgba(220, 38, 38, 0.1)',
+                                                    color: '#fca5a5',
+                                                    border: '1px solid var(--color-danger)',
+                                                    cursor: 'pointer',
+                                                    borderRadius: '0.5rem'
+                                                }}
+                                            >
+                                                🗑️ Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </div>
+
+        </div>
+        </main >
     )
 }
 
@@ -584,3 +552,60 @@ function CommunitySources() {
     )
 }
 
+function NotificationToggle({ email }) {
+    const [enabled, setEnabled] = useState(true)
+    const [loading, setLoading] = useState(false)
+
+    useEffect(() => {
+        if (!email) return
+        fetch(`/api/user/settings?email=${encodeURIComponent(email)}`)
+            .then(res => res.json())
+            .then(data => setEnabled(data.notifications_enabled))
+    }, [email])
+
+    const toggle = async () => {
+        setLoading(true)
+        const newState = !enabled
+        setEnabled(newState)
+        try {
+            await fetch('/api/user/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, notifications_enabled: newState })
+            })
+        } catch (e) {
+            console.error(e)
+            setEnabled(!newState)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <button
+            onClick={toggle}
+            disabled={loading}
+            style={{
+                background: enabled ? 'var(--color-primary)' : 'rgba(255,255,255,0.1)',
+                border: 'none',
+                borderRadius: '1rem',
+                width: '3rem',
+                height: '1.5rem',
+                position: 'relative',
+                cursor: 'pointer',
+                transition: 'background 0.2s'
+            }}
+        >
+            <div style={{
+                width: '1.1rem',
+                height: '1.1rem',
+                background: 'white',
+                borderRadius: '50%',
+                position: 'absolute',
+                top: '0.2rem',
+                left: enabled ? '1.7rem' : '0.2rem',
+                transition: 'left 0.2s'
+            }}></div>
+        </button>
+    )
+}
