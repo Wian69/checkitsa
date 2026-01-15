@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getRequestContext } from '@cloudflare/next-on-pages'
+import { EMAIL_TEMPLATE } from '@/app/lib/emailTemplate'
 
 export const runtime = 'edge'
 
@@ -120,38 +121,35 @@ export async function POST(req) {
         // [MODIFIED] Removed [TEST MODE] prefix
         const emailSubject = `🚨 Scam Report [${type}]: ${scammer_details.substring(0, 30)}...`
 
-        // Template Shared Styles
-        const styleContainer = "font-family: Arial, sans-serif; max-width: 600px; border: 1px solid #ddd; padding: 20px;"
-        const styleIncident = "background: #f9f9f9; padding: 10px; border-left: 3px solid #d32f2f;"
-
         // A. ADMIN TEMPLATE (With Verify/Reject Buttons)
-        // [MODIFIED] Added note about email flow
-        const adminHtml = `
-            <div style="${styleContainer}">
-                <h2 style="color: #d32f2f;">New Scam Report - Action Required</h2>
-                <div style="background: #eef; padding: 10px; margin-bottom: 10px; border: 1px solid #ccf; font-size: 0.9em;">
-                    <strong>ADMIN CONTROL PANEL</strong><br/>
-                    This is an internal notification. Authorities have NOT been notified yet.<br/>
-                    <strong>Click VERIFY below to send the automated report to authorities.</strong>
-                </div>
-                <p><strong>Type:</strong> ${type}</p>
-                <p><strong>Reported By:</strong> ${name} (${email})</p>
-                <hr />
-                <h3>Incident Details</h3>
-                <p><strong>Scammer/Suspect:</strong> ${scammer_details}</p>
-                <p><strong>Description:</strong></p>
-                <div style="${styleIncident}">
-                    ${description}
-                </div>
-                <br />
-                <p><em>Pending Forwarding to: ${authoritiesList.slice(0, 3).join(', ')}...</em></p>
-                
-                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
-                    <a href="${baseUrl}/api/admin/moderate?id=${displayId}&action=verify&token=${adminSecret}" style="background: green; color: white; padding: 10px 20px; text-decoration: none; margin-right: 10px;">Verify (Send to Authorities)</a>
-                    <a href="${baseUrl}/api/admin/moderate?id=${displayId}&action=reject&token=${adminSecret}" style="background: grey; color: white; padding: 10px 20px; text-decoration: none;">Reject</a>
-                </div>
+        const adminHtmlContent = `
+            <div style="margin-bottom: 20px; padding: 16px; background-color: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; color: #a5b4fc;">
+                <strong>ADMIN CONTROL PANEL</strong><br/>
+                This is an internal notification. Authorities have NOT been notified yet.<br/>
+                <strong>Click VERIFY below to send the automated report to authorities.</strong>
+            </div>
+
+            <p style="margin-bottom: 8px;"><strong>Type:</strong> <span style="color: #fff;">${type}</span></p>
+            <p style="margin-bottom: 20px;"><strong>Reported By:</strong> ${name} (${email})</p>
+            
+            <h3 style="color: #fff; font-size: 18px; margin-bottom: 12px; border-bottom: 1px solid #374151; padding-bottom: 8px;">Incident Details</h3>
+            <p style="margin-bottom: 8px;"><strong>Scammer/Suspect:</strong> <span style="color: #ef4444;">${scammer_details}</span></p>
+            
+            <div style="background-color: #1f2937; padding: 16px; border-radius: 6px; border-left: 4px solid #ef4444; color: #d1d5db; margin-bottom: 20px;">
+                ${description}
+            </div>
+            
+            <p style="font-size: 0.9em; color: #6b7280; font-style: italic; margin-bottom: 20px;">Pending Forwarding to: ${authoritiesList.slice(0, 3).join(', ')}...</p>
+        `
+
+        const adminActions = `
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <a href="${baseUrl}/api/admin/moderate?id=${displayId}&action=verify&token=${adminSecret}" style="background-color: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; margin-right: 10px;">Verify & Send</a>
+                <a href="${baseUrl}/api/admin/moderate?id=${displayId}&action=reject&token=${adminSecret}" style="background-color: #ef4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">Reject</a>
             </div>
         `
+
+        const adminHtml = EMAIL_TEMPLATE(`🚨 New Scam Report: ${type}`, adminHtmlContent, adminActions)
 
         // C. SEND LOGIC
         if (reportId) {

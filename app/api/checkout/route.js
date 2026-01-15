@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getRequestContext } from '@cloudflare/next-on-pages'
+import { EMAIL_TEMPLATE } from '@/app/lib/emailTemplate'
 
 export const runtime = 'edge'
 
@@ -130,18 +131,21 @@ export async function POST(req) {
                         return false
                     }
 
-                    const emailSubject = `💰 You earned a commission!`
-                    const emailHtml = `
-                        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-                            <h2 style="color: #10b981;">Commission Earned!</h2>
-                            <p>Hi ${referrer.fullName ? referrer.fullName.split(' ')[0] : 'Partner'},</p>
-                            <p><strong>Great news!</strong> Someone you referred just upgraded.</p>
-                            <p>We've added <strong>R${commissionRand.toFixed(2)}</strong> to your wallet.</p>
-                            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                            <p>Keep sharing to earn more!</p>
-                            <p style="font-size: 0.9em; color: #666;">Team CheckItSA</p>
+                    const emailSubject = `Commission Earned! 💰`
+                    const emailContent = `
+                        <p style="margin-bottom: 24px;">Hi ${referrer.fullName ? referrer.fullName.split(' ')[0] : 'Partner'},</p>
+                        <p style="margin-bottom: 24px;"><strong>Great news!</strong> Someone you referred just upgraded to a paid plan.</p>
+                        
+                        <div style="background-color: #1f2937; padding: 25px; border-radius: 8px; border: 1px solid #374151; margin-bottom: 24px; text-align: center;">
+                            <p style="margin: 0 0 10px 0; color: #9ca3af; font-size: 0.9em;">You Earned</p>
+                            <span style="display: block; font-size: 32px; font-weight: 800; color: #10b981; text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);">R${commissionRand.toFixed(2)}</span>
                         </div>
+
+                        <p style="margin-bottom: 16px;">We've added this amount to your wallet. Keep sharing to earn more!</p>
+                        <p style="color: #6b7280; font-size: 0.9em; margin: 0;">You can withdraw your earnings from the dashboard once you reach R200.</p>
                     `
+
+                    const emailHtml = EMAIL_TEMPLATE('Commission Earned! 💰', emailContent, `<a href="https://checkitsa.co.za/dashboard" style="display: inline-block; padding: 12px 24px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">View Dashboard</a>`)
 
                     // Send without awaiting to not block checkout response
                     if (ctx && ctx.waitUntil) {

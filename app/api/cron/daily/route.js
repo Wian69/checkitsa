@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getRequestContext } from '@cloudflare/next-on-pages'
+import { EMAIL_TEMPLATE } from '@/app/lib/emailTemplate'
 
 export const runtime = 'edge'
 
@@ -45,35 +46,27 @@ export async function GET(req) {
 
         // In a real app, we'd fetch the actual top story. 
         // For now, we'll make a dynamic "Status OK" or similar.
-        const htmlContent = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee;">
-                <div style="background: #111; color: white; padding: 20px; text-align: center;">
-                    <h1 style="margin:0;">CheckItSA</h1>
-                    <p style="margin:5px 0 0; opacity: 0.8;">Daily Security Briefing • ${dateStr}</p>
+        const briefingContent = `
+            <p style="margin-bottom: 24px;">Good Morning,</p>
+            <p style="margin-bottom: 20px;">Here is your daily security snapshot for <strong>${dateStr}</strong>.</p>
+            
+            <div style="background-color: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #374151; margin-bottom: 24px;">
+                <div style="margin-bottom: 12px;">
+                    <strong style="color: #10b981;">🛡️ System Status:</strong> <span style="color: #d1d5db;">Active Monitoring</span>
                 </div>
-                <div style="padding: 20px;">
-                    <h2 style="color: #333;">Good Morning.</h2>
-                    <p>Here is your daily security snapshot.</p>
-                    
-                    <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                        <strong>🛡️ System Status:</strong> Active Monitoring<br/>
-                        <strong>⚠️ Recent Scams Reported:</strong> Check Dashboard for live feed.<br/>
-                    </div>
-
-                    <p>Stay ahead of identity theft and fraud. Log in to your dashboard to view the latest real-time intel from MyBroadband, BusinessTech, and community reports.</p>
-                    
-                    <div style="text-align: center; margin-top: 30px;">
-                        <a href="https://checkitsa.co.za/dashboard" style="background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                            Open Dashboard
-                        </a>
-                    </div>
-                </div>
-                <div style="background: #f4f4f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
-                    <p>You received this because you are a Premium Member of CheckItSA.<br/>
-                    <a href="https://checkitsa.co.za/dashboard" style="color: #666;">Unsubscribe via Dashboard</a></p>
+                <div>
+                    <strong style="color: #f59e0b;">⚠️ Recent Scams Reported:</strong> <span style="color: #d1d5db;">Check Dashboard for live feed.</span>
                 </div>
             </div>
+
+            <p style="margin-bottom: 20px;">Stay ahead of identity theft and fraud. Log in to your dashboard to view the latest real-time intel from MyBroadband, BusinessTech, and community reports.</p>
         `
+
+        const htmlContent = EMAIL_TEMPLATE(
+            `🛡️ Security Briefing`,
+            briefingContent,
+            `<a href="https://checkitsa.co.za/dashboard" style="display: inline-block; padding: 12px 24px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">Open Dashboard</a>`
+        )
 
         // 4. Send Batch Emails (Chunking if needed, but for now linear)
         const brevoApiKey = process.env.BREVO_API_KEY

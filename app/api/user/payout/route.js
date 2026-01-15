@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getRequestContext } from '@cloudflare/next-on-pages'
+import { EMAIL_TEMPLATE } from '@/app/lib/emailTemplate'
 
 export const runtime = 'edge'
 
@@ -25,40 +26,39 @@ export async function POST(req) {
         const amount = user.wallet_balance
 
         // Admin Email Content
-        const adminSubject = `💸 Payout Request: R${amount} from ${user.fullName}`
-        const adminHtml = `
-            <h2>New Payout Request</h2>
-            <p><strong>User:</strong> ${user.fullName} (${user.email})</p>
-            <p><strong>Amount:</strong> R${amount}</p>
-            <hr/>
-            <h3>Unverified Bank Details Provided:</h3>
-            <ul>
-                <li><strong>Bank:</strong> ${bankName}</li>
-                <li><strong>Account Number:</strong> ${accountNumber}</li>
-                <li><strong>Account Type:</strong> ${accountType}</li>
-                <li><strong>Branch Code:</strong> ${branchCode || 'N/A'}</li>
+        const adminHtmlContent = `
+            <p style="color: #9ca3af; margin-bottom: 20px;">A new payout request has been submitted.</p>
+            
+            <div style="background-color: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #374151; margin-bottom: 20px;">
+                <p style="margin: 0 0 10px 0;"><strong>User:</strong> <span style="color: #fff;">${user.fullName}</span> (${user.email})</p>
+                <p style="margin: 0;"><strong>Amount:</strong> <span style="color: #10b981; font-weight: bold; font-size: 1.2em;">R${amount}</span></p>
+            </div>
+
+            <h3 style="color: #fff; font-size: 16px; margin-bottom: 15px; border-bottom: 1px solid #374151; padding-bottom: 10px;">Bank Details Provided by User:</h3>
+            <ul style="list-style: none; padding: 0; margin: 0; color: #d1d5db;">
+                <li style="padding: 8px 0; border-bottom: 1px solid #374151;"><strong>Bank:</strong> ${bankName}</li>
+                <li style="padding: 8px 0; border-bottom: 1px solid #374151;"><strong>Account Number:</strong> ${accountNumber}</li>
+                <li style="padding: 8px 0; border-bottom: 1px solid #374151;"><strong>Account Type:</strong> ${accountType}</li>
+                <li style="padding: 8px 0;"><strong>Branch Code:</strong> ${branchCode || 'N/A'}</li>
             </ul>
-            <hr/>
-            <p>Please log in to your bank and manually Pay this user.</p>
         `
+        const adminHtml = EMAIL_TEMPLATE(`💸 Payout Request: R${amount}`, adminHtmlContent, `<a href="mailto:${user.email}" style="display: inline-block; padding: 12px 24px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">Contact User</a>`)
 
         // User Confirmation Email Content
-        const userSubject = `✅ Payout Request Received: R${amount}`
-        const userHtml = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; border: 1px solid #eee;">
-                <h2 style="color: #10b981;">Payout Request Received</h2>
-                <p>Hi ${user.fullName.split(' ')[0]},</p>
-                <p>We have received your request to withdraw <strong>R${amount}</strong> from your affiliate wallet.</p>
-                
-                <div style="background: #f9f9f9; padding: 15px; margin: 20px 0; border-radius: 5px;">
-                    <p style="margin: 0;"><strong>Bank:</strong> ${bankName}</p>
-                    <p style="margin: 5px 0 0;"><strong>Account:</strong> ****${accountNumber.slice(-4)}</p>
-                </div>
-
-                <p>Our team will review your request. Once approved, funds typically reflect within <strong>48 hours</strong>.</p>
-                <p style="color: #666; font-size: 0.9em;">If you did not request this, please contact support immediately.</p>
+        const userHtmlContent = `
+            <p style="margin-bottom: 24px;">Hi ${user.fullName.split(' ')[0]},</p>
+            <p style="margin-bottom: 24px;">We have received your request to withdraw <strong>R${amount}</strong> from your affiliate wallet.</p>
+            
+            <div style="background-color: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #374151; margin-bottom: 24px;">
+                <p style="margin: 0 0 8px 0; color: #9ca3af; font-size: 0.9em;">Bank Details</p>
+                <p style="margin: 0 0 4px 0; font-weight: 600; color: #fff;">${bankName}</p>
+                <p style="margin: 0; font-family: monospace; color: #d1d5db;">****${accountNumber.slice(-4)}</p>
             </div>
+
+            <p style="margin-bottom: 16px;">Our team will review your request. Once approved, funds typically reflect within <strong>48 hours</strong>.</p>
+            <p style="color: #6b7280; font-size: 0.9em; margin: 0;">If you did not request this, please contact support immediately.</p>
         `
+        const userHtml = EMAIL_TEMPLATE('Payout Request Received', userHtmlContent)
 
         // 3. Send Emails (Brevo / Resend)
         const resendApiKey = process.env.RESEND_API_KEY

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getRequestContext } from '@cloudflare/next-on-pages'
+import { EMAIL_TEMPLATE } from '@/app/lib/emailTemplate'
 
 export const runtime = 'edge'
 
@@ -100,30 +101,33 @@ export async function GET(req) {
 
                     // Email Content
                     const emailSubject = `🚨 Scam Report [${type}]: ${(report.scammer_details || 'N/A').substring(0, 30)}...`
-                    const styleContainer = "font-family: Arial, sans-serif; max-width: 600px; border: 1px solid #ddd; padding: 20px;"
-                    const styleIncident = "background: #f9f9f9; padding: 10px; border-left: 3px solid #d32f2f;"
 
-                    const authorityHtml = `
-                        <div style="${styleContainer}">
-                             <h2 style="color: #d32f2f;">Automated Scam Report</h2>
-                             <p>This report was submitted via <strong>CheckItSA.co.za</strong> and was manually verified by our team.</p>
-                             <hr />
-                             <p><strong>Report Type:</strong> ${type}</p>
-                             <p><strong>Reporter Contact:</strong> ${report.reporter_name} (${report.reporter_email})</p>
-                             <br />
-                             <h3>Incident Report</h3>
-                             <p><strong>Suspect / Scammer Details:</strong><br/> ${report.scammer_details}</p>
-                             <p><strong>Incident Description:</strong></p>
-                             <div style="${styleIncident}">
-                                 ${report.description}
-                             </div>
-                             <br />
-                             <p style="font-size: 0.85em; color: #666; border-top: 1px solid #eee; padding-top: 10px;">
-                                This is an automated notification sent to relevant authorities for intelligence purposes. 
-                                Evidence attachments (if any) are included below.
-                             </p>
-                        </div>
+                    const authorityHtmlContent = `
+                         <p style="margin-bottom: 20px;">This report was submitted via <strong>CheckItSA.co.za</strong> and was manually verified by our team.</p>
+                         
+                         <div style="background-color: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #374151; margin-bottom: 20px;">
+                             <p style="margin: 0 0 8px 0;"><strong>Report Type:</strong> <span style="color: #fff;">${type}</span></p>
+                             <p style="margin: 0;"><strong>Reporter Contact:</strong> ${report.reporter_name} (${report.reporter_email})</p>
+                         </div>
+
+                         <h3 style="color: #fff; font-size: 18px; margin-bottom: 12px; border-bottom: 1px solid #374151; padding-bottom: 8px;">Incident Report</h3>
+                         <p style="margin-bottom: 8px;"><strong>Suspect / Scammer Details:</strong></p>
+                         <p style="color: #ef4444; font-weight: 600; margin-bottom: 16px;">${report.scammer_details}</p>
+                         
+                         <p style="margin-bottom: 8px;"><strong>Incident Description:</strong></p>
+                         <div style="background-color: #1f2937; padding: 16px; border-radius: 6px; border-left: 4px solid #ef4444; color: #d1d5db; margin-bottom: 20px;">
+                             ${report.description}
+                         </div>
                     `
+
+                    const authorityFooter = `
+                        <p style="font-size: 0.85em; color: #6b7280; font-style: italic;">
+                            This is an automated notification sent to relevant authorities for intelligence purposes. 
+                            Evidence attachments (if any) are included below.
+                        </p>
+                    `
+
+                    const authorityHtml = EMAIL_TEMPLATE(`Automated Scam Report`, authorityHtmlContent, authorityFooter)
 
                     // Send Email
                     const resendApiKey = process.env.RESEND_API_KEY
