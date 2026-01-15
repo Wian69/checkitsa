@@ -43,19 +43,25 @@ export async function POST(req) {
         // 3. Send Email (Resend)
         const resendApiKey = process.env.RESEND_API_KEY
         if (resendApiKey) {
-            await fetch('https://api.resend.com/emails', {
+            const emailRes = await fetch('https://api.resend.com/emails', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     from: 'CheckItSA Payouts <info@checkitsa.co.za>',
-                    to: 'wiandurandt69@gmail.com', // Admin Email
+                    to: 'wiandurandt69@gmail.com',
                     subject: subject,
                     html: html
                 })
             })
+
+            if (!emailRes.ok) {
+                const errText = await emailRes.text()
+                console.error("Resend API Error:", errText)
+                throw new Error(`Email Provider Error: ${emailRes.status} ${errText}`)
+            }
         } else {
             console.error("No Email Provider Configured for Payouts")
-            // In dev, we might still want to succeed to test DB logic
+            throw new Error("Server Misconfiguration: No Email Provider")
         }
 
         // 4. Reset Balance to 0
