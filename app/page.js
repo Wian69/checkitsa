@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import AdBanner from '@/components/AdBanner'
+import ProTools from '@/components/ProTools' // Premium Tools
 import { useState, useEffect } from 'react'
 
 import Navbar from '@/components/Navbar'
@@ -118,6 +119,11 @@ export default function Home() {
             badge={(!user || (user.tier !== 'elite' && user.tier !== 'custom' && user.tier !== 'enterprise')) ? "Elite Only" : "Enterprise"}
             opacity={(!user || (user.tier !== 'elite' && user.tier !== 'custom' && user.tier !== 'enterprise')) ? 0.7 : 1}
           />
+        </div>
+
+        {/* Premium Tools Integration */}
+        <div style={{ marginTop: '3rem', maxWidth: '1200px', margin: '3rem auto 0' }}>
+          <ProTools />
         </div>
       </section>
 
