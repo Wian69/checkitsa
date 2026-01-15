@@ -50,7 +50,7 @@ export default async function CheckPage({ params }) {
         <main className="min-h-screen pb-24">
             <Navbar />
 
-            <div className="container pt-32 px-4 mx-auto max-w-4xl">
+            <div className="container pt-40 px-4 mx-auto max-w-4xl">
                 {/* SEO Header */}
                 <div className="text-center mb-12">
                     <div className="inline-block px-3 py-1 mb-4 text-sm rounded-full bg-white/10 border border-white/10 text-emerald-400">
