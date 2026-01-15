@@ -82,48 +82,16 @@ export default function Dashboard() {
         }
     }
 
-    // Payout Handler
-    const handlePayout = async () => {
+    const [showPayoutModal, setShowPayoutModal] = useState(false)
+    const [payoutLoading, setPayoutLoading] = useState(false)
+
+    // Payout Handler - Open Modal
+    const handlePayoutClick = () => {
         if (!user || user.wallet_balance < 100) {
             alert("Minimum payout amount is R100.")
             return
         }
-
-        const bankName = prompt("Enter your Bank Name (e.g., FNB):")
-        if (!bankName) return
-
-        const accNum = prompt("Enter your Account Number:")
-        if (!accNum) return
-
-        const accType = prompt("Enter Account Type (Savings/Cheque):", "Savings")
-
-        if (confirm(`Request payout of R${user.wallet_balance} to ${bankName} - ${accNum}? This cannot be undone.`)) {
-            try {
-                const res = await fetch('/api/user/payout', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        email: user.email,
-                        bankName: bankName,
-                        accountNumber: accNum,
-                        accountType: accType
-                    })
-                })
-                const data = await res.json()
-                if (res.ok) {
-                    alert("Success! Payout requested. Admin will process within 48 hours.")
-                    // Optmistic Update
-                    setUser(prev => ({ ...prev, wallet_balance: 0 }))
-                    // Also update localStorage
-                    const local = JSON.parse(localStorage.getItem('checkitsa_user'))
-                    local.wallet_balance = 0
-                    localStorage.setItem('checkitsa_user', JSON.stringify(local))
-                } else {
-                    alert("Error: " + data.message)
-                }
-            } catch (e) {
-                alert("Network error processing payout.")
-            }
-        }
+        setShowPayoutModal(true)
     }
 
     const handleDeleteReview = async (reviewId) => {
@@ -190,7 +158,7 @@ export default function Dashboard() {
                                     <div style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>
                                         R{user?.wallet_balance || 0}
                                     </div>
-                                    <button onClick={handlePayout} className="btn btn-outline" style={{ marginTop: '1rem', fontSize: '0.8rem', padding: '0.5rem 1rem' }}>Request Payout</button>
+                                    <button onClick={handlePayoutClick} className="btn btn-outline" style={{ marginTop: '1rem', fontSize: '0.8rem', padding: '0.5rem 1rem' }}>Request Payout</button>
                                 </div>
                                 <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: '1rem', flex: 1, minWidth: '300px' }}>
                                     <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>Your Referral Link (Earn 5% Commission)</div>
@@ -559,7 +527,152 @@ export default function Dashboard() {
                     )}
                 </div>
             </div>
+
+            {/* Payout Modal */}
+            {showPayoutModal && (
+                <PayoutModal
+                    user={user}
+                    onClose={() => setShowPayoutModal(false)}
+                    setUser={setUser}
+                />
+            )}
         </main >
+    )
+}
+
+function PayoutModal({ user, onClose, setUser }) {
+    const [loading, setLoading] = useState(false)
+    const [formData, setFormData] = useState({
+        bankName: '',
+        accountNumber: '',
+        accountType: 'Savings'
+    })
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        setLoading(true)
+
+        try {
+            const res = await fetch('/api/user/payout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: user.email,
+                    ...formData
+                })
+            })
+            const data = await res.json()
+            if (res.ok) {
+                alert("Success! Payout requested. Admin will process within 48 hours.")
+                setUser(prev => ({ ...prev, wallet_balance: 0 }))
+                const local = JSON.parse(localStorage.getItem('checkitsa_user'))
+                local.wallet_balance = 0
+                localStorage.setItem('checkitsa_user', JSON.stringify(local))
+                onClose()
+            } else {
+                alert("Error: " + data.message)
+            }
+        } catch (e) {
+            alert("Network error processing payout.")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000
+        }}>
+            <div className="glass-panel" style={{
+                width: '100%', maxWidth: '450px',
+                padding: '2rem',
+                border: '1px solid rgba(255,255,255,0.1)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+            }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Request Payout 💸</h2>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: '1.5rem' }}>&times;</button>
+                </div>
+
+                <div style={{ marginBottom: '2rem', padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '0.5rem', textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.9rem', color: '#6ee7b7' }}>Available Balance</div>
+                    <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'white' }}>R{user.wallet_balance}</div>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                    <div style={{ marginBottom: '1rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Bank Name</label>
+                        <select
+                            required
+                            className="input"
+                            style={{ width: '100%' }}
+                            value={formData.bankName}
+                            onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                        >
+                            <option value="">Select Bank...</option>
+                            <option value="FNB">FNB</option>
+                            <option value="Capitec">Capitec</option>
+                            <option value="Standard Bank">Standard Bank</option>
+                            <option value="Absa">Absa</option>
+                            <option value="Nedbank">Nedbank</option>
+                            <option value="TymeBank">TymeBank</option>
+                            <option value="Discovery Bank">Discovery Bank</option>
+                            <option value="Investec">Investec</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div style={{ marginBottom: '1rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Account Number</label>
+                        <input
+                            type="text"
+                            required
+                            className="input"
+                            style={{ width: '100%' }}
+                            placeholder="e.g. 1234567890"
+                            value={formData.accountNumber}
+                            onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
+                        />
+                    </div>
+
+                    <div style={{ marginBottom: '2rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Account Type</label>
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    name="accType"
+                                    value="Savings"
+                                    checked={formData.accountType === 'Savings'}
+                                    onChange={(e) => setFormData({ ...formData, accountType: e.target.value })}
+                                /> Savings
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    name="accType"
+                                    value="Current/Cheque"
+                                    checked={formData.accountType === 'Current/Cheque'}
+                                    onChange={(e) => setFormData({ ...formData, accountType: e.target.value })}
+                                /> Current/Cheque
+                            </label>
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="btn btn-primary"
+                        style={{ width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '1rem' }}
+                    >
+                        {loading ? 'Processing...' : 'Confirm Withdrawal'}
+                    </button>
+                </form>
+            </div>
+        </div>
     )
 }
 
