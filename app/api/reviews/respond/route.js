@@ -53,13 +53,11 @@ export async function POST(req) {
             return NextResponse.json({ message: 'Review not found' }, { status: 404 })
         }
 
-        // normalize emails for comparison
-        const storedEmail = (review.business_email || '').toLowerCase().trim()
-        const providedEmail = (businessEmail || '').toLowerCase().trim()
+        // We allow responding from a different email than the one notification was sent to
+        // const storedEmail = (review.business_email || '').toLowerCase().trim()
+        // const providedEmail = (businessEmail || '').toLowerCase().trim()
 
-        if (storedEmail !== providedEmail) {
-            return NextResponse.json({ message: 'Email does not match our records for this business.' }, { status: 403 })
-        }
+        // if (storedEmail !== providedEmail) { ... }
 
         const { success } = await db.prepare(
             `UPDATE business_reviews SET response_content = ?, responded_at = CURRENT_TIMESTAMP WHERE id = ?`

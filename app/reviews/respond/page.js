@@ -82,17 +82,17 @@ function RespondForm() {
                 ) : (
                     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Confirm Business Email</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Business Email</label>
                             <input
                                 type="email"
                                 required
-                                placeholder="Enter the email where you received the notification"
+                                placeholder="Enter your business email address"
                                 style={{ width: '100%', padding: '0.8rem', borderRadius: '0.5rem', border: '1px solid var(--color-border)', background: 'rgba(255,255,255,0.05)', color: 'white' }}
                                 value={form.businessEmail}
                                 onChange={e => setForm({ ...form, businessEmail: e.target.value })}
                             />
                             <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
-                                For security, this must match the email address associated with the review.
+                                This will be displayed as the responding address.
                             </p>
                         </div>
 
