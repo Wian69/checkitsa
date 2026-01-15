@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 
 export default function ViralResults({ reports, query, type }) {
     const [isUnlocked, setIsUnlocked] = useState(false)
+    const [expandedEvidence, setExpandedEvidence] = useState(null)
     const storageKey = `checkitsa_unlocked_${query}`
 
     useEffect(() => {
@@ -41,7 +42,7 @@ export default function ViralResults({ reports, query, type }) {
                 <span>📋</span> Recent Community Reports
             </h3>
 
-            {/* Locked State Overlay - Only show if NOT unlocked and has reports */}
+            {/* Locked State Overlay - Only show if NOT unlocked */}
             {!isUnlocked && (
                 <div className="glass-panel p-6 border-2 border-yellow-500/50 bg-yellow-500/10 mb-8 rounded-xl relative overflow-hidden">
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center p-6 text-center">
@@ -96,19 +97,36 @@ export default function ViralResults({ reports, query, type }) {
                             "{report.description}"
                         </p>
 
-                        <div className="flex gap-2 items-center">
-                            {report.evidence_image ? (
-                                <div className="text-xs px-2 py-1 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1">
-                                    <span>📎</span> Evidence Attached
-                                </div>
-                            ) : (
-                                <div className="text-xs px-2 py-1 rounded bg-white/5 text-white/30">
-                                    No Evidence
-                                </div>
-                            )}
-                            {report.url && report.url !== 'N/A' && (
-                                <div className="text-xs text-white/40 truncate max-w-[200px]">
-                                    Link: {report.url}
+                        <div className="flex flex-col gap-4">
+                            <div className="flex gap-2 items-center">
+                                {report.evidence_image ? (
+                                    <button
+                                        onClick={() => setExpandedEvidence(expandedEvidence === report.id ? null : report.id)}
+                                        className="text-xs px-3 py-1.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1 hover:bg-indigo-500/30 transition-colors"
+                                    >
+                                        <span>{expandedEvidence === report.id ? '➖ Hide' : '📎 Show'}</span> Evidence Attached
+                                    </button>
+                                ) : (
+                                    <div className="text-xs px-2 py-1 rounded bg-white/5 text-white/30">
+                                        No Evidence
+                                    </div>
+                                )}
+                                {report.url && report.url !== 'N/A' && (
+                                    <div className="text-xs text-white/40 truncate max-w-[200px]">
+                                        Link: {report.url}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Expanded Evidence Image */}
+                            {expandedEvidence === report.id && report.evidence_image && (
+                                <div className="mt-2 p-2 bg-black/40 rounded border border-white/10 animate-in fade-in slide-in-from-top-2">
+                                    <img
+                                        src={report.evidence_image}
+                                        alt="Report Evidence"
+                                        className="w-full h-auto rounded max-h-[500px] object-contain"
+                                        loading="lazy"
+                                    />
                                 </div>
                             )}
                         </div>
