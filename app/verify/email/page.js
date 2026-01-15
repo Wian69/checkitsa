@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import { useState, useEffect } from 'react'
 import { trackSearch, addToHistory, incrementSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import LoadingOverlay from '@/components/LoadingOverlay'
 
 export default function EmailVerify() {
@@ -95,44 +96,82 @@ export default function EmailVerify() {
                     </form>
 
                     {result && (
-                        <div style={{ marginTop: '2rem', padding: '1.5rem', border: `1px solid ${result.score > 50 ? 'var(--color-danger)' : 'var(--color-success)'} `, borderRadius: '0.5rem', background: 'rgba(255,255,255,0.03)' }}>
-                            <h3 style={{ color: result.score > 50 ? 'var(--color-danger)' : 'var(--color-success)', marginBottom: '1rem' }}>
-                                {result.message}
-                            </h3>
-                            <div className="grid grid-cols-2 gap-4 mt-6">
-                                <div className="bg-gray-700/50 p-4 rounded-xl border border-gray-600/30">
-                                    <span className="text-gray-400 block text-xs uppercase tracking-wider mb-2">Risk Score</span>
-                                    <span className={`text-2xl font-bold font-mono ${result.score > 50 ? 'text-red-400' : 'text-green-400'}`}>
-                                        {result.score}/100
-                                    </span>
-                                </div>
-                                <div className="bg-gray-700/50 p-4 rounded-xl border border-gray-600/30">
-                                    <span className="text-gray-400 block text-xs uppercase tracking-wider mb-2">Domain Age</span>
-                                    <span className="text-white font-mono text-sm block break-words">{result.domain_age}</span>
-                                </div>
-                                <div className="bg-gray-700/50 p-4 rounded-xl border border-gray-600/30">
-                                    <span className="text-gray-400 block text-xs uppercase tracking-wider mb-2">Registrar</span>
-                                    <span className="text-white font-mono text-sm block break-words">{result.registrar || 'Unknown'}</span>
-                                </div>
-                                <div className="bg-gray-700/50 p-4 rounded-xl border border-gray-600/30">
-                                    <span className="text-gray-400 block text-xs uppercase tracking-wider mb-2">First Seen</span>
-                                    <span className="text-white font-mono text-sm block break-words">{result.email_first_seen || 'No public footprint'}</span>
-                                </div>
+                        <div className={`mt-8 overflow-hidden rounded-2xl border ${result.score > 50 ? 'border-red-500/50 bg-red-950/20' : 'border-emerald-500/50 bg-emerald-950/20'} transition-all duration-500`}>
+                            {/* Header Status */}
+                            <div className={`p-6 text-center border-b ${result.score > 50 ? 'border-red-500/30 bg-red-500/10' : 'border-emerald-500/30 bg-emerald-500/10'}`}>
+                                <h3 className={`text-2xl font-bold mb-1 ${result.score > 50 ? 'text-red-400' : 'text-emerald-400'}`}>
+                                    {result.score > 60 ? '⛔ DANGEROUS' : (result.score > 30 ? '⚠️ SUSPICIOUS' : '✅ SAFE TO REPLY')}
+                                </h3>
+                                <p className="text-white/60 text-sm">Automated Security Analysis</p>
                             </div>
 
-                            {result.flags.length > 0 && (
-                                <div style={{ marginTop: '1rem' }}>
-                                    <strong>Risk Factors:</strong>
-                                    <ul style={{ paddingLeft: '1.2rem', color: 'var(--color-accent)' }}>
-                                        {result.flags.map((f, i) => <li key={i}>{f}</li>)}
-                                    </ul>
+                            <div className="p-6">
+                                {/* Risk Gauge */}
+                                <div className="mb-8">
+                                    <div className="flex justify-between items-end mb-2">
+                                        <span className="text-sm uppercase tracking-wider text-white/60">Threat Level</span>
+                                        <span className={`text-3xl font-bold ${result.score > 50 ? 'text-red-400' : 'text-emerald-400'}`}>{result.score}%</span>
+                                    </div>
+                                    <div className="h-4 w-full bg-white/10 rounded-full overflow-hidden">
+                                        <div
+                                            className={`h-full rounded-full transition-all duration-1000 ${result.score > 50 ? 'bg-gradient-to-r from-orange-500 to-red-600' : 'bg-gradient-to-r from-emerald-500 to-teal-400'}`}
+                                            style={{ width: `${result.score}%` }}
+                                        ></div>
+                                    </div>
+                                    <p className="mt-2 text-xs text-center text-white/40">
+                                        {result.score > 50 ? 'Do not click links or reply.' : 'Sender appears legitimate based on digital footprint.'}
+                                    </p>
                                 </div>
-                            )}
 
-                            <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
-                                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', textAlign: 'center' }}>
-                                    To report this email, please use the <a href="/report" style={{ textDecoration: 'underline', fontWeight: 'bold' }}>Report Incident</a> feature.
-                                </p>
+                                {/* Details Grid */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span>📅</span>
+                                            <span className="text-xs uppercase tracking-wider text-white/60">Domain Age</span>
+                                        </div>
+                                        <span className="text-lg font-mono font-medium">{result.domain_age}</span>
+                                    </div>
+
+                                    <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span>🏢</span>
+                                            <span className="text-xs uppercase tracking-wider text-white/60">Registrar</span>
+                                        </div>
+                                        <span className="text-lg font-mono font-medium truncate" title={result.registrar}>{result.registrar || 'Unknown'}</span>
+                                    </div>
+
+                                    <div className="bg-white/5 p-4 rounded-xl border border-white/10 col-span-1 md:col-span-2">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span>👣</span>
+                                            <span className="text-xs uppercase tracking-wider text-white/60">Digital Footprint</span>
+                                        </div>
+                                        <div className={`text-lg font-medium ${result.email_first_seen?.includes('Private') || result.email_first_seen?.includes('Verified') ? 'text-emerald-300' : 'text-white'}`}>
+                                            {result.email_first_seen || 'No public footprint'}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Risk Factors */}
+                                {result.flags.length > 0 && (
+                                    <div className="mt-8 space-y-3">
+                                        <h4 className="text-sm uppercase tracking-wider text-white/60 border-b border-white/10 pb-2">Risk Factors ({result.flags.length})</h4>
+                                        {result.flags.map((f, i) => (
+                                            <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-200 text-sm">
+                                                <span className="mt-0.5">⚠️</span>
+                                                <span>{f}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Footer */}
+                            <div className="bg-black/20 p-4 text-center border-t border-white/5">
+                                <Link href="/report" className="text-sm text-white/60 hover:text-white hover:underline transition-colors flex items-center justify-center gap-2">
+                                    <span>Was this actual fraud? Report it here</span>
+                                    <span>→</span>
+                                </Link>
                             </div>
                         </div>
                     )}
