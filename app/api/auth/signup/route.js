@@ -21,9 +21,10 @@ export async function POST(req) {
             return NextResponse.json({ message: 'User already exists' }, { status: 400 })
         }
 
-        // Generate Referral Code (e.g., "Wian123" -> but random short string to avoid PII or collision)
-        // Simple random string: 4 chars + 3 numbers
-        const referralCode = Math.random().toString(36).substring(2, 9).toUpperCase()
+        // Generate Referral Code: FirstName + 3 Random Digits (e.g. WIAN123)
+        const firstName = fullName.split(' ')[0].replace(/[^a-zA-Z]/g, '').toUpperCase().substring(0, 8) || 'USER'
+        const randomDigits = Math.floor(100 + Math.random() * 900) // 100-999
+        const referralCode = `${firstName}${randomDigits}`
         const newId = crypto.randomUUID()
 
         const { success } = await db.prepare(
