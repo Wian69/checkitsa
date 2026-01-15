@@ -66,6 +66,18 @@ export async function POST(request) {
         } catch (e) { }
     }
 
+    // --- Calculate Domain Age Early ---
+    if (createdDate) {
+        const now = new Date()
+        const days = Math.ceil(Math.abs(now - createdDate) / (1000 * 60 * 60 * 24))
+        domainAge = days > 365 ? `${(days / 365).toFixed(1)} years` : `${days} days`
+
+        if (days < 30) {
+            riskScore += 30
+            details.push(`Domain is extremely new (${days} days old). High scam risk.`)
+        }
+    }
+
     // C: Serper Intelligence (Domain Age & Footprint)
     const env = process.env
     const serperKey = env.SERPER_API_KEY
@@ -127,16 +139,7 @@ export async function POST(request) {
         }
     }
 
-    if (createdDate) {
-        const now = new Date()
-        const days = Math.ceil(Math.abs(now - createdDate) / (1000 * 60 * 60 * 24))
-        domainAge = days > 365 ? `${(days / 365).toFixed(1)} years` : `${days} days`
 
-        if (days < 30) {
-            riskScore += 30
-            details.push(`Domain is extremely new (${days} days old). High scam risk.`)
-        }
-    }
 
     // 3. DNS Checks (MX/TXT)
     let dnsStatus = 'Unknown'
