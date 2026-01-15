@@ -17,14 +17,16 @@ export async function POST(req) {
 
         if (!user) return NextResponse.json({ message: 'User not found' }, { status: 404 })
 
-        if (user.wallet_balance < 100) {
-            return NextResponse.json({ message: `Minimum payout is R100. Current balance: R${user.wallet_balance}` }, { status: 400 })
+        if (user.wallet_balance < 200) {
+            return NextResponse.json({ message: `Minimum payout is R200. Current balance: R${user.wallet_balance}` }, { status: 400 })
         }
 
-        // 2. Prepare Admin Email
+        // 2. Prepare Emails
         const amount = user.wallet_balance
-        const subject = `💸 Payout Request: R${amount} from ${user.fullName}`
-        const html = `
+
+        // Admin Email Content
+        const adminSubject = `💸 Payout Request: R${amount} from ${user.fullName}`
+        const adminHtml = `
             <h2>New Payout Request</h2>
             <p><strong>User:</strong> ${user.fullName} (${user.email})</p>
             <p><strong>Amount:</strong> R${amount}</p>
@@ -40,65 +42,76 @@ export async function POST(req) {
             <p>Please log in to your bank and manually Pay this user.</p>
         `
 
-        // 3. Send Email (Brevo / Resend)
+        // User Confirmation Email Content
+        const userSubject = `✅ Payout Request Received: R${amount}`
+        const userHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; border: 1px solid #eee;">
+                <h2 style="color: #10b981;">Payout Request Received</h2>
+                <p>Hi ${user.fullName.split(' ')[0]},</p>
+                <p>We have received your request to withdraw <strong>R${amount}</strong> from your affiliate wallet.</p>
+                
+                <div style="background: #f9f9f9; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                    <p style="margin: 0;"><strong>Bank:</strong> ${bankName}</p>
+                    <p style="margin: 5px 0 0;"><strong>Account:</strong> ****${accountNumber.slice(-4)}</p>
+                </div>
+
+                <p>Our team will review your request. Once approved, funds typically reflect within <strong>48 hours</strong>.</p>
+                <p style="color: #666; font-size: 0.9em;">If you did not request this, please contact support immediately.</p>
+            </div>
+        `
+
+        // 3. Send Emails (Brevo / Resend)
         const resendApiKey = process.env.RESEND_API_KEY
         const brevoApiKey = process.env.BREVO_API_KEY
         let sent = false
 
-        // Try Brevo First
-        if (brevoApiKey) {
-            try {
-                const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
-                    method: 'POST',
-                    headers: { 'api-key': brevoApiKey, 'Content-Type': 'application/json', 'accept': 'application/json' },
-                    body: JSON.stringify({
-                        sender: { name: 'CheckItSA Payouts', email: 'no-reply@checkitsa.co.za' },
-                        to: [{ email: 'wiandurandt69@gmail.com', name: 'Admin' }],
-                        subject: subject,
-                        htmlContent: html
+        // Helper to send email via available provider
+        const sendEmail = async (toEmail, toName, subj, htmlBody) => {
+            if (brevoApiKey) {
+                try {
+                    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+                        method: 'POST',
+                        headers: { 'api-key': brevoApiKey, 'Content-Type': 'application/json', 'accept': 'application/json' },
+                        body: JSON.stringify({
+                            sender: { name: 'CheckItSA Payouts', email: 'no-reply@checkitsa.co.za' },
+                            to: [{ email: toEmail, name: toName }],
+                            subject: subj,
+                            htmlContent: htmlBody
+                        })
                     })
-                })
-
-                if (!brevoRes.ok) {
-                    const errText = await brevoRes.text()
-                    console.error("Brevo Error:", errText)
-                    // If Brevo fails, we might fall through to Resend
-                } else {
-                    sent = true
-                }
-            } catch (e) {
-                console.error("Brevo Network Error:", e)
+                    if (res.ok) return true
+                    console.error("Brevo Error:", await res.text())
+                } catch (e) { console.error("Brevo Fetch Error:", e) }
             }
+
+            if (resendApiKey) {
+                try {
+                    const res = await fetch('https://api.resend.com/emails', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            from: 'CheckItSA Payouts <onboarding@resend.dev>',
+                            to: toEmail,
+                            subject: subj,
+                            html: htmlBody
+                        })
+                    })
+                    if (res.ok) return true
+                    console.error("Resend Error:", await res.text())
+                } catch (e) { console.error("Resend Fetch Error:", e) }
+            }
+            return false
         }
 
-        // Try Resend if Brevo missing or failed
-        if (!sent && resendApiKey) {
-            const emailRes = await fetch('https://api.resend.com/emails', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    from: 'CheckItSA Payouts <onboarding@resend.dev>',
-                    to: 'wiandurandt69@gmail.com',
-                    subject: subject,
-                    html: html
-                })
-            })
+        // Send Admin Notification
+        const adminSent = await sendEmail('wiandurandt69@gmail.com', 'Admin', adminSubject, adminHtml)
 
-            if (!emailRes.ok) {
-                const errText = await emailRes.text()
-                console.error("Resend API Error:", errText)
-                if (!brevoApiKey) {
-                    // Only throw if this was our last resort
-                    throw new Error(`Email Provider Error: ${emailRes.status} ${errText}`)
-                }
-            } else {
-                sent = true
-            }
-        }
+        // Send User Confirmation
+        const userSent = await sendEmail(user.email, user.fullName, userSubject, userHtml)
 
-        if (!sent) {
+        if (!adminSent && !userSent) {
             console.error("No Email Provider Configured or All Failed")
-            throw new Error("Failed to send payout notification email via Brevo or Resend.")
+            throw new Error("Failed to send payout notification emails.")
         }
 
         // 4. Reset Balance to 0
@@ -106,7 +119,7 @@ export async function POST(req) {
 
         if (!success) throw new Error("Failed to update wallet balance")
 
-        return NextResponse.json({ message: 'Payout requested successfully. Admin notified.' })
+        return NextResponse.json({ message: 'Payout requested successfully.' })
 
     } catch (error) {
         console.error('Payout Error:', error)

@@ -87,8 +87,8 @@ export default function Dashboard() {
 
     // Payout Handler - Open Modal
     const handlePayoutClick = () => {
-        if (!user || user.wallet_balance < 100) {
-            alert("Minimum payout amount is R100.")
+        if (!user || user.wallet_balance < 200) {
+            alert("Minimum payout amount is R200.")
             return
         }
         setShowPayoutModal(true)
