@@ -32,6 +32,17 @@ export default function Dashboard() {
                 .then(res => res.json())
                 .then(data => setEmailNotifications(!!data.receive_security_intel))
 
+            // SYNC PROFILE (Fixes missing referral codes for old users)
+            fetch(`/api/user/profile?email=${encodeURIComponent(userData.email)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.user) {
+                        setUser(data.user)
+                        localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
+                    }
+                })
+                .catch(err => console.error("Profile sync failed", err))
+
             // Perform Cloud Sync
             syncFromCloud(userData.email).then(() => {
                 // After cloud sync, update UI state with fresh data
