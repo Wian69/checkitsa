@@ -177,13 +177,13 @@ export default function BusinessReviews() {
                                     </button>
 
                                     <button
-                                        onClick={() => setReviewType('ccma')}
+                                        onClick={() => window.open('https://cmsonline.ccma.org.za/Default.aspx', '_blank')}
                                         className="glass-panel hover-card"
                                         style={{ padding: '2rem', textAlign: 'left', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
                                     >
                                         <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>⚖️</div>
-                                        <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '0.25rem', color: 'white' }}>Report CCMA Case</div>
-                                        <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Detail labor disputes and CCMA outcomes.</div>
+                                        <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '0.25rem', color: 'white' }}>Lodge CCMA Dispute</div>
+                                        <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Go to officials CCMA Case Management System.</div>
                                     </button>
                                 </div>
                                 <button onClick={() => setShowModal(false)} style={{ marginTop: '2rem', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', textDecoration: 'underline' }}>
