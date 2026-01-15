@@ -6,6 +6,17 @@ export default function EvidenceViewer({ image }) {
 
     if (!image) return null
 
+    // Handle JSON array from DB (multiple images)
+    let imageUrl = image
+    try {
+        if (image.startsWith('[')) {
+            const parsed = JSON.parse(image)
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                imageUrl = parsed[0] // Show first evidence for now
+            }
+        }
+    } catch (e) { }
+
     return (
         <div>
             {!isOpen ? (
@@ -26,7 +37,7 @@ export default function EvidenceViewer({ image }) {
                     <div className="relative rounded-lg overflow-hidden border border-white/10 bg-black/40">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                            src={image}
+                            src={imageUrl}
                             alt="Scam Evidence"
                             className="max-w-full h-auto object-contain max-h-[400px]"
                         />
