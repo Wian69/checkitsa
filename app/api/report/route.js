@@ -150,7 +150,7 @@ export async function POST(req) {
             </div>
 
             <p style="margin-bottom: 8px;"><strong>Type:</strong> <span style="color: #fff;">${type}</span></p>
-            <p style="margin-bottom: 20px;"><strong>Reported By:</strong> ${name} (${email})</p>
+            <p style="margin-bottom: 20px;"><strong>Reported By:</strong> ${name} (${email} | ${phone || 'No Phone'})</p>
             
             <h3 style="color: #fff; font-size: 18px; margin-bottom: 12px; border-bottom: 1px solid #374151; padding-bottom: 8px;">Incident Details</h3>
             <p style="margin-bottom: 8px;"><strong>Scammer/Suspect:</strong> <span style="color: #ef4444;">${scammer_details}</span></p>

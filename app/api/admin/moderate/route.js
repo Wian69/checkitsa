@@ -106,7 +106,7 @@ export async function GET(req) {
                          
                          <div style="background-color: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #374151; margin-bottom: 20px;">
                              <p style="margin: 0 0 8px 0;"><strong>Report Type:</strong> <span style="color: #fff;">${type}</span></p>
-                             <p style="margin: 0;"><strong>Reporter Contact:</strong> ${report.reporter_name} (${report.reporter_email})</p>
+                             <p style="margin: 0;"><strong>Reporter Contact:</strong> ${report.reporter_name} (<a href="mailto:${report.reporter_email}" style="color: #a5b4fc;">${report.reporter_email}</a> | ${report.reporter_phone || 'No Phone'})</p>
                          </div>
 
                          <h3 style="color: #fff; font-size: 18px; margin-bottom: 12px; border-bottom: 1px solid #374151; padding-bottom: 8px;">Incident Report</h3>
