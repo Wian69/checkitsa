@@ -9,7 +9,13 @@ export default function BusinessReviews() {
     const [error, setError] = useState(null)
     const [showModal, setShowModal] = useState(false)
     const [submitting, setSubmitting] = useState(false)
+    const [reviewType, setReviewType] = useState(null) // 'business' or 'ccma'
     const [form, setForm] = useState({ businessName: '', businessEmail: '', rating: 5, title: '', content: '', reviewerName: '' })
+
+    const openModal = () => {
+        setReviewType(null)
+        setShowModal(true)
+    }
 
     const fetchReviews = async () => {
         try {
@@ -43,7 +49,7 @@ export default function BusinessReviews() {
         try {
             const res = await fetch('/api/reviews', {
                 method: 'POST',
-                body: JSON.stringify({ ...form, reviewerEmail })
+                body: JSON.stringify({ ...form, reviewerEmail, type: reviewType || 'business' })
             })
             if (!res.ok) {
                 const errData = await res.json()
@@ -70,7 +76,7 @@ export default function BusinessReviews() {
                         Real experiences from real South Africans. Verified.
                     </p>
                 </div>
-                <button onClick={() => setShowModal(true)} className="btn btn-primary">
+                <button onClick={openModal} className="btn btn-primary">
                     ✍️ Write a Review
                 </button>
             </div>
@@ -154,66 +160,121 @@ export default function BusinessReviews() {
                     zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center', pading: '1rem'
                 }}>
                     <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', padding: '2rem' }}>
-                        <h3 style={{ marginBottom: '1.5rem' }}>Rate a Business</h3>
-                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <input
-                                placeholder="Business Name"
-                                required
-                                style={{ padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.5rem', color: 'white' }}
-                                value={form.businessName}
-                                onChange={e => setForm({ ...form, businessName: e.target.value })}
-                            />
-                            <div style={{ position: 'relative' }}>
-                                <input
-                                    placeholder="Business E-mail (for notifications)"
-                                    type="email"
-                                    style={{ width: '100%', padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.5rem', color: 'white' }}
-                                    value={form.businessEmail}
-                                    onChange={e => setForm({ ...form, businessEmail: e.target.value })}
-                                />
-                                <div style={{ fontSize: '0.7rem', color: 'var(--color-primary)', marginTop: '0.3rem', marginLeft: '0.5rem' }}>
-                                    💡 We'll notify the business so they can respond to your feedback.
-                                </div>
-                            </div>
-                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                <label>Rating:</label>
-                                {[1, 2, 3, 4, 5].map(star => (
+
+                        {!reviewType ? (
+                            // STEP 1: SELECTION SCREEN
+                            <div style={{ textAlign: 'center' }}>
+                                <h3 style={{ marginBottom: '1.5rem', fontSize: '1.8rem' }}>What would you like to review?</h3>
+                                <div style={{ display: 'grid', gap: '1rem' }}>
                                     <button
-                                        type="button"
-                                        key={star}
-                                        onClick={() => setForm({ ...form, rating: star })}
-                                        style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: star <= form.rating ? '#fbbf24' : '#555' }}
-                                    >★</button>
-                                ))}
-                            </div>
-                            <input
-                                placeholder="Review Title (e.g. Great Service!)"
-                                required
-                                style={{ padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.5rem', color: 'white' }}
-                                value={form.title}
-                                onChange={e => setForm({ ...form, title: e.target.value })}
-                            />
-                            <textarea
-                                placeholder="Share your experience..."
-                                required
-                                rows={4}
-                                style={{ padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.5rem', color: 'white' }}
-                                value={form.content}
-                                onChange={e => setForm({ ...form, content: e.target.value })}
-                            />
-                            <input
-                                placeholder="Your Name (Optional)"
-                                style={{ padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.5rem', color: 'white' }}
-                                value={form.reviewerName}
-                                onChange={e => setForm({ ...form, reviewerName: e.target.value })}
-                            />
-                            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                                <button type="submit" disabled={submitting} className="btn btn-primary" style={{ flex: 1 }}>
-                                    {submitting ? 'Submitting...' : 'Submit Review'}
+                                        onClick={() => setReviewType('business')}
+                                        className="glass-panel hover-card"
+                                        style={{ padding: '2rem', textAlign: 'left', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }}
+                                    >
+                                        <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🏢</div>
+                                        <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '0.25rem' }}>Review a Business</div>
+                                        <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Share your expirience with a company or service provider.</div>
+                                    </button>
+
+                                    <button
+                                        onClick={() => setReviewType('ccma')}
+                                        className="glass-panel hover-card"
+                                        style={{ padding: '2rem', textAlign: 'left', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }}
+                                    >
+                                        <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>⚖️</div>
+                                        <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '0.25rem' }}>Report CCMA Case</div>
+                                        <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Detail labor disputes and CCMA outcomes.</div>
+                                    </button>
+                                </div>
+                                <button onClick={() => setShowModal(false)} style={{ marginTop: '2rem', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', textDecoration: 'underline' }}>
+                                    Cancel
                                 </button>
-                                <button type="button" onClick={() => setShowModal(false)} className="btn btn-outline" style={{ flex: 1 }}>Cancel</button>
                             </div>
-                        </form>
+                        ) : (
+                            // STEP 2: FORM
+                            <>
+                                <h3 style={{ marginBottom: '1.5rem' }}>
+                                    {reviewType === 'ccma' ? '⚖️ Report CCMA Case' : 'Rate a Business'}
+                                </h3>
+                                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    <input
+                                        placeholder={reviewType === 'ccma' ? "Company / Employer Name" : "Business Name"}
+                                        required
+                                        style={{ padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.5rem', color: 'white' }}
+                                        value={form.businessName}
+                                        onChange={e => setForm({ ...form, businessName: e.target.value })}
+                                    />
+                                    <div style={{ position: 'relative' }}>
+                                        <input
+                                            placeholder="Business E-mail (for notifications)"
+                                            type="email"
+                                            style={{ width: '100%', padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.5rem', color: 'white' }}
+                                            value={form.businessEmail}
+                                            onChange={e => setForm({ ...form, businessEmail: e.target.value })}
+                                        />
+                                        <div style={{ fontSize: '0.7rem', color: 'var(--color-primary)', marginTop: '0.3rem', marginLeft: '0.5rem' }}>
+                                            💡 We'll notify them so they can respond.
+                                        </div>
+                                    </div>
+
+                                    {reviewType === 'ccma' ? (
+                                        // CCMA Specific Rating Check (Logic Reuse or Custom?)
+                                        // For now, reuse star rating but label it "Outcome Rating"?
+                                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                            <label>Experience:</label>
+                                            {[1, 2, 3, 4, 5].map(star => (
+                                                <button
+                                                    type="button"
+                                                    key={star}
+                                                    onClick={() => setForm({ ...form, rating: star })}
+                                                    style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: star <= form.rating ? '#fbbf24' : '#555' }}
+                                                >★</button>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                            <label>Rating:</label>
+                                            {[1, 2, 3, 4, 5].map(star => (
+                                                <button
+                                                    type="button"
+                                                    key={star}
+                                                    onClick={() => setForm({ ...form, rating: star })}
+                                                    style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: star <= form.rating ? '#fbbf24' : '#555' }}
+                                                >★</button>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    <input
+                                        placeholder={reviewType === 'ccma' ? "Case Number / Subject" : "Review Title (e.g. Great Service!)"}
+                                        required
+                                        style={{ padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.5rem', color: 'white' }}
+                                        value={form.title}
+                                        onChange={e => setForm({ ...form, title: e.target.value })}
+                                    />
+                                    <textarea
+                                        placeholder={reviewType === 'ccma' ? "Describe the dispute and outcome..." : "Share your experience..."}
+                                        required
+                                        rows={4}
+                                        style={{ padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.5rem', color: 'white' }}
+                                        value={form.content}
+                                        onChange={e => setForm({ ...form, content: e.target.value })}
+                                    />
+                                    <input
+                                        placeholder="Your Name (Optional)"
+                                        style={{ padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.5rem', color: 'white' }}
+                                        value={form.reviewerName}
+                                        onChange={e => setForm({ ...form, reviewerName: e.target.value })}
+                                    />
+                                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                                        <button type="submit" disabled={submitting} className="btn btn-primary" style={{ flex: 1 }}>
+                                            {submitting ? 'Submitting...' : 'Submit Report'}
+                                        </button>
+                                        <button type="button" onClick={() => setReviewType(null)} className="btn btn-outline" style={{ flex: 1 }}>Back</button>
+                                    </div>
+                                </form>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

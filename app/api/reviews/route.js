@@ -36,6 +36,9 @@ async function ensureSchema(db) {
         if (!columns.includes('reviewer_email')) {
             await db.prepare("ALTER TABLE business_reviews ADD COLUMN reviewer_email TEXT").run()
         }
+        if (!columns.includes('type')) {
+            await db.prepare("ALTER TABLE business_reviews ADD COLUMN type TEXT DEFAULT 'business'").run()
+        }
     } catch (e) {
         console.error('Schema Sync Error:', e)
     }
@@ -66,7 +69,7 @@ export async function GET(req) {
 
 export async function POST(req) {
     try {
-        const { businessName, businessEmail, rating, title, content, reviewerName, reviewerEmail } = await req.json()
+        const { businessName, businessEmail, rating, title, content, reviewerName, reviewerEmail, type = 'business' } = await req.json()
         const db = getRequestContext().env.DB
         await ensureSchema(db)
 
@@ -75,8 +78,8 @@ export async function POST(req) {
         }
 
         const { success, meta } = await db.prepare(
-            `INSERT INTO business_reviews (business_name, business_email, rating, title, content, reviewer_name, reviewer_email, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'verified')`
-        ).bind(businessName, businessEmail || null, rating, title, content, reviewerName || 'Anonymous', reviewerEmail || null).run()
+            `INSERT INTO business_reviews (business_name, business_email, rating, title, content, reviewer_name, reviewer_email, status, type) VALUES (?, ?, ?, ?, ?, ?, ?, 'verified', ?)`
+        ).bind(businessName, businessEmail || null, rating, title, content, reviewerName || 'Anonymous', reviewerEmail || null, type).run()
 
         if (success && businessEmail) {
             const newReviewId = meta.last_row_id
