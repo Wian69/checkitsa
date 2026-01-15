@@ -673,104 +673,146 @@ function PayoutModal({ user, onClose, setUser }) {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit}>
-                    <div style={{ display: 'grid', gap: '1.25rem' }}>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Bank Name</label>
-                            <div style={{ position: 'relative' }}>
-                                <select
-                                    required
-                                    className="input"
-                                    style={{
-                                        width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem',
-                                        background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border)',
-                                        color: 'white', fontSize: '1rem', outline: 'none'
-                                    }}
-                                    value={formData.bankName}
-                                    onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
-                                >
-                                    <option value="" style={{ color: 'black' }}>Select Bank...</option>
-                                    <option value="FNB" style={{ color: 'black' }}>FNB</option>
-                                    <option value="Capitec" style={{ color: 'black' }}>Capitec</option>
-                                    <option value="Standard Bank" style={{ color: 'black' }}>Standard Bank</option>
-                                    <option value="Absa" style={{ color: 'black' }}>Absa</option>
-                                    <option value="Nedbank" style={{ color: 'black' }}>Nedbank</option>
-                                    <option value="TymeBank" style={{ color: 'black' }}>TymeBank</option>
-                                    <option value="Discovery Bank" style={{ color: 'black' }}>Discovery Bank</option>
-                                    <option value="Investec" style={{ color: 'black' }}>Investec</option>
-                                    <option value="Other" style={{ color: 'black' }}>Other</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Account Number</label>
-                            <input
-                                type="text"
-                                required
-                                style={{
-                                    width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem',
-                                    background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border)',
-                                    color: 'white', fontSize: '1rem', outline: 'none', transition: 'border-color 0.2s'
-                                }}
-                                placeholder="e.g. 1234567890"
-                                value={formData.accountNumber}
-                                onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
-                            />
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                {step === 1 ? (
+                    <form onSubmit={handleNext}>
+                        <div style={{ display: 'grid', gap: '1.25rem' }}>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Branch Code (Optional)</label>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Bank Name</label>
+                                <div style={{ position: 'relative' }}>
+                                    <select
+                                        required
+                                        className="input"
+                                        style={{
+                                            width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem',
+                                            background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border)',
+                                            color: 'white', fontSize: '1rem', outline: 'none',
+                                            appearance: 'none'
+                                        }}
+                                        value={formData.bankName}
+                                        onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                                    >
+                                        <option value="" style={{ color: 'black' }}>Select Bank...</option>
+                                        <option value="FNB" style={{ color: 'black' }}>FNB</option>
+                                        <option value="Capitec" style={{ color: 'black' }}>Capitec</option>
+                                        <option value="Standard Bank" style={{ color: 'black' }}>Standard Bank</option>
+                                        <option value="Absa" style={{ color: 'black' }}>Absa</option>
+                                        <option value="Nedbank" style={{ color: 'black' }}>Nedbank</option>
+                                        <option value="TymeBank" style={{ color: 'black' }}>TymeBank</option>
+                                        <option value="Discovery Bank" style={{ color: 'black' }}>Discovery Bank</option>
+                                        <option value="Investec" style={{ color: 'black' }}>Investec</option>
+                                        <option value="Other" style={{ color: 'black' }}>Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Account Number</label>
                                 <input
                                     type="text"
+                                    required
                                     style={{
                                         width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem',
                                         background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border)',
-                                        color: 'white', fontSize: '1rem', outline: 'none'
+                                        color: 'white', fontSize: '1rem', outline: 'none', transition: 'border-color 0.2s'
                                     }}
-                                    placeholder="Universal"
-                                    value={formData.branchCode}
-                                    onChange={(e) => setFormData({ ...formData, branchCode: e.target.value })}
+                                    placeholder="e.g. 1234567890"
+                                    value={formData.accountNumber}
+                                    onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
                                 />
                             </div>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Account Type</label>
-                                <select
-                                    className="input"
-                                    style={{
-                                        width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem',
-                                        background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border)',
-                                        color: 'white', fontSize: '1rem', outline: 'none'
-                                    }}
-                                    value={formData.accountType}
-                                    onChange={(e) => setFormData({ ...formData, accountType: e.target.value })}
-                                >
-                                    <option value="Savings" style={{ color: 'black' }}>Savings</option>
-                                    <option value="Current/Cheque" style={{ color: 'black' }}>Current/Cheque</option>
-                                    <option value="Transmission" style={{ color: 'black' }}>Transmission</option>
-                                </select>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Branch Code (Optional)</label>
+                                    <input
+                                        type="text"
+                                        style={{
+                                            width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem',
+                                            background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border)',
+                                            color: 'white', fontSize: '1rem', outline: 'none'
+                                        }}
+                                        placeholder="Universal"
+                                        value={formData.branchCode}
+                                        onChange={(e) => setFormData({ ...formData, branchCode: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Account Type</label>
+                                    <select
+                                        className="input"
+                                        style={{
+                                            width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem',
+                                            background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border)',
+                                            color: 'white', fontSize: '1rem', outline: 'none',
+                                            appearance: 'none'
+                                        }}
+                                        value={formData.accountType}
+                                        onChange={(e) => setFormData({ ...formData, accountType: e.target.value })}
+                                    >
+                                        <option value="Savings" style={{ color: 'black' }}>Savings</option>
+                                        <option value="Current/Cheque" style={{ color: 'black' }}>Current/Cheque</option>
+                                        <option value="Transmission" style={{ color: 'black' }}>Transmission</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="btn btn-primary"
-                        style={{ width: '100%', justifyContent: 'center', fontSize: '1rem', padding: '1rem', marginTop: '2rem' }}
-                    >
-                        {loading ? (
-                            <>Processing...</>
-                        ) : (
-                            <>Confirm Withdrawal</>
-                        )}
-                    </button>
+                        <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
+                            <button type="button" onClick={onClose} className="btn" style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', cursor: 'pointer', padding: '1rem', borderRadius: '0.5rem' }}>
+                                Cancel
+                            </button>
+                            <button type="submit" className="btn btn-primary" style={{ flex: 2, background: 'var(--color-primary)', border: 'none', color: 'white', padding: '1rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>
+                                Review & Confirm →
+                            </button>
+                        </div>
+                    </form>
+                ) : (
+                    // STEP 2: CONFIRMATION
+                    <form onSubmit={handleSubmit}>
+                        <div style={{ textAlign: 'left', marginBottom: '1.5rem', background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '0.75rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#e5e7eb' }}>Confirm Bank Details</h3>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', fontSize: '0.95rem' }}>
+                                <span style={{ color: '#9ca3af' }}>Bank:</span> <strong style={{ color: 'white' }}>{formData.bankName}</strong>
+                                <span style={{ color: '#9ca3af' }}>Account:</span> <strong style={{ color: 'white' }}>{formData.accountNumber}</strong>
+                                <span style={{ color: '#9ca3af' }}>Type:</span> <strong style={{ color: 'white' }}>{formData.accountType}</strong>
+                                <span style={{ color: '#9ca3af' }}>Branch:</span> <strong style={{ color: 'white' }}>{formData.branchCode || 'Universal'}</strong>
+                            </div>
+                        </div>
 
-                    <p style={{ marginTop: '1rem', textAlign: 'center', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                        🔒 Securely processed via manual EFT.
-                    </p>
-                </form>
+                        <div style={{ marginBottom: '2rem', textAlign: 'left' }}>
+                            <label style={{ display: 'flex', alignItems: 'flex-start', cursor: 'pointer', gap: '0.75rem', fontSize: '0.9rem', color: '#d1d5db', lineHeight: 1.5 }}>
+                                <input
+                                    type="checkbox"
+                                    checked={agreed}
+                                    onChange={e => setAgreed(e.target.checked)}
+                                    style={{ marginTop: '0.25rem', width: '1.2rem', height: '1.2rem', accentColor: 'var(--color-primary)' }}
+                                />
+                                <span>
+                                    I confirm that the details above are correct. I understand that <strong>CheckItSA will not be liable</strong> for any funds lost due to incorrect details provided by me.
+                                </span>
+                            </label>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <button type="button" onClick={() => setStep(1)} className="btn" style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '1rem', borderRadius: '0.5rem', cursor: 'pointer' }}>
+                                ← Edit Details
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={loading || !agreed}
+                                className="btn btn-primary"
+                                style={{
+                                    flex: 2,
+                                    background: (!agreed || loading) ? 'rgba(79, 70, 229, 0.5)' : 'var(--color-primary)',
+                                    opacity: (!agreed || loading) ? 0.7 : 1,
+                                    border: 'none', color: 'white', padding: '1rem', borderRadius: '0.5rem', cursor: (!agreed || loading) ? 'not-allowed' : 'pointer', fontWeight: 'bold'
+                                }}
+                            >
+                                {loading ? 'Processing...' : 'Confirm & Withdraw'}
+                            </button>
+                        </div>
+                    </form>
+                )}
             </div>
         </div>
     )
