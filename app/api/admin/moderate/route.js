@@ -88,7 +88,8 @@ export async function GET(req) {
                                     return {
                                         name: `evidence_${index + 1}.jpg`,
                                         content: match[2],
-                                        contentType: match[1]
+                                        contentType: match[1],
+                                        cid: `evidence_${index + 1}` // Content-ID for inline referencing
                                     }
                                 }
                                 return null
@@ -117,12 +118,18 @@ export async function GET(req) {
                          <div style="background-color: #1f2937; padding: 16px; border-radius: 6px; border-left: 4px solid #ef4444; color: #d1d5db; margin-bottom: 20px;">
                              ${report.description}
                          </div>
+
+                         ${attachments.length > 0 ? `
+                            <div style="margin-bottom: 20px;">
+                                <strong>Attached Evidence:</strong><br/>
+                                <img src="cid:evidence_1" alt="Evidence" style="max-width: 100%; border-radius: 8px; border: 1px solid #374151; margin-top: 10px;" />
+                            </div>
+                         ` : ''}
                     `
 
                     const authorityFooter = `
                         <p style="font-size: 0.85em; color: #6b7280; font-style: italic;">
                             This is an automated notification sent to relevant authorities for intelligence purposes. 
-                            Evidence attachments (if any) are included below.
                         </p>
                     `
 
@@ -160,7 +167,7 @@ export async function GET(req) {
                                         bcc: authoritiesList,
                                         reply_to: 'no-reply@checkitsa.co.za',
                                         subject: emailSubject, html: authorityHtml,
-                                        attachments: attachments.map(a => ({ filename: a.name, content: a.content }))
+                                        attachments: attachments.map(a => ({ filename: a.name, content: a.content, content_id: a.cid }))
                                     })
                                 })
                                 console.log(`[Moderate] Sent to authorities via Resend`)
