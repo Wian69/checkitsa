@@ -24,11 +24,12 @@ export async function POST(req) {
         // Generate Referral Code (e.g., "Wian123" -> but random short string to avoid PII or collision)
         // Simple random string: 4 chars + 3 numbers
         const referralCode = Math.random().toString(36).substring(2, 9).toUpperCase()
+        const newId = crypto.randomUUID()
 
         const { success } = await db.prepare(
-            'INSERT INTO users (fullName, email, password, tier, searches, createdAt, referral_code, referred_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+            'INSERT INTO users (id, fullName, email, password, tier, searches, createdAt, referral_code, referred_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
         )
-            .bind(fullName, email, password, 'free', 0, new Date().toISOString(), referralCode, ref || null)
+            .bind(newId, fullName, email, password, 'free', 0, new Date().toISOString(), referralCode, ref || null)
             .run()
 
         if (!success) {

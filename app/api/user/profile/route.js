@@ -18,7 +18,7 @@ export async function GET(req) {
         // Lazy Backfill: If no referral code, generate one now
         if (!user.referral_code) {
             const newCode = Math.random().toString(36).substring(2, 9).toUpperCase()
-            await db.prepare('UPDATE users SET referral_code = ? WHERE id = ?').bind(newCode, user.id).run()
+            await db.prepare('UPDATE users SET referral_code = ? WHERE email = ?').bind(newCode, email).run()
             user.referral_code = newCode // Update object to return
         }
 
