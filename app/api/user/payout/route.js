@@ -73,6 +73,6 @@ export async function POST(req) {
 
     } catch (error) {
         console.error('Payout Error:', error)
-        return NextResponse.json({ message: 'Server error' }, { status: 500 })
+        return NextResponse.json({ message: error.message || 'Server error' }, { status: 500 })
     }
 }
