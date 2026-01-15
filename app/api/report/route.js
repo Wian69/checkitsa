@@ -118,7 +118,8 @@ export async function POST(req) {
                         return {
                             name: `evidence_${index + 1}.jpg`,
                             content: match[2], // Base64 content
-                            contentType: match[1] // Mime type e.g. image/jpeg
+                            contentType: match[1], // Mime type e.g. image/jpeg
+                            cid: `evidence_${index + 1}` // Content-ID for inline referencing
                         }
                     }
                     return null
@@ -204,7 +205,7 @@ export async function POST(req) {
                                 bcc: Array.isArray(to) ? to : [to], // BCC for mass
                                 reply_to: 'no-reply@checkitsa.co.za',
                                 subject, html,
-                                attachments: attachments.map(a => ({ filename: a.name, content: a.content }))
+                                attachments: attachments.map(a => ({ filename: a.name, content: a.content, content_id: a.cid })) // Resend uses content_id
                             })
                         })
                         console.log(`[Email] Sent via Resend`)
@@ -226,6 +227,12 @@ export async function POST(req) {
                     <li>Added to the National Scam Database to warn others.</li>
                     <li>Forwarded to relevant authorities (SAPS, Banks, ISPs).</li>
                 </ul>
+                ${attachments.length > 0 ? `
+                <div style="margin: 20px 0; padding: 10px; border: 1px dashed #ccc; border-radius: 5px;">
+                    <strong>Received Evidence:</strong><br/>
+                    <img src="cid:evidence_1" alt="Evidence" style="max-width: 100%; border-radius: 5px; margin-top: 10px;" />
+                </div>
+                ` : ''}
                 <p>You do not need to take any further action on our platform. We will notify you if we need more information.</p>
                 `,
                 `<a href="https://checkitsa.co.za/dashboard" style="background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Your Reports</a>`
