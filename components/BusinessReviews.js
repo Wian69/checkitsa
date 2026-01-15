@@ -17,11 +17,35 @@ export default function BusinessReviews() {
         setShowModal(true)
     }
 
+    const [businessList, setBusinessList] = useState([])
+
+    // Static list of popular SA companies to bootstrap the dropdown
+    const POPULAR_COMPANIES = [
+        "FNB", "Absa", "Standard Bank", "Nedbank", "Capitec", "TymeBank", "Discovery Bank", "Investec", "African Bank",
+        "Vodacom", "MTN", "Telkom", "Cell C", "Rain",
+        "Checkers", "Shoprite", "Pick n Pay", "Woolworths", "Spar", "Clicks", "Dis-Chem",
+        "Eskom", "SABC", "Multichoice (DStv)", "Takealot", "Mr D Food", "Uber Eats",
+        "Sanlam", "Old Mutual", "Outsurance", "Momentum", "Santam"
+    ]
+
     const fetchReviews = async () => {
         try {
-            const res = await fetch('/api/reviews')
-            const data = await res.json()
-            setReviews(data.reviews || [])
+            // Parallel fetch for reviews and business list
+            const [resReviews, resList] = await Promise.all([
+                fetch('/api/reviews'),
+                fetch('/api/reviews?distinct=true')
+            ])
+
+            const dataReviews = await resReviews.json()
+            const dataList = await resList.json()
+
+            setReviews(dataReviews.reviews || [])
+
+            // Merge verified DB businesses with popular static list (unique)
+            const dbBusinesses = dataList.businesses || []
+            const combined = Array.from(new Set([...POPULAR_COMPANIES, ...dbBusinesses])).sort()
+            setBusinessList(combined)
+
             setError(null)
         } catch (e) {
             console.error('Fetch Reviews Error:', e)
@@ -32,6 +56,7 @@ export default function BusinessReviews() {
     }
 
     useEffect(() => {
+        // Initial Fetch
         fetchReviews()
     }, [])
 
@@ -198,12 +223,17 @@ export default function BusinessReviews() {
                                 </h3>
                                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                     <input
-                                        placeholder={reviewType === 'ccma' ? "Company / Employer Name" : "Business Name"}
+                                        list="browsers-list" // Changed ID
+                                        placeholder={reviewType === 'ccma' ? "Company / Employer Name" : "Business Name (Type to search...)"}
                                         required
                                         style={{ padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.5rem', color: 'white' }}
                                         value={form.businessName}
                                         onChange={e => setForm({ ...form, businessName: e.target.value })}
                                     />
+                                    <datalist id="browsers-list">
+                                        {businessList.map((b, i) => <option key={i} value={b} />)}
+                                    </datalist>
+
                                     <div style={{ position: 'relative' }}>
                                         <input
                                             placeholder="Business E-mail (for notifications)"
