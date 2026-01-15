@@ -147,7 +147,8 @@ export async function POST(req) {
                         headers: {
                             'api-key': brevoApiKey,
                             'Content-Type': 'application/json',
-                            'accept': 'application/json'
+                            'accept': 'application/json',
+                            'List-Unsubscribe': `<mailto:unsubscribe@checkitsa.co.za?subject=unsubscribe>`
                         },
                         body: JSON.stringify({
                             sender: { name: 'CheckItSA Reviews', email: 'info@checkitsa.co.za' },
@@ -177,7 +178,10 @@ export async function POST(req) {
                             reply_to: 'info@checkitsa.co.za',
                             subject: type === 'ccma' ? `⚖️ New CCMA Case Report: ${businessName}` : emailSubject,
                             html: type === 'ccma' ? emailHtml.replace('You\'ve received a new review!', 'New CCMA Case Reported') : emailHtml,
-                            text: emailText.replace('New Business Review:', type === 'ccma' ? 'New CCMA Case Report:' : 'New Business Review:')
+                            text: emailText.replace('New Business Review:', type === 'ccma' ? 'New CCMA Case Report:' : 'New Business Review:'),
+                            headers: {
+                                'List-Unsubscribe': `<mailto:unsubscribe@checkitsa.co.za?subject=unsubscribe>`
+                            }
                         })
                     })
                 } catch (e) { console.error('Resend Error:', e) }
