@@ -43,6 +43,7 @@ export async function POST(req) {
             </ul>
         `
         const adminHtml = EMAIL_TEMPLATE(`💸 Payout Request: R${amount}`, adminHtmlContent, `<a href="mailto:${user.email}" style="display: inline-block; padding: 12px 24px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">Contact User</a>`)
+        const adminSubject = `PCT_ADMIN: Payout Request R${amount} - ${user.fullName}`
 
         // User Confirmation Email Content
         const userHtmlContent = `
@@ -59,6 +60,7 @@ export async function POST(req) {
             <p style="color: #6b7280; font-size: 0.9em; margin: 0;">If you did not request this, please contact support immediately.</p>
         `
         const userHtml = EMAIL_TEMPLATE('Payout Request Received', userHtmlContent)
+        const userSubject = `✅ Payout Request Received: R${amount}`
 
         // 3. Send Emails (Brevo / Resend)
         const resendApiKey = process.env.RESEND_API_KEY
