@@ -29,6 +29,12 @@ export async function POST(request) {
     }
     const senderDomain = cleanSender.split('@')[1] || ''
 
+    // Shared Analysis Vars
+    const fullText = (sender + ' ' + subject + ' ' + content).toLowerCase()
+    const targets = ['fnb', 'sars', 'standard bank', 'absa', 'capitec']
+    const free = ['gmail.com', 'yahoo.com', 'outlook.com']
+    const isFree = free.includes(senderDomain)
+
     // 2. Advanced Domain & Email Age Analysis
     let domainAge = 'Unknown'
     let registrar = 'Unknown'
@@ -139,6 +145,50 @@ export async function POST(request) {
         }
     }
 
+    // --- Advanced Serper Content Analysis (Reputation & Scripts) ---
+    if (serperKey) {
+        try {
+            // 1. Reputation Check: Is the domain known for scams?
+            if (senderDomain && !isFree) {
+                const repRes = await fetch('https://google.serper.dev/search', {
+                    method: 'POST',
+                    headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ q: `"${senderDomain}" scam reviews complaints`, num: 3 })
+                })
+                const repData = await repRes.json()
+                const repItems = repData.organic || []
+                const combinedRep = repItems.map(i => (i.title + ' ' + i.snippet).toLowerCase()).join(' ')
+
+                if (combinedRep.includes('scam') || combinedRep.includes('fraud') || combinedRep.includes('phishing') || combinedRep.includes('fake')) {
+                    riskScore += 40
+                    details.push(`High Alert: Online complaints found regarding ${senderDomain}.`)
+                }
+            }
+
+            // 2. Script Fingerprinting: Search for the exact Subject line
+            // Scammers often reuse subjects like "URGENT PAYMENT OUTSTANDING"
+            if (subject && subject.length > 10) {
+                const scriptRes = await fetch('https://google.serper.dev/search', {
+                    method: 'POST',
+                    headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ q: `"${subject}" scam script`, num: 3 })
+                })
+                const scriptData = await scriptRes.json()
+                if (scriptData.organic && scriptData.organic.length > 0) {
+                    // If we find exact matches on sites like 'scamwarners', it's bad.
+                    const foundSites = scriptData.organic.map(i => i.link).join(' ')
+                    if (foundSites.includes('scam') || foundSites.includes('reddit') || foundSites.includes('consumer')) {
+                        riskScore += 30
+                        details.push('Subject line matches known scam templates online.')
+                    }
+                }
+            }
+
+        } catch (e) {
+            console.error('Serper Advanced Check Error', e)
+        }
+    }
+
 
 
     // 3. DNS Checks (MX/TXT)
@@ -157,10 +207,7 @@ export async function POST(request) {
     }
 
     // 4. Impersonation & Content (Re-using logic)
-    const fullText = (sender + ' ' + subject + ' ' + content).toLowerCase()
-    const targets = ['fnb', 'sars', 'standard bank', 'absa', 'capitec']
-    const free = ['gmail.com', 'yahoo.com', 'outlook.com']
-    const isFree = free.includes(senderDomain)
+
 
     targets.forEach(t => {
         if (fullText.includes(t)) {
