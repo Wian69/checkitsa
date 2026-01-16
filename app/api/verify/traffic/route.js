@@ -28,7 +28,17 @@ export async function POST(req) {
                 const mimeType = match ? match[1] : 'image/jpeg'
                 const base64Data = match ? match[2] : image
 
-                const prompt = "Identify the South African vehicle license plate (number plate) in this image. Return ONLY a JSON object: { \"plate\": \"PLATE123\", \"province\": \"Gauteng/WC/etc\", \"confidence\": 0-100, \"vehicle_description\": \"Make/Model/Color if visible\" }"
+                const prompt = `
+                    Identify the South African vehicle license plate (number plate) in this image.
+                    Return ONLY a JSON object: 
+                    { 
+                        "plate": "PLATE123", 
+                        "province": "Gauteng|Western Cape|KwaZulu-Natal|Eastern Cape|Free State|Limpopo|Mpumalanga|North West|Northern Cape", 
+                        "confidence": 0-100, 
+                        "vehicle_description": "Make/Model/Color if visible" 
+                    }
+                    Note: For SA plates, use the trailing/prefix letters to identify the province (e.g., GP = Gauteng, CA/CY/CAA = Western Cape, ZN = KZN, FS/L = Free State, N = KZN, EC = Eastern Cape, MP = Mpumalanga, L = Limpopo, NW = North West, NC = Northern Cape).
+                `
 
                 const result = await model.generateContent([
                     prompt,
@@ -80,6 +90,7 @@ export async function POST(req) {
                 evidence_image TEXT,
                 reporter_name TEXT,
                 reporter_email TEXT,
+                province TEXT,
                 status TEXT DEFAULT 'pending',
                 created_at DATETIME
             )
@@ -89,12 +100,13 @@ export async function POST(req) {
         try {
             await db.prepare(`ALTER TABLE traffic_reports ADD COLUMN lat DECIMAL`).run()
             await db.prepare(`ALTER TABLE traffic_reports ADD COLUMN lng DECIMAL`).run()
+            await db.prepare(`ALTER TABLE traffic_reports ADD COLUMN province TEXT`).run()
         } catch (e) { /* Already exists */ }
 
         const { success } = await db.prepare(
             `INSERT INTO traffic_reports (
-                plate_number, location, lat, lng, offense_type, description, evidence_image, reporter_name, reporter_email, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                plate_number, location, lat, lng, offense_type, description, evidence_image, reporter_name, reporter_email, province, status, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).bind(
             plateNumber,
             location || 'Unknown',
@@ -105,6 +117,8 @@ export async function POST(req) {
             image,
             reporter_name || 'Anonymous',
             reporter_email || 'N/A',
+            aiAnalysis?.province || 'Unknown',
+            'pending',
             new Date().toISOString()
         ).run()
 
@@ -131,11 +145,11 @@ export async function GET(req) {
         const { searchParams } = new URL(req.url)
         const plate = searchParams.get('plate')
 
-        let query = "SELECT id, plate_number, location, lat, lng, offense_type, status, created_at FROM traffic_reports WHERE status = 'verified' OR status = 'pending' ORDER BY created_at DESC LIMIT 100"
+        let query = "SELECT id, plate_number, location, lat, lng, offense_type, province, status, created_at FROM traffic_reports WHERE status = 'verified' OR status = 'pending' ORDER BY created_at DESC LIMIT 100"
         let params = []
 
         if (plate) {
-            query = "SELECT id, plate_number, location, lat, lng, offense_type, status, created_at FROM traffic_reports WHERE plate_number = ? ORDER BY created_at DESC"
+            query = "SELECT id, plate_number, location, lat, lng, offense_type, province, status, created_at FROM traffic_reports WHERE plate_number = ? ORDER BY created_at DESC"
             params = [plate]
         }
 
@@ -143,5 +157,27 @@ export async function GET(req) {
         return NextResponse.json({ reports: res.results })
     } catch (error) {
         return NextResponse.json({ reports: [] }, { status: 500 })
+    }
+}
+
+export async function PATCH(req) {
+    try {
+        const body = await req.json()
+        const { id, status } = body
+        const db = getRequestContext().env.DB
+
+        if (!id || !status) {
+            return NextResponse.json({ error: 'Missing ID or status' }, { status: 400 })
+        }
+
+        const { success } = await db.prepare(
+            "UPDATE traffic_reports SET status = ? WHERE id = ?"
+        ).bind(status, id).run()
+
+        if (!success) throw new Error('Update failed')
+
+        return NextResponse.json({ success: true, message: `Report ${id} updated to ${status}` })
+    } catch (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 })
     }
 }

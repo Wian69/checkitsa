@@ -224,9 +224,13 @@ export default function TrafficReporter() {
                                 <div className="text-4xl font-mono font-bold text-emerald-400 mt-2 p-4 bg-black/40 rounded-xl inline-block border border-emerald-500/20">
                                     {result.plate}
                                 </div>
-                                <p className="mt-4 text-sm text-gray-500">
-                                    {result.details?.vehicle_description || 'Unknown Vehicle'} • {result.details?.province || 'South Africa'}
+                                <p className="mt-4 text-sm text-gray-400">
+                                    <span className="text-blue-400 font-bold uppercase tracking-wider">{result.details?.province || 'South Africa'}</span><br />
+                                    {result.details?.vehicle_description || 'Unknown Vehicle'}
                                 </p>
+                                <div className="mt-6 flex items-center justify-center gap-2 text-yellow-500 font-bold text-sm bg-yellow-500/10 py-2 px-4 rounded-full border border-yellow-500/20 max-w-xs mx-auto">
+                                    <span>⏳</span> Pending Admin Verification
+                                </div>
                             </div>
 
                             <div className="glass-panel" style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)' }}>
@@ -358,10 +362,14 @@ function MapInitializer({ reports: newReports, mapLoaded }) {
                             .bindPopup(`
                                 <div style="color: black; padding: 5px; min-width: 150px;">
                                     <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; color: #1e293b;">${r.plate_number}</div>
+                                    <div style="color: #3b82f6; font-weight: 700; font-size: 0.75rem; margin-bottom: 2px;">📍 ${r.province || 'South Africa'}</div>
                                     <div style="color: #f59e0b; font-weight: 600; font-size: 0.85rem; margin-bottom: 8px;">📢 ${r.offense_type}</div>
                                     <div style="font-size: 0.75rem; color: #64748b; border-top: 1px solid #f1f5f9; padding-top: 8px;">
                                         📍 ${r.location}<br/>
-                                        🗓️ ${new Date(r.created_at).toLocaleDateString()}
+                                        🗓️ ${new Date(r.created_at).toLocaleDateString()}<br/>
+                                        <span style="color: ${r.status === 'verified' ? '#10b981' : '#f59e0b'}; font-weight: bold;">
+                                            ${r.status === 'verified' ? '✅ Verified' : '⏳ Pending'}
+                                        </span>
                                     </div>
                                 </div>
                             `)
@@ -404,14 +412,37 @@ function RecentReports() {
                     {r.plate_number}
                 </div>
                 <div>
-                    <div className="font-bold text-white text-lg">{r.offense_type}</div>
+                    <div className="font-bold text-white text-lg flex items-center gap-2">
+                        {r.offense_type}
+                    </div>
                     <div className="text-sm text-gray-500 flex items-center gap-2">
-                        <span>📍</span> {r.location} • {new Date(r.created_at).toLocaleDateString()}
+                        <span className="text-blue-400 font-bold">{r.province || 'SA'}</span> • <span>📍</span> {r.location} • {new Date(r.created_at).toLocaleDateString()}
                     </div>
                 </div>
             </div>
-            <div className={`text-xs px-3 py-1.5 rounded-full font-bold uppercase tracking-widest ${r.status === 'verified' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
-                {r.status === 'verified' ? 'Police Notified' : 'Logged'}
+            <div className="flex flex-col items-end gap-2">
+                <div className={`text-xs px-3 py-1.5 rounded-full font-bold uppercase tracking-widest ${r.status === 'verified' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'}`}>
+                    {r.status === 'verified' ? 'Police Notified' : 'Pending Review'}
+                </div>
+                {r.status === 'pending' && (
+                    <button
+                        onClick={async (e) => {
+                            e.stopPropagation();
+                            if (!confirm('Approve this report for authority notification?')) return;
+                            const res = await fetch('/api/verify/traffic', {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ id: r.id, status: 'verified' })
+                            });
+                            if (res.ok) {
+                                window.location.reload();
+                            }
+                        }}
+                        className="text-[10px] bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 px-2 py-1 rounded transition-colors font-bold border border-emerald-500/20"
+                    >
+                        Approve
+                    </button>
+                )}
             </div>
         </div>
     ))
