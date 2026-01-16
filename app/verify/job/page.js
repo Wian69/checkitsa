@@ -1,6 +1,6 @@
 "use client"
-import { useState } from 'react'
 import Navbar from '@/components/Navbar'
+import { useState } from 'react'
 
 export default function JobVerifyPage() {
     const [loading, setLoading] = useState(false)
@@ -33,119 +33,118 @@ export default function JobVerifyPage() {
     }
 
     return (
-        <main className="min-h-screen pb-24">
+        <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
             <Navbar />
 
-            {/* Hero Section with Decoration */}
-            <div className="relative pt-40 px-4">
-                {/* Background Decoration */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-indigo-900/20 blur-[100px] -z-10 pointer-events-none rounded-full" />
+            <div className="container" style={{ paddingTop: '10rem', maxWidth: '800px' }}>
+                <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600 mb-6 font-outfit">
+                    Job Scam Validator
+                </h1>
+                <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto font-light">
+                    Analyze recruiter emails, job links, and ad text for hidden scam signals like upfront fees.
+                </p>
 
-                <div className="container mx-auto max-w-2xl text-center mb-12">
-                    <div className="inline-block px-3 py-1 mb-4 text-sm rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-medium">
-                        🕵️‍♂️ Job Scam Validator
-                    </div>
-                    <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-200 to-indigo-400">
-                        Is this Job Real?
-                    </h1>
-                    <p className="text-lg text-white/60 mb-8 max-w-prose mx-auto">
-                        Paste the recruiter's details or job link below to scan for hidden scam signals like free emails or fake domains.
-                    </p>
-                </div>
-
-                <div className="container mx-auto max-w-2xl glass-panel p-6 md:p-8 border border-white/10 rounded-2xl bg-black/40 backdrop-blur-xl shadow-2xl shadow-indigo-500/10">
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="glass-panel" style={{ padding: '2rem' }}>
+                    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
                         <div>
-                            <label className="block text-sm font-medium text-white/80 mb-2">Job Link / Application URL (Optional)</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Job Link / Application URL (Optional)</label>
                             <input
                                 type="url"
-                                placeholder="e.g. bit.ly/easy-job or https://careers.wixsite.com"
-                                className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 outline-none transition-all"
+                                placeholder="e.g. bit.ly/easy-job"
                                 value={formData.jobUrl}
                                 onChange={(e) => setFormData({ ...formData, jobUrl: e.target.value })}
+                                style={{ width: '100%', padding: '0.8rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white' }}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-white/80 mb-2">Recruiter Email (If available)</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Recruiter Email (If available)</label>
                             <input
                                 type="email"
                                 placeholder="e.g. careers@gmail.com"
-                                className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 outline-none transition-all"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                style={{ width: '100%', padding: '0.8rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white' }}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-white/80 mb-2">Company Name</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Company Name</label>
                             <input
                                 type="text"
                                 placeholder="e.g. Awesome Reps Ltd"
-                                className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 outline-none transition-all"
                                 value={formData.companyName}
                                 onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                                style={{ width: '100%', padding: '0.8rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white' }}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-white/80 mb-2">Job Description / Ad Text</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Job Description / Ad Text</label>
                             <textarea
                                 rows={4}
                                 placeholder="Paste the job ad content here..."
-                                className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 outline-none transition-all resize-none"
                                 value={formData.jobDescription}
                                 onChange={(e) => setFormData({ ...formData, jobDescription: e.target.value })}
+                                style={{ width: '100%', padding: '0.8rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white' }}
                             />
                         </div>
 
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`w-full py-4 rounded-xl font-bold text-lg transition-all transform active:scale-[0.98] ${loading
-                                    ? 'bg-white/10 cursor-not-allowed text-white/40'
-                                    : 'bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 text-white'
-                                }`}
+                            className="btn btn-primary"
+                            style={{ marginTop: '1rem' }}
                         >
-                            {loading ? 'Analyzing Signals...' : 'Scan Job Offer'}
+                            {loading ? 'Analyzing...' : 'Scan Job Offer'}
                         </button>
                     </form>
-                </div>
 
-                {/* Results Section */}
-                {result && (
-                    <div className="container mx-auto max-w-2xl mt-8">
-                        <div className={`p-6 rounded-2xl border ${result.isSafe ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-red-500/10 border-red-500/20'} animate-in fade-in slide-in-from-bottom-4`}>
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className={`text-4xl p-3 rounded-xl ${result.isSafe ? 'bg-emerald-500/20' : 'bg-red-500/20'}`}>
-                                    {result.isSafe ? '✅' : '⚠️'}
-                                </div>
-                                <div>
-                                    <h3 className={`text-2xl font-bold ${result.isSafe ? 'text-emerald-400' : 'text-red-400'}`}>
-                                        {result.verdict}
-                                    </h3>
-                                    <p className="text-white/60 text-sm">Targeted Scam Analysis</p>
-                                </div>
-                                <div className="ml-auto text-3xl font-bold text-white/20">
-                                    {result.riskScore}%
-                                </div>
+                    {result && (
+                        <div className={`mt-8 overflow-hidden rounded-2xl border ${result.isSafe ? 'border-emerald-500/50 bg-emerald-950/20' : 'border-red-500/50 bg-red-950/20'} transition-all duration-500`}>
+                            {/* Header Status */}
+                            <div className={`p-6 text-center border-b ${result.isSafe ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-red-500/30 bg-red-500/10'}`}>
+                                <h3 className={`text-2xl font-bold mb-1 ${result.isSafe ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    {result.verdict}
+                                </h3>
+                                <p className="text-white/60 text-sm">Targeted Scam Analysis</p>
                             </div>
 
-                            <div className="space-y-3">
+                            <div className="p-6">
+                                {/* Risk Gauge */}
+                                <div className="mb-8">
+                                    <div className="flex justify-between items-end mb-2">
+                                        <span className="text-sm uppercase tracking-wider text-white/60">Risk Score</span>
+                                        <span className={`text-3xl font-bold ${result.isSafe ? 'text-emerald-400' : 'text-red-400'}`}>{result.riskScore}%</span>
+                                    </div>
+                                    <div className="h-4 w-full bg-white/10 rounded-full overflow-hidden">
+                                        <div
+                                            className={`h-full rounded-full transition-all duration-1000 ${result.isSafe ? 'bg-gradient-to-r from-emerald-500 to-teal-400' : 'bg-gradient-to-r from-orange-500 to-red-600'}`}
+                                            style={{ width: `${result.riskScore}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+
+                                {/* Risk Factors */}
                                 {result.reasons.length > 0 ? (
-                                    result.reasons.map((reason, i) => (
-                                        <div key={i} className="flex gap-3 text-white/80 text-sm p-3 bg-black/20 rounded-lg items-start">
-                                            <span className="text-red-400 mt-0.5">✕</span>
-                                            {reason}
-                                        </div>
-                                    ))
+                                    <div className="mt-8 space-y-3">
+                                        <h4 className="text-sm uppercase tracking-wider text-white/60 border-b border-white/10 pb-2">Risk Factors ({result.reasons.length})</h4>
+                                        {result.reasons.map((f, i) => (
+                                            <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-200 text-sm">
+                                                <span className="mt-0.5">⚠️</span>
+                                                <span>{f}</span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 ) : (
-                                    <p className="text-emerald-400/80 text-sm">We didn't find specific scam triggers, but always stay vigilant.</p>
+                                    <div className="text-emerald-400/80 text-sm text-center">
+                                        No specific scam triggers found, but always verify independently.
+                                    </div>
                                 )}
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </main>
     )
