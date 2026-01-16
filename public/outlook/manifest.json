@@ -1,0 +1,75 @@
+{
+    "$schema": "https://developer.microsoft.com/json-schemas/office-js/manifest/v1/manifest.schema.json",
+    "id": "5db854e4-7d84-4638-89c0-6923c8930dcc",
+    "version": "1.0.0",
+    "name": {
+        "en-US": "CheckItSA Scam Scanner"
+    },
+    "description": {
+        "en-US": "Verify if this email is a scam using CheckItSA's powerful verification engine."
+    },
+    "icons": [
+        {
+            "src": "https://checkitsa.co.za/icon-192.png",
+            "size": "192x192"
+        },
+        {
+            "src": "https://checkitsa.co.za/icon-512.png",
+            "size": "512x512"
+        }
+    ],
+    "author": "CheckItSA",
+    "accentColor": "#4F46E5",
+    "capabilities": [
+        {
+            "name": "outlook",
+            "taskpane": {
+                "url": "https://checkitsa.co.za/outlook",
+                "hideOnNoMailboxItem": true,
+                "ribbon": {
+                    "tabs": [
+                        {
+                            "id": "CI_Tab",
+                            "label": "CheckItSA",
+                            "groups": [
+                                {
+                                    "id": "CI_Group",
+                                    "label": "Security",
+                                    "controls": [
+                                        {
+                                            "id": "CI_ScanButton",
+                                            "type": "button",
+                                            "label": "Scan for Scams",
+                                            "icons": [
+                                                {
+                                                    "size": 16,
+                                                    "url": "https://checkitsa.co.za/icon-192.png"
+                                                },
+                                                {
+                                                    "size": 32,
+                                                    "url": "https://checkitsa.co.za/icon-192.png"
+                                                },
+                                                {
+                                                    "size": 80,
+                                                    "url": "https://checkitsa.co.za/icon-512.png"
+                                                }
+                                            ],
+                                            "supertip": {
+                                                "title": "CheckItSA Scan",
+                                                "description": "Analyze this email for phishing and fraud indicators."
+                                            },
+                                            "action": {
+                                                "type": "showTaskpane",
+                                                "taskpaneId": "CI_Taskpane"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
