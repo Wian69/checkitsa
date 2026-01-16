@@ -33,6 +33,22 @@ async function getReport(id) {
     }
 }
 
+// 1. Dynamic SEO Metadata
+export async function generateMetadata({ params }) {
+    const report = await getReport(params.id)
+    if (!report) return { title: 'Report Not Found - CheckItSA' }
+
+    return {
+        title: `🚨 Scam Alert: ${report.url} (${report.type}) - CheckItSA`,
+        description: `Community report regarding ${report.type} fraud involving ${report.url}. Read the full warning and evidence on CheckItSA's Wall of Shame.`,
+        openGraph: {
+            title: `⚠️ SCAM WARNING: ${report.url}`,
+            description: `I just checked ${report.url} on CheckItSA. It has been flagged as a ${report.type} scam. Click to see the evidence.`,
+            images: ['https://checkitsa.co.za/og-warning.png'] // Using a generic warning OG image for now
+        }
+    }
+}
+
 export default async function ReportDetails({ params }) {
     const report = await getReport(params.id)
 
