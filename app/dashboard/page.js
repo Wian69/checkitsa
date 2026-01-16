@@ -271,6 +271,52 @@ export default function Dashboard() {
                 </div>
             </div>
 
+            {/* Outlook Add-in Section */}
+            <div style={{ marginTop: '3rem' }}>
+                <div className="glass-panel" style={{
+                    padding: '2.5rem',
+                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
+                    border: '1px solid rgba(59, 130, 246, 0.2)'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
+                        <div style={{ flex: '1', minWidth: '300px' }}>
+                            <div className="inline-block px-2 py-1 mb-4 text-[10px] font-bold uppercase tracking-widest rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                                NEW: Outlook Integration
+                            </div>
+                            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span>📧</span> Microsoft Outlook Add-in
+                            </h3>
+                            <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
+                                Scan every email you receive directly inside Outlook. Our Add-in analyzes sender reputation and content flags in real-time.
+                            </p>
+                            <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', display: 'grid', gap: '0.5rem' }}>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>1.</span>
+                                    <span>Download the Manifest XML file below.</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>2.</span>
+                                    <span>In Outlook, go to "Get Add-ins" &gt; "My Add-ins" &gt; "Add from file".</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style={{ minWidth: '250px', textAlign: 'center' }}>
+                            <a
+                                href="/outlook/manifest.xml"
+                                download="CheckItSA_Outlook_Addin.xml"
+                                className="btn btn-primary"
+                                style={{ width: '100%', justifyContent: 'center', padding: '1.25rem' }}
+                            >
+                                📥 Download Manifest
+                            </a>
+                            <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '1rem' }}>
+                                Works on Outlook Web, Windows, and Mac.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Promotion & Growth Hub */}
             <div style={{ marginTop: '3rem' }}>
                 <div className="glass-panel" style={{
