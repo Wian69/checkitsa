@@ -109,15 +109,6 @@ export default function Home() {
             href="/verify/gambling"
             color="#F87171"
           />
-          {/* Job Scam Checker temporarily hidden for logic hardening 
-          <Tile
-            title="Job Scam Checker"
-            icon="💼"
-            desc="Analyze job offers for training fees and fake recruiters."
-            href="/verify/job"
-            color="#6366f1"
-          /> 
-          */}
           <Tile
             title="Developer API"
             icon={(!user || (user.tier !== 'elite' && user.tier !== 'custom' && user.tier !== 'enterprise')) ? "🔒" : "⚡"}
