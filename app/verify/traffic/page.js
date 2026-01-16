@@ -157,15 +157,15 @@ export default function TrafficReporter() {
                                     </div>
                                 ) : (
                                     <>
-                                        <div className="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">📸</div>
-                                        <div className="text-lg font-bold text-white mb-2">Vehicle Photo Evidence</div>
-                                        <div className="text-sm text-gray-500 max-w-xs mx-auto mb-6">Ensure the license plate is clearly visible</div>
+                                        <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">📸</div>
+                                        <div className="text-lg font-bold text-white mb-1">Vehicle Photo Evidence</div>
+                                        <div className="text-sm text-gray-500 max-w-xs mx-auto mb-4">Ensure the license plate is clearly visible</div>
 
                                         <button
                                             type="button"
                                             onClick={() => fileInputRef.current?.click()}
                                             className="btn btn-outline"
-                                            style={{ padding: '0.6rem 2rem' }}
+                                            style={{ padding: '0.5rem 1.5rem', fontSize: '0.9rem' }}
                                         >
                                             Browse Files or Camera
                                         </button>
@@ -175,7 +175,7 @@ export default function TrafficReporter() {
                                     type="file"
                                     ref={fileInputRef}
                                     onChange={handleImageChange}
-                                    className="hidden"
+                                    style={{ display: 'none' }}
                                     accept="image/*"
                                 />
                             </div>
