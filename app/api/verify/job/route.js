@@ -57,18 +57,38 @@ async function checkGoogleReputation(companyName) {
     }
 }
 
+const FREE_Job_HOSTS = ['wixsite.com', 'weebly.com', 'yolasite.com', 'wordpress.com', 'blogspot.com', 'google.com/site']
+const URL_SHORTENERS = ['bit.ly', 'goo.gl', 'tinyurl.com', 'ow.ly', 't.co', 'is.gd', 'buff.ly']
+
 export async function POST(req) {
     try {
-        const { email, companyName, jobDescription, website } = await req.json()
+        const { email, companyName, jobDescription, jobUrl } = await req.json()
         let riskScore = 0
         const reasons = []
 
-        // 1. Email Domain Analysis
+        // 1. URL Analysis (Critical for Platform Scams)
+        if (jobUrl) {
+            const lowerUrl = jobUrl.toLowerCase()
+
+            // Check for Shorteners (Scammers hide links)
+            if (URL_SHORTENERS.some(domain => lowerUrl.includes(domain))) {
+                riskScore += 40
+                reasons.push("Job link uses a URL shortener (e.g. bit.ly). Legitimate companies link directly to their careers page.")
+            }
+
+            // Check for Free Hosts (Legit companies usually have own domain)
+            if (FREE_Job_HOSTS.some(domain => lowerUrl.includes(domain))) {
+                riskScore += 50
+                reasons.push("Job site is hosted on a free platform (Wix/WordPress). Real companies use professional domains (e.g. careers.coke.co.za).")
+            }
+        }
+
+        // 2. Email Domain Analysis
         if (email) {
             const domain = email.split('@')[1]?.toLowerCase()
             if (domain && FREE_EMAIL_PROVIDERS.includes(domain)) {
                 riskScore += 50
-                reasons.push("Recruiter is using a free email provider (e.g., Gmail/Yahoo). Legitimate companies use corporate domains (e.g., careers@company.co.za).")
+                reasons.push("Recruiter is using a free email provider (e.g., Gmail/Yahoo). Legitimate companies use corporate domains.")
             }
         }
 

@@ -6,6 +6,7 @@ export default function JobVerifyPage() {
     const [loading, setLoading] = useState(false)
     const [result, setResult] = useState(null)
     const [formData, setFormData] = useState({
+        jobUrl: '',
         email: '',
         companyName: '',
         jobDescription: ''
@@ -44,14 +45,25 @@ export default function JobVerifyPage() {
                         Is this Job Real?
                     </h1>
                     <p className="text-white/60">
-                        Paste the recruiter's details below to scan for hidden scam signals.
+                        Paste the recruiter's details or job link below to scan for hidden scam signals.
                     </p>
                 </div>
 
                 <div className="glass-panel p-6 md:p-8 border border-white/10 rounded-2xl bg-white/5 backdrop-blur-lg">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-white/80 mb-2">Recruiter Email (Optional)</label>
+                            <label className="block text-sm font-medium text-white/80 mb-2">Job Link / Application URL (Optional)</label>
+                            <input
+                                type="url"
+                                placeholder="e.g. bit.ly/easy-job or https://careers.wixsite.com"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all"
+                                value={formData.jobUrl}
+                                onChange={(e) => setFormData({ ...formData, jobUrl: e.target.value })}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-white/80 mb-2">Recruiter Email (If available)</label>
                             <input
                                 type="email"
                                 placeholder="e.g. careers@gmail.com"
