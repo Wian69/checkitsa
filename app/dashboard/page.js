@@ -289,39 +289,56 @@ export default function Dashboard() {
                             <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
                                 Scan every email you receive directly inside Outlook. Our Add-in analyzes sender reputation and content flags in real-time.
                             </p>
-                            <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', display: 'grid', gap: '0.8rem' }}>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>1.</span>
-                                    <span>
-                                        Download the manifest file for your version of Outlook:
-                                        <br />
-                                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                                            <a href="/outlook/manifest.json" download="CheckItSA_Outlook.json" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>New Outlook/Web (JSON)</a>
-                                            <span>•</span>
-                                            <a href="/outlook/manifest.xml" download="CheckItSA_Outlook.xml" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>Classic Outlook (XML)</a>
-                                        </div>
-                                    </span>
+                            <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', display: 'grid', gap: '1.5rem' }}>
+                                {/* New Outlook / Web */}
+                                <div>
+                                    <div style={{ color: 'white', fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '0.9rem' }}>A. New Outlook / Web (Recommended)</div>
+                                    <div style={{ display: 'grid', gap: '0.4rem', paddingLeft: '0.5rem', borderLeft: '2px solid var(--color-primary)' }}>
+                                        <div>1. Download the **JSON Manifest** below.</div>
+                                        <div>2. In Outlook, click the **Apps** icon on the left sidebar.</div>
+                                        <div>3. Click **Add Apps** &gt; **Manage your apps**.</div>
+                                        <div>4. Click **Add a custom app** &gt; **Add from file**.</div>
+                                        <div>5. Upload the downloaded JSON file.</div>
+                                    </div>
                                 </div>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>2.</span>
-                                    <span>In Outlook, go to **Get Add-ins** &gt; **My Add-ins** &gt; **Add from file**.</span>
+
+                                {/* Classic Outlook */}
+                                <div>
+                                    <div style={{ color: 'white', fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '0.9rem' }}>B. Classic Outlook (Desktop)</div>
+                                    <div style={{ display: 'grid', gap: '0.4rem', paddingLeft: '0.5rem', borderLeft: '2px solid rgba(255,255,255,0.2)' }}>
+                                        <div>1. Download the **XML Manifest** below.</div>
+                                        <div>2. Click **File** &gt; **Manage Add-ins** (opens browser).</div>
+                                        <div>3. In the new window, click the **+** (plus) icon.</div>
+                                        <div>4. Select **Add from file** and upload the XML file.</div>
+                                        <div>5. Restart Outlook to see the "CheckItSA" tab.</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div style={{ minWidth: '250px', textAlign: 'center' }}>
+                        <div style={{ minWidth: '300px', textAlign: 'center' }}>
                             <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '1rem', textAlign: 'left' }}>
-                                    <strong>Troubleshooting:</strong><br />
-                                    If Outlook says "Invalid Manifest", use the **JSON** version. If you are on an older version of Office, use the **XML** version.
+                                <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '1.2rem', textAlign: 'left' }}>
+                                    <strong>Quick Selection:</strong><br />
+                                    Use **JSON** for Outlook Web or the "New Outlook" toggle. Use **XML** for the older Desktop version.
                                 </div>
-                                <a
-                                    href="/outlook/manifest.json"
-                                    download="CheckItSA_Outlook.json"
-                                    className="btn btn-primary"
-                                    style={{ width: '100%', justifyContent: 'center', padding: '1rem' }}
-                                >
-                                    📥 Download JSON (Recommended)
-                                </a>
+                                <div style={{ display: 'grid', gap: '0.75rem' }}>
+                                    <a
+                                        href="/outlook/manifest.json"
+                                        download="CheckItSA_Outlook.json"
+                                        className="btn btn-primary"
+                                        style={{ width: '100%', justifyContent: 'center', padding: '1rem' }}
+                                    >
+                                        📥 Download JSON (New)
+                                    </a>
+                                    <a
+                                        href="/outlook/manifest.xml"
+                                        download="CheckItSA_Outlook.xml"
+                                        className="btn btn-outline"
+                                        style={{ width: '100%', justifyContent: 'center', padding: '1rem', borderColor: 'rgba(255,255,255,0.1)' }}
+                                    >
+                                        📄 Download XML (Classic)
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
