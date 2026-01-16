@@ -1,0 +1,39 @@
+{
+    "timeZone": "Africa/Johannesburg",
+    "dependencies": {
+        "enabledAdvancedServices": [
+            {
+                "userSymbol": "Gmail",
+                "serviceId": "gmail",
+                "version": "v1"
+            }
+        ]
+    },
+    "exceptionLogging": "STACKDRIVER",
+    "runtimeVersion": "V8",
+    "addOns": {
+        "common": {
+            "name": "CheckItSA Scanner",
+            "logoUrl": "https://checkitsa.co.za/icon-192.png",
+            "useLocaleFromApp": true,
+            "homepageTrigger": {
+                "runFunction": "onHomePage",
+                "enabled": true
+            },
+            "universalActions": [
+                {
+                    "label": "Open Website",
+                    "openLink": "https://checkitsa.co.za"
+                }
+            ]
+        },
+        "gmail": {
+            "contextualTriggers": [
+                {
+                    "unconditional": {},
+                    "onTriggerFunction": "onGmailMessage"
+                }
+            ]
+        }
+    }
+}

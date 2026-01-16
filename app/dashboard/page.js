@@ -345,6 +345,69 @@ export default function Dashboard() {
                 </div>
             </div>
 
+            {/* Gmail Add-on Section */}
+            <div style={{ marginTop: '3rem' }}>
+                <div className="glass-panel" style={{
+                    padding: '2.5rem',
+                    background: 'linear-gradient(135deg, rgba(234, 67, 53, 0.1) 0%, rgba(251, 188, 5, 0.1) 100%)',
+                    border: '1px solid rgba(234, 67, 53, 0.2)'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
+                        <div style={{ flex: '1', minWidth: '300px' }}>
+                            <div className="inline-block px-2 py-1 mb-4 text-[10px] font-bold uppercase tracking-widest rounded bg-red-500/20 text-red-400 border border-red-500/30">
+                                BETA: Gmail Integration
+                            </div>
+                            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span>✉️</span> Native Gmail Add-on
+                            </h3>
+                            <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
+                                Add CheckItSA directly to your Gmail sidebar (Web & Mobile). Sideload our native script to scan emails without leaving your inbox.
+                            </p>
+                            <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', display: 'grid', gap: '1rem' }}>
+                                <div>
+                                    <div style={{ color: 'white', fontWeight: 'bold', marginBottom: '0.3rem' }}>Step 1: Create script</div>
+                                    <div>Go to [script.google.com](https://script.google.com) and create a **New Project**.</div>
+                                </div>
+                                <div>
+                                    <div style={{ color: 'white', fontWeight: 'bold', marginBottom: '0.3rem' }}>Step 2: Copy & Paste</div>
+                                    <div>Replace the auto-generated code with the content of the files below.</div>
+                                </div>
+                                <div>
+                                    <div style={{ color: 'white', fontWeight: 'bold', marginBottom: '0.3rem' }}>Step 3: Deploy</div>
+                                    <div>Click **Deploy** &gt; **Test deployments** &gt; **Install**.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style={{ minWidth: '300px', textAlign: 'center' }}>
+                            <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '1.2rem', textAlign: 'left' }}>
+                                    <strong>Required Files:</strong><br />
+                                    You need both the logic (`Code.gs`) and the configuration (`manifest`) to make it work.
+                                </div>
+                                <div style={{ display: 'grid', gap: '0.75rem' }}>
+                                    <a
+                                        href="/gmail/Code.gs"
+                                        download="CheckItSA_Gmail_Logic.gs"
+                                        className="btn btn-primary"
+                                        style={{ width: '100%', justifyContent: 'center', padding: '1rem', background: '#ea4335' }}
+                                    >
+                                        📥 Download Code.gs
+                                    </a>
+                                    <a
+                                        href="/gmail/appsscript.json"
+                                        download="appsscript.json"
+                                        className="btn btn-outline"
+                                        style={{ width: '100%', justifyContent: 'center', padding: '1rem', borderColor: 'rgba(255,255,255,0.1)' }}
+                                    >
+                                        📄 Download Manifest
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Promotion & Growth Hub */}
             <div style={{ marginTop: '3rem' }}>
                 <div className="glass-panel" style={{
