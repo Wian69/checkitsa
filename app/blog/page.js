@@ -2,6 +2,8 @@
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 
+export const runtime = 'edge'
+
 const POSTS = [
     {
         slug: 'top-5-whatsapp-scams-south-africa-2025',

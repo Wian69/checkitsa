@@ -3,6 +3,8 @@ import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 
+export const runtime = 'edge'
+
 const ARTICLES = {
     'top-5-whatsapp-scams-south-africa-2025': {
         title: 'The 5 Most Common WhatsApp Scams in South Africa (2025)',
