@@ -110,6 +110,13 @@ export default function Home() {
             color="#F87171"
           />
           <Tile
+            title="Job Scam Checker"
+            icon="💼"
+            desc="Analyze job offers for training fees and fake recruiters."
+            href="/verify/job"
+            color="#3b82f6"
+          />
+          <Tile
             title="Developer API"
             icon={(!user || (user.tier !== 'elite' && user.tier !== 'custom' && user.tier !== 'enterprise')) ? "🔒" : "⚡"}
             desc="Integrate our verification engine directly into your app."
