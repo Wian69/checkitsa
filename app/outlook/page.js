@@ -133,6 +133,18 @@ export default function OutlookTaskpane() {
                         </div>
                     </div>
 
+                    {/* AI Powered Insight */}
+                    {result.ai_analysis && (
+                        <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/10 mb-4">
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="text-purple-400 font-bold uppercase tracking-[0.15em] text-[9px]">AI BRAIN</span>
+                            </div>
+                            <p className="text-[11px] text-purple-200/70 leading-relaxed italic">
+                                {result.ai_analysis.reasoning}
+                            </p>
+                        </div>
+                    )}
+
                     {result.flags.length > 0 && (
                         <div className="space-y-2">
                             <h4 className="text-[10px] uppercase text-white/40 font-bold px-1">Risk Factors</h4>

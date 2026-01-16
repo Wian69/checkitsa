@@ -224,6 +224,43 @@ export async function POST(request) {
         details.push('Urgent language detected.')
     }
 
+    // --- Layer 6: Gemini AI Semantic Intent Analysis ---
+    let aiInsight = null
+    if (env.GEMINI_API_KEY) {
+        try {
+            const { GoogleGenerativeAI } = require("@google/generative-ai")
+            const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY)
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+
+            const prompt = `
+                Analyze this email for scam/phishing indicators. 
+                Sender: ${sender}
+                Subject: ${subject}
+                Body Snapshot: ${content.substring(0, 1500)}
+
+                Focus on psychological triggers: Are they asking for OTPs, bank logins, or using extreme urgency?
+                Return ONLY a JSON object with:
+                {
+                  "intent": "Scam/Phishing/Safe/Marketing",
+                  "risk_points": 0 to 60,
+                  "reasoning": "brief description",
+                  "triggers": ["list of flags"]
+                }
+            `
+            const result = await model.generateContent(prompt)
+            const responseText = result.response.text().replace(/```json|```/g, "").trim()
+            const aiData = JSON.parse(responseText)
+
+            aiInsight = aiData
+            riskScore += aiData.risk_points
+            if (aiData.risk_points > 20) {
+                details.push(`AI Analysis: ${aiData.reasoning}`)
+            }
+        } catch (e) {
+            console.error('Gemini Analysis Failed', e)
+        }
+    }
+
     riskScore = Math.min(riskScore, 100)
 
     return NextResponse.json({
@@ -233,6 +270,7 @@ export async function POST(request) {
         registrar: registrar,
         email_first_seen: emailFirstSeen,
         flags: details,
+        ai_analysis: aiInsight,
         message: riskScore > 60 ? '⛔ DANGEROUS' : 'Analysis Complete.'
     })
 }

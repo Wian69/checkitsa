@@ -164,6 +164,18 @@ export default function EmailVerify() {
                                         ))}
                                     </div>
                                 )}
+
+                                {/* AI Powered Insight */}
+                                {result.ai_analysis && (
+                                    <div className="mt-8 p-4 rounded-xl bg-purple-500/5 border border-purple-500/20">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="text-purple-400 font-bold uppercase tracking-widest text-[10px]">AI SEMANTIC INSIGHT</span>
+                                        </div>
+                                        <p className="text-sm text-purple-200/80 leading-relaxed italic">
+                                            "{result.ai_analysis.reasoning}"
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Footer */}
