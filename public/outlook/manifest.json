@@ -1,43 +1,51 @@
 {
-    "$schema": "https://developer.microsoft.com/json-schemas/office-js/manifest/v1/manifest.schema.json",
-    "id": "5db854e4-7d84-4638-89c0-6923c8930dcc",
+    "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.16",
     "version": "1.0.0",
+    "id": "5db854e4-7d84-4638-89c0-6923c8930dcc",
+    "developer": {
+        "name": "CheckItSA",
+        "websiteUrl": "https://checkitsa.co.za",
+        "privacyUrl": "https://checkitsa.co.za/privacy",
+        "termsOfUseUrl": "https://checkitsa.co.za/terms"
+    },
+    "icons": {
+        "color": "https://checkitsa.co.za/icon-192.png",
+        "outline": "https://checkitsa.co.za/icon-192.png"
+    },
     "name": {
-        "en-US": "CheckItSA Scam Scanner"
+        "short": "CheckItSA Scanner",
+        "full": "CheckItSA Scam & Phishing Scanner"
     },
     "description": {
-        "en-US": "Verify if this email is a scam using CheckItSA's powerful verification engine."
+        "short": "Verify if an email is a scam.",
+        "full": "Protect yourself from fraud. CheckItSA analyzes sender reputation, domain age, and semantic intent using AI to catch phishing attempts directly in Outlook."
     },
-    "icons": [
-        {
-            "src": "https://checkitsa.co.za/icon-192.png",
-            "size": "192x192"
-        },
-        {
-            "src": "https://checkitsa.co.za/icon-512.png",
-            "size": "512x512"
-        }
-    ],
-    "author": "CheckItSA",
     "accentColor": "#4F46E5",
-    "capabilities": [
+    "extensions": [
         {
-            "name": "outlook",
-            "taskpane": {
-                "url": "https://checkitsa.co.za/outlook",
-                "hideOnNoMailboxItem": true,
-                "ribbon": {
+            "requirementSets": [
+                {
+                    "name": "Mailbox",
+                    "version": "1.5"
+                }
+            ],
+            "ribbons": [
+                {
+                    "contexts": [
+                        "mailRead"
+                    ],
                     "tabs": [
                         {
-                            "id": "CI_Tab",
+                            "id": "ScanTab",
                             "label": "CheckItSA",
                             "groups": [
                                 {
-                                    "id": "CI_Group",
+                                    "id": "ScanGroup",
                                     "label": "Security",
                                     "controls": [
                                         {
-                                            "id": "CI_ScanButton",
+                                            "id": "TaskpaneButton",
                                             "type": "button",
                                             "label": "Scan for Scams",
                                             "icons": [
@@ -54,13 +62,10 @@
                                                     "url": "https://checkitsa.co.za/icon-512.png"
                                                 }
                                             ],
-                                            "supertip": {
-                                                "title": "CheckItSA Scan",
-                                                "description": "Analyze this email for phishing and fraud indicators."
-                                            },
                                             "action": {
                                                 "type": "showTaskpane",
-                                                "taskpaneId": "CI_Taskpane"
+                                                "title": "CheckItSA Scan",
+                                                "sourceLocation": "https://checkitsa.co.za/outlook"
                                             }
                                         }
                                     ]
@@ -69,7 +74,7 @@
                         }
                     ]
                 }
-            }
+            ]
         }
     ]
 }

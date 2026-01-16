@@ -289,29 +289,40 @@ export default function Dashboard() {
                             <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
                                 Scan every email you receive directly inside Outlook. Our Add-in analyzes sender reputation and content flags in real-time.
                             </p>
-                            <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', display: 'grid', gap: '0.5rem' }}>
+                            <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', display: 'grid', gap: '0.8rem' }}>
                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                                     <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>1.</span>
-                                    <span>Download the Manifest XML file below.</span>
+                                    <span>
+                                        Download the manifest file for your version of Outlook:
+                                        <br />
+                                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                                            <a href="/outlook/manifest.json" download="CheckItSA_Outlook.json" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>New Outlook/Web (JSON)</a>
+                                            <span>•</span>
+                                            <a href="/outlook/manifest.xml" download="CheckItSA_Outlook.xml" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>Classic Outlook (XML)</a>
+                                        </div>
+                                    </span>
                                 </div>
                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                                     <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>2.</span>
-                                    <span>In Outlook, go to "Get Add-ins" &gt; "My Add-ins" &gt; "Add from file".</span>
+                                    <span>In Outlook, go to **Get Add-ins** &gt; **My Add-ins** &gt; **Add from file**.</span>
                                 </div>
                             </div>
                         </div>
                         <div style={{ minWidth: '250px', textAlign: 'center' }}>
-                            <a
-                                href="/outlook/manifest.xml"
-                                download="CheckItSA_Outlook_Addin.xml"
-                                className="btn btn-primary"
-                                style={{ width: '100%', justifyContent: 'center', padding: '1.25rem' }}
-                            >
-                                📥 Download Manifest
-                            </a>
-                            <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '1rem' }}>
-                                Works on Outlook Web, Windows, and Mac.
-                            </p>
+                            <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '1rem', textAlign: 'left' }}>
+                                    <strong>Troubleshooting:</strong><br />
+                                    If Outlook says "Invalid Manifest", use the **JSON** version. If you are on an older version of Office, use the **XML** version.
+                                </div>
+                                <a
+                                    href="/outlook/manifest.json"
+                                    download="CheckItSA_Outlook.json"
+                                    className="btn btn-primary"
+                                    style={{ width: '100%', justifyContent: 'center', padding: '1rem' }}
+                                >
+                                    📥 Download JSON (Recommended)
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
