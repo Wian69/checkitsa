@@ -69,6 +69,7 @@ export default function Navbar() {
                     <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }} className="nav-links">
                         <Link href="/" style={{ fontSize: '0.9375rem', opacity: 0.8 }}>Home</Link>
                         <Link href="/#tools" style={{ fontSize: '0.9375rem', opacity: 0.8 }}>Services</Link>
+                        <Link href="/blog" style={{ fontSize: '0.9375rem', opacity: 0.8 }}>Blog</Link>
                         <Link href="/subscription" style={{ fontSize: '0.9375rem', opacity: 0.8 }}>Pricing</Link>
                         <Link href="/about" style={{ fontSize: '0.9375rem', opacity: 0.8 }}>About</Link>
                         <Link href="/trust" style={{ fontSize: '0.9375rem', opacity: 0.8 }}>Trust</Link>
@@ -122,11 +123,11 @@ export default function Navbar() {
             <div className={`mobile-nav-overlay ${mobileMenuOpen ? 'open' : ''}`}>
                 <Link href="/" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600 }}>Home</Link>
                 <Link href="/#tools" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600 }}>Services</Link>
+                <Link href="/blog" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600 }}>Blog</Link>
                 <Link href="/subscription" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600 }}>Pricing</Link>
                 <Link href="/about" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600 }}>About</Link>
                 <Link href="/trust" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600 }}>Trust</Link>
                 <Link href="/report" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-primary-light)' }}>Report Incident</Link>
-
                 <div style={{ height: '1px', background: 'var(--color-border)', margin: '1rem 0' }}></div>
 
                 {user ? (
