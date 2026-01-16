@@ -114,7 +114,7 @@ export default function Home() {
             icon="💼"
             desc="Analyze job offers for training fees and fake recruiters."
             href="/verify/job"
-            color="#3b82f6"
+            color="#6366f1"
           />
           <Tile
             title="Developer API"

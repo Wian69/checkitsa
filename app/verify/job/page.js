@@ -32,12 +32,12 @@ export default function JobVerifyPage() {
     }
 
     return (
-        <main className="min-h-screen pb-24 bg-[#0a0a0a]">
+        <main className="min-h-screen pb-24">
             <Navbar />
 
             <div className="container pt-32 px-4 mx-auto max-w-2xl">
                 <div className="text-center mb-12">
-                    <div className="inline-block px-3 py-1 mb-4 text-sm rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400">
+                    <div className="inline-block px-3 py-1 mb-4 text-sm rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
                         🕵️‍♂️ Job Scam Validator
                     </div>
                     <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
@@ -55,7 +55,7 @@ export default function JobVerifyPage() {
                             <input
                                 type="email"
                                 placeholder="e.g. careers@gmail.com"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             />
@@ -66,7 +66,7 @@ export default function JobVerifyPage() {
                             <input
                                 type="text"
                                 placeholder="e.g. Awesome Reps Ltd"
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all"
                                 value={formData.companyName}
                                 onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                             />
@@ -77,7 +77,7 @@ export default function JobVerifyPage() {
                             <textarea
                                 rows={4}
                                 placeholder="Paste the job ad content here..."
-                                className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all"
+                                className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all"
                                 value={formData.jobDescription}
                                 onChange={(e) => setFormData({ ...formData, jobDescription: e.target.value })}
                             />
@@ -88,7 +88,7 @@ export default function JobVerifyPage() {
                             disabled={loading}
                             className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${loading
                                     ? 'bg-white/10 cursor-not-allowed text-white/40'
-                                    : 'bg-blue-600 hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/20 text-white'
+                                    : 'bg-indigo-600 hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-500/20 text-white'
                                 }`}
                         >
                             {loading ? 'Analyzing Signals...' : 'Scan Job Offer'}
