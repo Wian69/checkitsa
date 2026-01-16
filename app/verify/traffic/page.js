@@ -13,6 +13,7 @@ export default function TrafficReporter() {
     const [location, setLocation] = useState('')
     const [coords, setCoords] = useState(null)
     const [description, setDescription] = useState('')
+    const [error, setError] = useState('')
     const [mapLoaded, setMapLoaded] = useState(false)
     const fileInputRef = useRef(null)
     const mapRef = useRef(null)
@@ -23,26 +24,40 @@ export default function TrafficReporter() {
             return
         }
 
-        // Show fetching state in location input
         setLocation("📍 Fetching precise coordinates...")
+        setError("")
 
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords
-                setCoords({ lat: latitude, lng: longitude })
-                setLocation(`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`)
-            },
-            (error) => {
-                console.error("Location error:", error)
-                setLocation("")
-                alert("Unable to retrieve your location. Please ensure location services are enabled or enter it manually.")
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+
+        const success = (position) => {
+            const { latitude, longitude } = position.coords
+            setCoords({ lat: latitude, lng: longitude })
+            setLocation(`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`)
+        }
+
+        const failure = (err) => {
+            console.error("Location error (High Accuracy):", err)
+
+            // Fallback to low accuracy if high accuracy fails or times out
+            if (options.enableHighAccuracy) {
+                setLocation("📍 Using network-based location...")
+                navigator.geolocation.getCurrentPosition(success, (err2) => {
+                    console.error("Location error (Low Accuracy):", err2)
+                    setLocation("")
+                    let msg = "Unable to retrieve location."
+                    if (err2.code === 1) msg = "Location access denied. Please enable GPS permissions."
+                    else if (err2.code === 3) msg = "Location request timed out. Please enter manually."
+                    setError(msg)
+                    alert(msg)
+                }, { enableHighAccuracy: false, timeout: 10000 })
             }
-        )
+        }
+
+        navigator.geolocation.getCurrentPosition(success, failure, options)
     }
 
     const handleImageChange = (e) => {
@@ -76,9 +91,11 @@ export default function TrafficReporter() {
                 })
             })
             const data = await res.json()
+            if (!res.ok) throw new Error(data.error || 'Failed to process report')
             setResult(data)
         } catch (err) {
             console.error(err)
+            setError(err.message)
         } finally {
             setLoading(false)
         }
@@ -109,8 +126,7 @@ export default function TrafficReporter() {
                     {!result ? (
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div
-                                onClick={() => fileInputRef.current?.click()}
-                                className="group relative border-2 border-dashed border-white/10 rounded-2xl p-8 text-center cursor-pointer hover:bg-white/5 transition-all overflow-hidden"
+                                className="group relative border-2 border-dashed border-white/10 rounded-2xl p-8 text-center hover:bg-white/5 transition-all overflow-hidden"
                                 style={{ background: 'rgba(255,255,255,0.02)', minHeight: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
                             >
                                 {image ? (
@@ -118,7 +134,7 @@ export default function TrafficReporter() {
                                         <img src={image} alt="Preview" className="max-h-64 rounded-xl shadow-2xl border border-white/10" />
                                         <button
                                             type="button"
-                                            onClick={(e) => { e.stopPropagation(); setImage(null); }}
+                                            onClick={() => setImage(null)}
                                             className="mt-4 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30 px-3 py-1.5 rounded-full transition-colors font-bold border border-red-500/20"
                                         >
                                             ✕ Remove Photo
@@ -127,8 +143,17 @@ export default function TrafficReporter() {
                                 ) : (
                                     <>
                                         <div className="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">📸</div>
-                                        <div className="text-lg font-bold text-white mb-1">Click to Capture or Upload</div>
-                                        <div className="text-sm text-gray-500 max-w-xs mx-auto">Ensure the license plate is clearly visible in the photo</div>
+                                        <div className="text-lg font-bold text-white mb-2">Vehicle Photo Evidence</div>
+                                        <div className="text-sm text-gray-500 max-w-xs mx-auto mb-6">Ensure the license plate is clearly visible</div>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="btn btn-outline"
+                                            style={{ padding: '0.6rem 2rem' }}
+                                        >
+                                            Browse Files or Camera
+                                        </button>
                                     </>
                                 )}
                                 <input
@@ -139,6 +164,12 @@ export default function TrafficReporter() {
                                     accept="image/*"
                                 />
                             </div>
+
+                            {error && (
+                                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm font-medium flex items-center gap-2 animate-pulse">
+                                    <span>⚠️</span> {error}
+                                </div>
+                            )}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
