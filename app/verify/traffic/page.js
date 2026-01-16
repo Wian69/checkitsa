@@ -1,8 +1,9 @@
 "use client"
-
+import Navbar from '@/components/Navbar'
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import Script from 'next/script'
+import LoadingOverlay from '@/components/LoadingOverlay'
 
 export default function TrafficReporter() {
     const [image, setImage] = useState(null)
@@ -75,35 +76,36 @@ export default function TrafficReporter() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 text-white p-6 pb-24">
-            <div className="max-w-2xl mx-auto pt-10">
-                <Link href="/dashboard" className="text-blue-400 mb-8 inline-block">← Back to Dashboard</Link>
+        <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
+            <Navbar />
 
-                <div style={{
-                    background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%)',
-                    padding: '2rem',
-                    borderRadius: '1.5rem',
-                    border: '1px solid rgba(234, 179, 8, 0.2)',
-                    marginBottom: '2rem'
-                }}>
-                    <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
-                        <span className="text-4xl">🚦</span> Road Sentinel
+            {loading && <LoadingOverlay message="AI Extracting Plate..." />}
+
+            <div className="container" style={{ paddingTop: '10rem', maxWidth: '900px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+                    <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600 mb-6 font-outfit">
+                        Road Sentinel
                     </h1>
-                    <p className="text-slate-400 mb-6 font-medium">AI-Powered Traffic Incident Reporter</p>
+                    <p className="text-xl text-gray-400 font-light max-w-2xl mx-auto">
+                        High-accuracy AI incident reporting. Identify reckless drivers and notify authorities instantly.
+                    </p>
+                </div>
 
+                <div className="glass-panel" style={{ padding: '2rem', marginBottom: '3rem' }}>
                     {!result ? (
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div
                                 onClick={() => fileInputRef.current?.click()}
-                                className="border-2 border-dashed border-orange-500/30 rounded-2xl p-8 text-center cursor-pointer hover:bg-orange-500/5 transition-all"
+                                className="border-2 border-dashed border-white/10 rounded-2xl p-8 text-center cursor-pointer hover:bg-white/5 transition-all"
+                                style={{ background: 'rgba(255,255,255,0.02)' }}
                             >
                                 {image ? (
-                                    <img src={image} alt="Preview" className="max-h-64 mx-auto rounded-lg mb-4" />
+                                    <img src={image} alt="Preview" className="max-h-64 mx-auto rounded-lg mb-4 shadow-2xl" />
                                 ) : (
                                     <div className="py-10">
-                                        <div className="text-5xl mb-4">📸</div>
-                                        <div className="text-lg font-bold">Snap or Upload a Photo</div>
-                                        <div className="text-sm text-slate-500">Make sure the number plate is clear</div>
+                                        <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">📸</div>
+                                        <div className="text-lg font-bold text-white">Snap or Upload a Photo</div>
+                                        <div className="text-sm text-gray-500">Make sure the number plate is clear and visible</div>
                                     </div>
                                 )}
                                 <input
@@ -117,11 +119,11 @@ export default function TrafficReporter() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-bold mb-2 text-slate-300">Offense Type</label>
+                                    <label className="block text-sm font-medium mb-2 text-gray-400">Offense Type</label>
                                     <select
                                         value={offense}
                                         onChange={(e) => setOffense(e.target.value)}
-                                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:border-orange-500 outline-none"
+                                        style={{ width: '100%', padding: '0.8rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white' }}
                                     >
                                         <option>Reckless Driving</option>
                                         <option>Speeding</option>
@@ -132,82 +134,79 @@ export default function TrafficReporter() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold mb-2 text-slate-300 flex justify-between">
+                                    <label className="block text-sm font-medium mb-2 text-gray-400 flex justify-between">
                                         <span>Exact Location</span>
                                         <button
                                             type="button"
                                             onClick={getGeolocation}
-                                            className="text-xs text-orange-400 hover:text-orange-300"
+                                            className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
                                         >
                                             📍 Use My Location
                                         </button>
                                     </label>
                                     <input
                                         type="text"
-                                        placeholder="e.g. N1 South, William Nicol Offramp"
+                                        placeholder="e.g. N1 South, William Nicol"
                                         value={location}
                                         onChange={(e) => setLocation(e.target.value)}
-                                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:border-orange-500 outline-none"
+                                        style={{ width: '100%', padding: '0.8rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white' }}
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold mb-2 text-slate-300">Short Description</label>
+                                <label className="block text-sm font-medium mb-2 text-gray-400">Description</label>
                                 <textarea
                                     rows="3"
-                                    placeholder="Describe what happened..."
+                                    placeholder="Briefly describe the incident..."
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:border-orange-500 outline-none"
+                                    style={{ width: '100%', padding: '0.8rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white' }}
                                 />
                             </div>
 
                             <button
                                 type="submit"
                                 disabled={loading || !image}
-                                className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${loading || !image
-                                    ? 'bg-slate-800 text-slate-500'
-                                    : 'bg-orange-500 text-white shadow-lg shadow-orange-500/20 hover:scale-[1.02]'
-                                    }`}
+                                className="btn btn-primary w-full py-4 text-lg"
                             >
                                 {loading ? '🤖 AI Extracting Plate...' : '🚀 Submit Report'}
                             </button>
                         </form>
                     ) : (
-                        <div className="space-y-6 animate-in fade-in duration-500">
-                            <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-6 text-center">
+                        <div className="space-y-6 animate-in fade-in zoom-in duration-500">
+                            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-8 text-center">
                                 <div className="text-5xl mb-4">✅</div>
-                                <h2 className="text-2xl font-bold mb-2">Report Submitted!</h2>
-                                <p className="text-slate-400">AI identified vehicle plate:</p>
-                                <div className="text-4xl font-mono font-bold text-white mt-2 p-4 bg-black/30 rounded-xl inline-block">
+                                <h2 className="text-2xl font-bold mb-2 text-white">Report Logged</h2>
+                                <p className="text-gray-400">AI identified vehicle plate:</p>
+                                <div className="text-4xl font-mono font-bold text-emerald-400 mt-2 p-4 bg-black/40 rounded-xl inline-block border border-emerald-500/20">
                                     {result.plate}
                                 </div>
-                                <p className="mt-4 text-sm text-slate-500">
-                                    Vehicle: {result.details?.vehicle_description || 'Unidentified'} • {result.details?.province || 'South Africa'}
+                                <p className="mt-4 text-sm text-gray-500">
+                                    {result.details?.vehicle_description || 'Unknown Vehicle'} • {result.details?.province || 'South Africa'}
                                 </p>
                             </div>
 
-                            <div className="bg-slate-900/50 rounded-2xl p-6 border border-slate-800">
-                                <h3 className="font-bold mb-4 flex items-center gap-2">
+                            <div className="glass-panel" style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)' }}>
+                                <h3 className="font-bold mb-4 flex items-center gap-2 text-white">
                                     <span>📩</span> Next Steps
                                 </h3>
                                 <div className="space-y-4">
                                     <button
                                         onClick={openWhatsApp}
-                                        className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-3 rounded-xl font-bold hover:opacity-90"
+                                        className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-4 rounded-xl font-bold hover:brightness-110 transition-all shadow-lg"
                                     >
-                                        <span>💬</span> Report to JMPD WhatsApp
+                                        <span>💬</span> Send WhatsApp to JMPD
                                     </button>
-                                    <div className="text-xs text-center text-slate-500 px-4">
+                                    <p className="text-xs text-center text-gray-500 px-4">
                                         We have also added this to the CheckItSA database and will notify the RTCC (National Traffic Call Centre) automatically.
-                                    </div>
+                                    </p>
                                 </div>
                             </div>
 
                             <button
                                 onClick={() => setResult(null)}
-                                className="w-full py-3 text-slate-400 hover:text-white transition-colors"
+                                className="w-full py-3 text-gray-500 hover:text-white transition-colors font-medium"
                             >
                                 Submit another report
                             </button>
@@ -215,29 +214,29 @@ export default function TrafficReporter() {
                     )}
                 </div>
 
-                <div className="text-sm text-slate-500 bg-slate-900/30 p-4 rounded-xl border border-slate-800 mb-8">
-                    <strong>Legal Notice:</strong> Knowingly submitting false reports to traffic authorities is a criminal offense. Use this tool responsibly to improve South African road safety.
+                <div className="text-sm text-gray-500 bg-white/5 p-4 rounded-xl border border-white/10 mb-12 italic text-center">
+                    <strong>Legal Notice:</strong> Knowingly submitting false reports to traffic authorities is a criminal offense in South Africa.
                 </div>
 
                 {/* Map View Intelligence */}
-                <div className="mb-12">
-                    <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                        <span>🌍</span> Incident Map Intelligence
+                <div className="mb-20">
+                    <h2 className="text-2xl font-bold mb-6 flex items-center gap-3 text-white">
+                        <span className="bg-blue-500/20 p-2 rounded-lg text-blue-400">🌍</span> Incident Map Intelligence
                     </h2>
-                    <div className="glass-panel overflow-hidden border border-slate-800" style={{ height: '400px', borderRadius: '1.5rem', position: 'relative' }}>
+                    <div className="glass-panel overflow-hidden border border-white/10 shadow-2xl" style={{ height: '500px', borderRadius: '1.5rem', position: 'relative' }}>
                         <div id="map" style={{ height: '100%', width: '100%', background: '#020617' }}></div>
                         {!mapLoaded && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-slate-950/80 z-[1000] text-slate-500 italic">
-                                Loading interactive map...
+                            <div className="absolute inset-0 flex items-center justify-center bg-slate-950/80 z-[1000] text-gray-500 italic">
+                                Loading real-time incident map...
                             </div>
                         )}
                     </div>
                 </div>
 
                 {/* Wall of Shame Feed */}
-                <div className="space-y-6">
-                    <h2 className="text-2xl font-bold flex items-center gap-2">
-                        <span>📢</span> Community Wall of Shame
+                <div className="space-y-8">
+                    <h2 className="text-2xl font-bold flex items-center gap-3 text-white">
+                        <span className="bg-purple-500/20 p-2 rounded-lg text-purple-400">📢</span> Community Wall of Shame
                     </h2>
                     <div className="grid gap-4">
                         <RecentReports />
@@ -266,7 +265,7 @@ export default function TrafficReporter() {
             />
 
             <MapInitializer reports={result ? [result] : []} mapLoaded={mapLoaded} />
-        </div>
+        </main>
     )
 }
 
@@ -357,18 +356,20 @@ function RecentReports() {
     if (reports.length === 0) return <div className="text-center py-10 opacity-50 italic">No public reports yet. Be the first!</div>
 
     return reports.map(r => (
-        <div key={r.id} className="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl flex justify-between items-center hover:bg-slate-900 transition-colors">
-            <div className="flex items-center gap-4">
-                <div className="bg-black/40 px-3 py-2 rounded-lg font-mono font-bold text-orange-400 border border-orange-500/20">
+        <div key={r.id} className="glass-panel hover:bg-white/5 transition-all p-5 flex justify-between items-center group">
+            <div className="flex items-center gap-5">
+                <div className="bg-black/60 px-4 py-3 rounded-xl font-mono font-bold text-blue-400 border border-blue-500/20 shadow-inner group-hover:border-blue-500/40 transition-colors">
                     {r.plate_number}
                 </div>
                 <div>
-                    <div className="font-bold">{r.offense_type}</div>
-                    <div className="text-xs text-slate-500">{r.location} • {new Date(r.created_at).toLocaleDateString()}</div>
+                    <div className="font-bold text-white text-lg">{r.offense_type}</div>
+                    <div className="text-sm text-gray-500 flex items-center gap-2">
+                        <span>📍</span> {r.location} • {new Date(r.created_at).toLocaleDateString()}
+                    </div>
                 </div>
             </div>
-            <div className={`text-xs px-2 py-1 rounded ${r.status === 'verified' ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-500'}`}>
-                {r.status === 'verified' ? 'Police Notified' : 'Under Review'}
+            <div className={`text-xs px-3 py-1.5 rounded-full font-bold uppercase tracking-widest ${r.status === 'verified' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
+                {r.status === 'verified' ? 'Police Notified' : 'Logged'}
             </div>
         </div>
     ))
