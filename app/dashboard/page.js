@@ -131,14 +131,13 @@ export default function Dashboard() {
                         <p style={{ color: 'var(--color-text-muted)' }}>Manage your security profile and history.</p>
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                        <Link href="/verify/traffic" className="btn btn-primary" style={{ background: '#f59e0b', borderColor: '#f59e0b' }}>
-                            🚦 Road Sentinel
-                        </Link>
-                        {(user?.tier === 'elite' || user?.tier === 'custom' || user?.tier === 'ultimate') && (
-                            <Link href="/dashboard/developer" className="btn btn-outline" style={{ borderColor: 'var(--color-primary)', color: 'var(--color-primary)' }}>
-                                👨‍💻 Developer API
-                            </Link>
-                        )}
+                        <button
+                            onClick={() => alert("Road Sentinel is currently in development and will be coming soon!")}
+                            className="btn btn-primary"
+                            style={{ background: '#f59e0b', borderColor: '#f59e0b', opacity: 0.7, cursor: 'not-allowed' }}
+                        >
+                            🚦 Road Sentinel (Coming Soon)
+                        </button>
                         {stats.tier === 'free' && (
                             <Link href="/subscription" className="btn btn-primary">
                                 Upgrade Plan ⚡

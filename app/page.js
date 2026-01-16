@@ -113,18 +113,10 @@ export default function Home() {
             title="Road Sentinel"
             icon="🚦"
             desc="Report reckless drivers. AI extracts plates and notifies authorities."
-            href="/verify/traffic"
+            href="#"
             color="#F59E0B"
-            badge="NEW"
-          />
-          <Tile
-            title="Developer API"
-            icon={(!user || (user.tier !== 'elite' && user.tier !== 'custom' && user.tier !== 'enterprise')) ? "🔒" : "⚡"}
-            desc="Integrate our verification engine directly into your app."
-            href={(!user || (user.tier !== 'elite' && user.tier !== 'custom' && user.tier !== 'enterprise')) ? "/subscription" : "/dashboard/developer"}
-            color="#FBBF24"
-            badge={(!user || (user.tier !== 'elite' && user.tier !== 'custom' && user.tier !== 'enterprise')) ? "Elite Only" : "Enterprise"}
-            opacity={(!user || (user.tier !== 'elite' && user.tier !== 'custom' && user.tier !== 'enterprise')) ? 0.7 : 1}
+            badge="Coming Soon"
+            locked={true}
           />
         </div>
       </section>
@@ -269,78 +261,94 @@ export default function Home() {
   )
 }
 
-function Tile({ title, icon, desc, href, color, badge, opacity = 1 }) {
+function Tile({ title, icon, desc, href, color, badge, opacity = 1, locked = false }) {
   return (
-    <Link href={href} className="glass-panel hover-card" style={{
-      padding: '2rem',
-      textAlign: 'left',
-      position: 'relative',
-      overflow: 'hidden',
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      justifyContent: 'space-between',
-      border: '1px solid rgba(255, 255, 255, 0.05)',
-      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%)',
-      opacity: opacity
-    }}>
-      {badge && (
-        <div style={{
-          position: 'absolute',
-          top: '1rem',
-          right: '1rem',
-          background: `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, 0.2)`,
-          padding: '0.25rem 0.75rem',
-          borderRadius: '2rem',
-          fontSize: '0.7rem',
-          fontWeight: 'bold',
-          color: color,
-          border: `1px solid ${color}44`,
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em'
+    <div style={{ position: 'relative', height: '100%' }}>
+      <Link
+        href={locked ? "#" : href}
+        onClick={(e) => {
+          if (locked) {
+            e.preventDefault();
+            alert("This feature is currently in development and will be coming soon!");
+          }
+        }}
+        className={`glass-panel hover-card ${locked ? 'locked-tile' : ''}`}
+        style={{
+          padding: '2rem',
+          textAlign: 'left',
+          position: 'relative',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          justifyContent: 'space-between',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%)',
+          opacity: locked ? 0.6 : opacity,
+          cursor: locked ? 'not-allowed' : 'pointer',
+          filter: locked ? 'grayscale(0.5)' : 'none',
+          textDecoration: 'none',
+          color: 'inherit'
         }}>
-          {badge}
-        </div>
-      )}
+        {badge && (
+          <div style={{
+            position: 'absolute',
+            top: '1rem',
+            right: '1rem',
+            background: locked ? 'rgba(245, 158, 11, 0.2)' : `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, 0.2)`,
+            padding: '0.4rem 0.8rem',
+            borderRadius: '2rem',
+            fontSize: '0.75rem',
+            fontWeight: 'bold',
+            color: locked ? '#F59E0B' : color,
+            border: `1px solid ${locked ? '#F59E0B' : color}44`,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            zIndex: 2
+          }}>
+            {badge}
+          </div>
+        )}
 
-      <div>
-        <div className="icon-container" style={{
-          width: '3.5rem',
-          height: '3.5rem',
-          background: `rgba(${parseInt(color.slice(1, 3), 16) || 99}, ${parseInt(color.slice(3, 5), 16) || 102}, ${parseInt(color.slice(5, 7), 16) || 241}, 0.1)`,
-          borderRadius: '1rem',
+        <div>
+          <div className="icon-container" style={{
+            width: '3.5rem',
+            height: '3.5rem',
+            background: `rgba(${parseInt(color.slice(1, 3), 16) || 99}, ${parseInt(color.slice(3, 5), 16) || 102}, ${parseInt(color.slice(5, 7), 16) || 241}, 0.1)`,
+            borderRadius: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.5rem',
+            marginBottom: '1.5rem',
+            border: `1px solid ${color}33`,
+            boxShadow: `0 4px 20px -5px ${color}22`
+          }}>{icon}</div>
+
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '0.75rem', fontWeight: 600 }}>{title}</h3>
+          <p style={{ fontSize: '0.95rem', color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: '2rem' }}>{desc}</p>
+        </div>
+
+        <div style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '1.5rem',
-          marginBottom: '1.5rem',
-          border: `1px solid ${color}33`,
-          boxShadow: `0 4px 20px -5px ${color}22`
-        }}>{icon}</div>
+          color: locked ? 'var(--color-text-muted)' : color,
+          fontSize: '0.9rem',
+          fontWeight: 600
+        }}>
+          {locked ? 'Coming Soon' : 'Access Tool'} <span className="arrow-icon" style={{ marginLeft: '0.5rem' }}>→</span>
+        </div>
 
-        <h3 style={{ fontSize: '1.25rem', marginBottom: '0.75rem', fontWeight: 600 }}>{title}</h3>
-        <p style={{ fontSize: '0.95rem', color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: '2rem' }}>{desc}</p>
-      </div>
-
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        color: color,
-        fontSize: '0.9rem',
-        fontWeight: 600
-      }}>
-        Access Tool <span className="arrow-icon" style={{ marginLeft: '0.5rem' }}>→</span>
-      </div>
-
-      <div style={{
-        position: 'absolute',
-        bottom: '0',
-        left: '0',
-        width: '100%',
-        height: '3px',
-        background: `linear-gradient(90deg, ${color} 0%, transparent 100%)`,
-        opacity: 0.5
-      }}></div>
-    </Link>
+        <div style={{
+          position: 'absolute',
+          bottom: '0',
+          left: '0',
+          width: '100%',
+          height: '3px',
+          background: locked ? 'linear-gradient(90deg, #F59E0B 0%, transparent 100%)' : `linear-gradient(90deg, ${color} 0%, transparent 100%)`,
+          opacity: 0.5
+        }}></div>
+      </Link>
+    </div>
   )
 }
