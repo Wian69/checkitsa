@@ -22,13 +22,27 @@ export default function TrafficReporter() {
             alert("Geolocation is not supported by your browser")
             return
         }
-        navigator.geolocation.getCurrentPosition((position) => {
-            const { latitude, longitude } = position.coords
-            setCoords({ lat: latitude, lng: longitude })
-            setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
-        }, () => {
-            alert("Unable to retrieve your location")
-        })
+
+        // Show fetching state in location input
+        setLocation("📍 Fetching precise coordinates...")
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords
+                setCoords({ lat: latitude, lng: longitude })
+                setLocation(`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`)
+            },
+            (error) => {
+                console.error("Location error:", error)
+                setLocation("")
+                alert("Unable to retrieve your location. Please ensure location services are enabled or enter it manually.")
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        )
     }
 
     const handleImageChange = (e) => {
@@ -96,17 +110,26 @@ export default function TrafficReporter() {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div
                                 onClick={() => fileInputRef.current?.click()}
-                                className="border-2 border-dashed border-white/10 rounded-2xl p-8 text-center cursor-pointer hover:bg-white/5 transition-all"
-                                style={{ background: 'rgba(255,255,255,0.02)' }}
+                                className="group relative border-2 border-dashed border-white/10 rounded-2xl p-8 text-center cursor-pointer hover:bg-white/5 transition-all overflow-hidden"
+                                style={{ background: 'rgba(255,255,255,0.02)', minHeight: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
                             >
                                 {image ? (
-                                    <img src={image} alt="Preview" className="max-h-64 mx-auto rounded-lg mb-4 shadow-2xl" />
-                                ) : (
-                                    <div className="py-10">
-                                        <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">📸</div>
-                                        <div className="text-lg font-bold text-white">Snap or Upload a Photo</div>
-                                        <div className="text-sm text-gray-500">Make sure the number plate is clear and visible</div>
+                                    <div className="relative w-full h-full flex flex-col items-center">
+                                        <img src={image} alt="Preview" className="max-h-64 rounded-xl shadow-2xl border border-white/10" />
+                                        <button
+                                            type="button"
+                                            onClick={(e) => { e.stopPropagation(); setImage(null); }}
+                                            className="mt-4 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30 px-3 py-1.5 rounded-full transition-colors font-bold border border-red-500/20"
+                                        >
+                                            ✕ Remove Photo
+                                        </button>
                                     </div>
+                                ) : (
+                                    <>
+                                        <div className="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">📸</div>
+                                        <div className="text-lg font-bold text-white mb-1">Click to Capture or Upload</div>
+                                        <div className="text-sm text-gray-500 max-w-xs mx-auto">Ensure the license plate is clearly visible in the photo</div>
+                                    </>
                                 )}
                                 <input
                                     type="file"
@@ -123,34 +146,53 @@ export default function TrafficReporter() {
                                     <select
                                         value={offense}
                                         onChange={(e) => setOffense(e.target.value)}
-                                        style={{ width: '100%', padding: '0.8rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white' }}
+                                        style={{
+                                            width: '100%',
+                                            padding: '0.8rem',
+                                            borderRadius: '0.5rem',
+                                            background: '#0f172a',
+                                            border: '1px solid var(--color-border)',
+                                            color: 'white',
+                                            outline: 'none'
+                                        }}
+                                        className="focus:border-blue-500 transition-colors"
                                     >
-                                        <option>Reckless Driving</option>
-                                        <option>Speeding</option>
-                                        <option>Skipped Red Light</option>
-                                        <option>Illegal Overtaking</option>
-                                        <option>Unroadworthy Vehicle</option>
-                                        <option>Other</option>
+                                        <option value="Reckless Driving" style={{ background: '#0f172a' }}>Reckless Driving</option>
+                                        <option value="Speeding" style={{ background: '#0f172a' }}>Speeding</option>
+                                        <option value="Skipped Red Light" style={{ background: '#0f172a' }}>Skipped Red Light</option>
+                                        <option value="Illegal Overtaking" style={{ background: '#0f172a' }}>Illegal Overtaking</option>
+                                        <option value="Unroadworthy Vehicle" style={{ background: '#0f172a' }}>Unroadworthy Vehicle</option>
+                                        <option value="Other" style={{ background: '#0f172a' }}>Other</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-2 text-gray-400 flex justify-between">
-                                        <span>Exact Location</span>
+                                    <label className="block text-sm font-medium mb-2 text-gray-400">Exact Location</label>
+                                    <div className="relative group">
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. N1 South, William Nicol"
+                                            value={location}
+                                            onChange={(e) => setLocation(e.target.value)}
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.8rem',
+                                                paddingRight: '3rem',
+                                                borderRadius: '0.5rem',
+                                                background: 'rgba(255,255,255,0.05)',
+                                                border: '1px solid var(--color-border)',
+                                                color: 'white'
+                                            }}
+                                            className="focus:border-blue-400 transition-all outline-none"
+                                        />
                                         <button
                                             type="button"
                                             onClick={getGeolocation}
-                                            className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                                            title="Use my GPS location"
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-blue-400 hover:text-blue-300 transition-colors rounded-lg hover:bg-white/5"
                                         >
-                                            📍 Use My Location
+                                            📍
                                         </button>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. N1 South, William Nicol"
-                                        value={location}
-                                        onChange={(e) => setLocation(e.target.value)}
-                                        style={{ width: '100%', padding: '0.8rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white' }}
-                                    />
+                                    </div>
                                 </div>
                             </div>
 
