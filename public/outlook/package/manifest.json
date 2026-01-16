@@ -1,0 +1,83 @@
+{
+    "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.16",
+    "version": "1.0.1",
+    "id": "5db854e4-7d84-4638-89c0-6923c8930dcc",
+    "developer": {
+        "name": "CheckItSA",
+        "websiteUrl": "https://checkitsa.co.za",
+        "privacyUrl": "https://checkitsa.co.za/privacy",
+        "termsOfUseUrl": "https://checkitsa.co.za/terms"
+    },
+    "icons": {
+        "color": "color.png",
+        "outline": "outline.png"
+    },
+    "name": {
+        "short": "CheckItSA Scanner",
+        "full": "CheckItSA Scam & Phishing Scanner"
+    },
+    "description": {
+        "short": "Verify if an email is a scam.",
+        "full": "Protect yourself from fraud. CheckItSA analyzes sender reputation, domain age, and semantic intent using AI to catch phishing attempts directly in Outlook."
+    },
+    "accentColor": "#4F46E5",
+    "extensions": [
+        {
+            "requirementSets": [
+                {
+                    "name": "Mailbox",
+                    "version": "1.1"
+                }
+            ],
+            "ribbons": [
+                {
+                    "contexts": [
+                        "mailRead"
+                    ],
+                    "tabs": [
+                        {
+                            "id": "ScanTab",
+                            "label": "CheckItSA",
+                            "groups": [
+                                {
+                                    "id": "ScanGroup",
+                                    "label": "Security",
+                                    "controls": [
+                                        {
+                                            "id": "TaskpaneButton",
+                                            "type": "button",
+                                            "label": "Scan for Scams",
+                                            "icons": [
+                                                {
+                                                    "size": 16,
+                                                    "url": "https://checkitsa.co.za/icon-192.png"
+                                                },
+                                                {
+                                                    "size": 32,
+                                                    "url": "https://checkitsa.co.za/icon-192.png"
+                                                },
+                                                {
+                                                    "size": 80,
+                                                    "url": "https://checkitsa.co.za/icon-512.png"
+                                                }
+                                            ],
+                                            "action": {
+                                                "type": "showTaskpane",
+                                                "title": "CheckItSA Scan",
+                                                "sourceLocation": "https://checkitsa.co.za/outlook"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "validDomains": [
+        "checkitsa.co.za"
+    ]
+}

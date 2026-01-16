@@ -294,11 +294,11 @@ export default function Dashboard() {
                                 <div>
                                     <div style={{ color: 'white', fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '0.9rem' }}>A. New Outlook / Web (Recommended)</div>
                                     <div style={{ display: 'grid', gap: '0.4rem', paddingLeft: '0.5rem', borderLeft: '2px solid var(--color-primary)' }}>
-                                        <div>1. Download the **JSON Manifest** below.</div>
+                                        <div>1. Download the **Outlook App Package (ZIP)** below.</div>
                                         <div>2. In Outlook, click the **Apps** icon on the left sidebar.</div>
                                         <div>3. Click **Add Apps** &gt; **Manage your apps**.</div>
-                                        <div>4. Click **Add a custom app** &gt; **Add from file**.</div>
-                                        <div>5. Upload the downloaded JSON file.</div>
+                                        <div>4. Click **Upload a custom app** &gt; **Upload an app package**.</div>
+                                        <div>5. Select the downloaded ZIP file.</div>
                                     </div>
                                 </div>
 
@@ -318,17 +318,17 @@ export default function Dashboard() {
                         <div style={{ minWidth: '300px', textAlign: 'center' }}>
                             <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.05)' }}>
                                 <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '1.2rem', textAlign: 'left' }}>
-                                    <strong>Quick Selection:</strong><br />
-                                    Use **JSON** for Outlook Web or the "New Outlook" toggle. Use **XML** for the older Desktop version.
+                                    <strong>App Package:</strong><br />
+                                    The ZIP file is required for the "Upload an app package" method in modern Outlook.
                                 </div>
                                 <div style={{ display: 'grid', gap: '0.75rem' }}>
                                     <a
-                                        href="/outlook/manifest.json"
-                                        download="CheckItSA_Outlook.json"
+                                        href="/outlook/CheckItSA_Outlook_App.zip"
+                                        download="CheckItSA_Outlook_App.zip"
                                         className="btn btn-primary"
                                         style={{ width: '100%', justifyContent: 'center', padding: '1rem' }}
                                     >
-                                        📥 Download JSON (New)
+                                        📥 Download App Package (ZIP)
                                     </a>
                                     <a
                                         href="/outlook/manifest.xml"
@@ -338,6 +338,9 @@ export default function Dashboard() {
                                     >
                                         📄 Download XML (Classic)
                                     </a>
+                                    <div style={{ fontSize: '10px', marginTop: '0.5rem' }}>
+                                        Advanced: <a href="/outlook/manifest.json" download="CheckItSA_Outlook.json" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>Raw JSON Manifest</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
