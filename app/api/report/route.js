@@ -184,9 +184,14 @@ export async function POST(req) {
                         const toList = Array.isArray(to) ? to.map(e => ({ email: e, name: e.split('@')[0] })) : [{ email: to, name: 'Recipient' }]
                         await fetch('https://api.brevo.com/v3/smtp/email', {
                             method: 'POST',
-                            headers: { 'api-key': brevoApiKey, 'Content-Type': 'application/json', 'accept': 'application/json' },
+                            headers: {
+                                'api-key': brevoApiKey,
+                                'Content-Type': 'application/json',
+                                'accept': 'application/json',
+                                'List-Unsubscribe': `<mailto:unsubscribe@checkitsa.co.za?subject=unsubscribe>`
+                            },
                             body: JSON.stringify({
-                                sender: { name: 'CheckItSA Automated Reporting', email: 'no-reply@checkitsa.co.za' },
+                                sender: { name: 'CheckItSA Reports', email: 'no-reply@checkitsa.co.za' },
                                 to: toList, subject, htmlContent: html,
                                 attachment: attachments.length > 0 ? attachments : undefined
                             })
@@ -200,7 +205,11 @@ export async function POST(req) {
                     try {
                         await fetch('https://api.resend.com/emails', {
                             method: 'POST',
-                            headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
+                            headers: {
+                                'Authorization': `Bearer ${resendApiKey}`,
+                                'Content-Type': 'application/json',
+                                'List-Unsubscribe': `<mailto:unsubscribe@checkitsa.co.za?subject=unsubscribe>`
+                            },
                             body: JSON.stringify({
                                 from: 'CheckItSA Reports <onboarding@resend.dev>',
                                 bcc: Array.isArray(to) ? to : [to], // BCC for mass
