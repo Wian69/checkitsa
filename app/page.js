@@ -110,6 +110,14 @@ export default function Home() {
             color="#F87171"
           />
           <Tile
+            title="Road Sentinel"
+            icon="🚦"
+            desc="Report reckless drivers. AI extracts plates and notifies authorities."
+            href="/verify/traffic"
+            color="#F59E0B"
+            badge="NEW"
+          />
+          <Tile
             title="Developer API"
             icon={(!user || (user.tier !== 'elite' && user.tier !== 'custom' && user.tier !== 'enterprise')) ? "🔒" : "⚡"}
             desc="Integrate our verification engine directly into your app."

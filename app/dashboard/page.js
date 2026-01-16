@@ -130,7 +130,10 @@ export default function Dashboard() {
                         </h1>
                         <p style={{ color: 'var(--color-text-muted)' }}>Manage your security profile and history.</p>
                     </div>
-                    <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                        <Link href="/verify/traffic" className="btn btn-primary" style={{ background: '#f59e0b', borderColor: '#f59e0b' }}>
+                            🚦 Road Sentinel
+                        </Link>
                         {(user?.tier === 'elite' || user?.tier === 'custom' || user?.tier === 'ultimate') && (
                             <Link href="/dashboard/developer" className="btn btn-outline" style={{ borderColor: 'var(--color-primary)', color: 'var(--color-primary)' }}>
                                 👨‍💻 Developer API
