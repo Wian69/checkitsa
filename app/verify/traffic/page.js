@@ -63,11 +63,26 @@ export default function TrafficReporter() {
     const handleImageChange = (e) => {
         const file = e.target.files[0]
         if (file) {
+            console.log("File selected:", file.name, file.type, file.size)
+            if (file.size > 10 * 1024 * 1024) {
+                setError("Photo is too large. Please use a file under 10MB.")
+                return
+            }
             const reader = new FileReader()
+            setLoading(true)
             reader.onloadend = () => {
                 setImage(reader.result)
+                setLoading(false)
+                console.log("Image data loaded successfully")
+            }
+            reader.onerror = () => {
+                setError("Failed to read image file.")
+                setLoading(false)
             }
             reader.readAsDataURL(file)
+
+            // Reset input so searching the same file again works
+            e.target.value = ''
         }
     }
 
