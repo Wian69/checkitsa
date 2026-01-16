@@ -33,7 +33,7 @@ export default function BlogIndex() {
         <main className="min-h-screen pb-24">
             <Navbar />
 
-            <div className="container pt-32 px-4 mx-auto max-w-4xl">
+            <div className="container pt-48 px-4 mx-auto max-w-4xl">
                 <div className="text-center mb-16">
                     <div className="inline-block px-3 py-1 mb-4 text-sm rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-medium">
                         📚 Scam Prevention Guide

@@ -106,7 +106,7 @@ export default function BlogPost() {
         <main className="min-h-screen pb-24">
             <Navbar />
 
-            <article className="container pt-32 px-4 mx-auto max-w-3xl">
+            <article className="container pt-48 px-4 mx-auto max-w-3xl">
                 <Link href="/blog" className="text-white/40 hover:text-white mb-8 inline-block transition-colors">
                     ← Back to Articles
                 </Link>
