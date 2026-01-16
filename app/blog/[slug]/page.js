@@ -107,16 +107,16 @@ export default function BlogPost() {
             <Navbar />
 
             <article className="container pt-48 px-4 mx-auto max-w-3xl">
-                <Link href="/blog" className="text-white/40 hover:text-white mb-8 inline-block transition-colors">
-                    ← Back to Articles
+                <Link href="/blog" className="text-gray-400 hover:text-white mb-8 inline-flex items-center gap-2 transition-colors text-sm">
+                    <span>←</span> Back to Articles
                 </Link>
 
                 <header className="mb-12 text-center">
-                    <div className="text-indigo-400 font-bold uppercase tracking-wider text-sm mb-4">{post.category}</div>
-                    <h1 className="text-4xl md:text-5xl font-bold mb-6 font-outfit leading-tight">
+                    <div className="inline-block px-3 py-1 mb-4 text-sm rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 font-medium uppercase tracking-wider">{post.category}</div>
+                    <h1 className="text-4xl md:text-5xl font-bold mb-6 font-outfit leading-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
                         {post.title}
                     </h1>
-                    <div className="text-white/40">
+                    <div className="text-gray-400 font-light">
                         Published on {post.date}
                     </div>
                 </header>
