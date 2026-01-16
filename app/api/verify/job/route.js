@@ -22,7 +22,7 @@ const FREE_Job_HOSTS = [
 
 const URL_SHORTENERS = [
     'bit.ly', 'goo.gl', 'tinyurl.com', 'ow.ly', 't.co', 'is.gd', 'buff.ly', 'tr.im', 'rebrand.ly',
-    'tiny.cc', 'shorturl.at', 'bl.ink'
+    'tiny.cc', 'shorturl.at', 'bl.ink', 'bitly.cx', 'cutt.ly', 'clck.ru', 'rb.gy', 'shorte.st'
 ]
 
 const LEGIT_JOB_BOARDS = [
