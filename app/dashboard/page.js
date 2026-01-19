@@ -606,7 +606,6 @@ export default function Dashboard() {
                         setUser={setUser}
                     />
                 )}
-                )}
 
                 {/* Product Manager Modal */}
                 {managingListing && (
