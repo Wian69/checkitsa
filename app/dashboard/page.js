@@ -90,6 +90,7 @@ export default function Dashboard() {
 
     const [showPayoutModal, setShowPayoutModal] = useState(false)
     const [payoutLoading, setPayoutLoading] = useState(false)
+    const [managingListing, setManagingListing] = useState(null) // New state for modal
 
     // Payout Handler - Open Modal
     const handlePayoutClick = () => {
@@ -301,23 +302,36 @@ export default function Dashboard() {
                                             <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{ad.business_name}</div>
                                             <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{ad.category} • {ad.website_url}</div>
                                         </div>
-                                        <div style={{ textAlign: 'right' }}>
-                                            <span style={{
-                                                fontSize: '0.7rem',
-                                                padding: '0.2rem 0.6rem',
-                                                borderRadius: '4px',
-                                                background: ad.status === 'active' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)',
-                                                color: ad.status === 'active' ? '#10b981' : 'white',
-                                                textTransform: 'uppercase',
-                                                fontWeight: 'bold'
-                                            }}>
-                                                {ad.status}
-                                            </span>
-                                            {ad.expires_at && (
-                                                <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: '0.3rem' }}>
-                                                    Ends: {new Date(ad.expires_at).toLocaleDateString()}
-                                                </div>
+                                        <div style={{ textAlign: 'right', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                            {ad.status === 'active' && (
+                                                <button
+                                                    onClick={() => setManagingListing(ad)}
+                                                    className="btn btn-outline"
+                                                    style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
+                                                >
+                                                    📦 Manage Products
+                                                </button>
                                             )}
+                                            <div>
+                                                <span style={{
+                                                    fontSize: '0.7rem',
+                                                    padding: '0.2rem 0.6rem',
+                                                    borderRadius: '4px',
+                                                    background: ad.status === 'active' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+                                                    color: ad.status === 'active' ? '#10b981' : 'white',
+                                                    textTransform: 'uppercase',
+                                                    fontWeight: 'bold',
+                                                    display: 'block',
+                                                    marginBottom: '0.2rem'
+                                                }}>
+                                                    {ad.status}
+                                                </span>
+                                                {ad.expires_at && (
+                                                    <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>
+                                                        Ends: {new Date(ad.expires_at).toLocaleDateString()}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -592,8 +606,262 @@ export default function Dashboard() {
                         setUser={setUser}
                     />
                 )}
+                )}
+
+                {/* Product Manager Modal */}
+                {managingListing && (
+                    <ProductManagerModal
+                        user={user}
+                        listing={managingListing}
+                        onClose={() => setManagingListing(null)}
+                    />
+                )}
             </div>
         </main>
+    )
+}
+
+
+// --- Product Management Modal ---
+function ProductManagerModal({ user, listing, onClose }) {
+    const [products, setProducts] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [view, setView] = useState('list') // 'list' or 'add'
+
+    // Form State
+    const [formData, setFormData] = useState({
+        title: '',
+        price: '',
+        description: '',
+        category: 'Product',
+        image_url: ''
+    })
+    const [submitting, setSubmitting] = useState(false)
+
+    // Load Products
+    useEffect(() => {
+        fetch(`/api/user/products?listing_id=${listing.id}`)
+            .then(res => res.json())
+            .then(data => {
+                setProducts(data.products || [])
+                setLoading(false)
+            })
+    }, [listing.id])
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0]
+        if (!file) return
+
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            alert("File is too large. Max 5MB.")
+            return
+        }
+
+        const reader = new FileReader()
+        reader.onloadend = () => {
+            setFormData({ ...formData, image_url: reader.result })
+        }
+        reader.readAsDataURL(file)
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        setSubmitting(true)
+
+        try {
+            const res = await fetch('/api/user/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: user.email,
+                    listing_id: listing.id,
+                    ...formData,
+                    price: parseFloat(formData.price) || 0
+                })
+            })
+
+            if (res.ok) {
+                // Refresh list
+                const newProduct = { ...formData, id: Date.now(), price: parseFloat(formData.price) } // Optimistic update
+                setProducts([newProduct, ...products])
+                setView('list') // Go back to list
+                setFormData({ title: '', price: '', description: '', category: 'Product', image_url: '' }) // Reset
+            } else {
+                alert("Failed to add product.")
+            }
+        } catch (err) {
+            console.error(err)
+            alert("Error adding product.")
+        } finally {
+            setSubmitting(false)
+        }
+    }
+
+    const handleDelete = async (productId) => {
+        if (!confirm("Are you sure you want to delete this item?")) return
+
+        try {
+            const res = await fetch('/api/user/products', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: user.email,
+                    product_id: productId
+                })
+            })
+            if (res.ok) {
+                setProducts(products.filter(p => p.id !== productId))
+            }
+        } catch (err) {
+            alert("Failed to delete.")
+        }
+    }
+
+    return (
+        <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+            background: 'rgba(3, 7, 18, 0.95)', backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 2000, animation: 'fadeIn 0.3s ease-out'
+        }}>
+            <div className="glass-panel" style={{
+                width: '100%', maxWidth: '800px', height: '90vh',
+                display: 'flex', flexDirection: 'column',
+                padding: '0', overflow: 'hidden',
+                background: '#111', border: '1px solid var(--color-border)'
+            }}>
+                {/* Header */}
+                <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)' }}>
+                    <div>
+                        <h2 style={{ fontSize: '1.2rem', marginBottom: '0.25rem' }}>Using: {listing.business_name}</h2>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Manage Products & Listings</p>
+                    </div>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
+                </div>
+
+                {/* Content */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
+
+                    {view === 'list' ? (
+                        <>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                                <h3 style={{ fontSize: '1.5rem' }}>Your Catalog ({products.length})</h3>
+                                <button onClick={() => setView('add')} className="btn btn-primary">
+                                    + Add New Item
+                                </button>
+                            </div>
+
+                            {loading ? (
+                                <div style={{ color: 'var(--color-text-muted)', textAlign: 'center' }}>Loading...</div>
+                            ) : products.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '3rem', border: '1px dashed var(--color-border)', borderRadius: '1rem', color: 'var(--color-text-muted)' }}>
+                                    No products listed yet. Click "Add New Item" to start selling.
+                                </div>
+                            ) : (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                                    {products.map(p => (
+                                        <div key={p.id} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '0.5rem', overflow: 'hidden' }}>
+                                            <div style={{ height: '120px', background: '#000' }}>
+                                                {p.image_url && <img src={p.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                                            </div>
+                                            <div style={{ padding: '1rem' }}>
+                                                <div style={{ fontWeight: 'bold' }}>{p.title}</div>
+                                                <div style={{ color: 'var(--color-primary)', fontSize: '0.9rem' }}>R{p.price}</div>
+                                                <button
+                                                    onClick={() => handleDelete(p.id)}
+                                                    className="btn"
+                                                    style={{ width: '100%', marginTop: '0.5rem', fontSize: '0.8rem', padding: '0.25rem', background: 'rgba(220, 38, 38, 0.2)', color: '#fca5a5' }}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div style={{ maxWidth: '500px', margin: '0 auto' }}>
+                            <button onClick={() => setView('list')} className="btn" style={{ marginBottom: '1rem', color: 'var(--color-text-muted)', paddingLeft: 0 }}>
+                                ← Back to List
+                            </button>
+                            <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Add New Item</h3>
+
+                            <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Category</label>
+                                    <select
+                                        className="input"
+                                        style={{ width: '100%', background: '#222', color: 'white', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--color-border)' }}
+                                        value={formData.category}
+                                        onChange={e => setFormData({ ...formData, category: e.target.value })}
+                                    >
+                                        <option>Product</option>
+                                        <option>Property (Sale)</option>
+                                        <option>Property (Rent)</option>
+                                        <option>Vehicle</option>
+                                        <option>Service</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Item Title</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="e.g. 3 Bedroom House"
+                                        style={{ width: '100%', background: '#222', color: 'white', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--color-border)' }}
+                                        value={formData.title}
+                                        onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Price (R)</label>
+                                    <input
+                                        type="number"
+                                        required
+                                        placeholder="0.00"
+                                        style={{ width: '100%', background: '#222', color: 'white', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--color-border)' }}
+                                        value={formData.price}
+                                        onChange={e => setFormData({ ...formData, price: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Description</label>
+                                    <textarea
+                                        rows="4"
+                                        placeholder="Describe your item..."
+                                        style={{ width: '100%', background: '#222', color: 'white', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--color-border)' }}
+                                        value={formData.description}
+                                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Photo</label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        style={{ color: 'var(--color-text-muted)' }}
+                                    />
+                                    {formData.image_url && (
+                                        <img src={formData.image_url} style={{ height: '100px', marginTop: '1rem', borderRadius: '0.5rem' }} />
+                                    )}
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="btn btn-primary"
+                                    style={{ marginTop: '1rem', padding: '1rem', justifyContent: 'center' }}
+                                >
+                                    {submitting ? 'Creating...' : 'Create Listing'}
+                                </button>
+                            </form>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
     )
 }
 
