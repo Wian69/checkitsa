@@ -223,7 +223,45 @@ function LeadsContent() {
             // Weddings & Events
             { business_name: 'Weddings In Africa', email: 'cindy.weddingsinafrica@gmail.com', source: 'Web Search' },
             { business_name: 'Orion Hotels Events', email: 'events@orionhotels.co.za', source: 'Web Search' },
-            { business_name: 'Wedding Venue Co', email: 'contact@weddingvenue.co.za', source: 'Web Search' }
+            { business_name: 'Wedding Venue Co', email: 'contact@weddingvenue.co.za', source: 'Web Search' },
+
+            // Guest Houses
+            { business_name: 'Bloem Show Stay', email: 'info@bloemshow.co.za', source: 'Web Search' },
+            { business_name: 'Melville Guest', email: 'info@melvilleguest.co.za', source: 'Web Search' },
+            { business_name: 'Stellenbosch Lodges', email: 'info@stellenboschlodges.co.za', source: 'Web Search' },
+            { business_name: 'Middelburg Karoo', email: 'info@midkaroo.co.za', source: 'Web Search' },
+            { business_name: 'Orion Hotels', email: 'reservations@orionhotels.co.za', source: 'Web Search' },
+
+            // Accountants
+            { business_name: 'FinPro Accountants', email: 'info@finproaccountants.co.za', source: 'Web Search' },
+            { business_name: 'LearnAndSave', email: 'INFO@LearnAndSave.co.za', source: 'Web Search' },
+            { business_name: 'Leofin Rekenmeesters', email: 'mariaan@leofin.co.za', source: 'Web Search' },
+            { business_name: 'Lethu Accounts', email: 'books@lethuaccounts.co.za', source: 'Web Search' },
+            { business_name: 'PATC Accountants', email: 'gavin@patc.co.za', source: 'Web Search' },
+            { business_name: 'Zeelie Professional', email: 'hello@zeeliepasa.co.za', source: 'Web Search' },
+            { business_name: 'CFO360 Accountants', email: 'info@cfo360.co.za', source: 'Web Search' },
+            { business_name: 'CY Financial', email: 'cyfinancialservices@gmail.com', source: 'Web Search' },
+            { business_name: 'DAH Chartered', email: 'dalehair@dahca.co.za', source: 'Web Search' },
+            { business_name: 'Ackim Consultants', email: 'ackim.consultants@gmail.com', source: 'Web Search' },
+
+            // Cleaning Services
+            { business_name: 'Advanced Cleaning', email: 'enquiries@advcs.co.za', source: 'Web Search' },
+            { business_name: 'House of Cleaning', email: 'info@houseofcleaning.co.za', source: 'Web Search' },
+            { business_name: 'Vulithuba Cleaning', email: 'vulithuba@telkomsa.net', source: 'Web Search' },
+            { business_name: 'Nombie Trading', email: 'nombiecc@gmail.com', source: 'Web Search' },
+            { business_name: 'Africa Cleaning JHB', email: 'orders@acssa.co.za', source: 'Web Search' },
+            { business_name: 'Africa Cleaning CPT', email: 'salescpt@acssa.co.za', source: 'Web Search' },
+
+            // Construction
+            { business_name: 'Abil Services', email: 'ismail@abilservices.co.za', source: 'Web Search' },
+            { business_name: 'ACP Ceilings', email: 'sally.raine@acponline.co.za', source: 'Web Search' },
+            { business_name: 'Raubex Group', email: 'raubex@raubex.com', source: 'Web Search' },
+            { business_name: 'Vumile Consulting', email: 'admin@vumile.co.za', source: 'Web Search' },
+            { business_name: 'Concor Construction', email: 'info.construction@concor.co.za', source: 'Web Search' },
+            { business_name: 'Amos Builders', email: 'amosmakulfabuilders@gmail.com', source: 'Web Search' },
+            { business_name: 'Arti Homes', email: 'artihomes.sa@gmail.com', source: 'Web Search' },
+            { business_name: 'Dukes Construction', email: 'info@dukesconstruction.co.za', source: 'Web Search' },
+            { business_name: 'Eco-Pro Construction', email: 'manie@ecoprocon.co.za', source: 'Web Search' }
         ]
 
         for (const l of demoLeads) {
