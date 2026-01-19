@@ -61,6 +61,11 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Featured Listings Section (Promoted Businesses) */}
+      <div style={{ marginTop: '-4rem', position: 'relative', zIndex: 10 }}>
+        <FeaturedListings />
+      </div>
+
       {/* Tools Section */}
       <section id="tools" className="container content-section">
         <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
@@ -226,9 +231,6 @@ export default function Home() {
 
       {/* Business Reviews Section (HelloPeter Style) */}
       <BusinessReviews />
-
-      {/* Featured Listings Section */}
-      <FeaturedListings />
 
       {/* Global Intel Section */}
       <section className="container">
