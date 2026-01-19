@@ -6,7 +6,7 @@ export const getMarketingHtml = (businessName = "Business Owner") => `
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>How CheckItSA Works</title>
+    <title>Discover CheckItSA</title>
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9fafb;">
     <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; margin-top: 40px; margin-bottom: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
@@ -14,7 +14,7 @@ export const getMarketingHtml = (businessName = "Business Owner") => `
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 20px; text-align: center;">
             <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">CheckItSA</h1>
-            <p style="color: #ecfdf5; margin: 10px 0 0 0; font-size: 16px;">How We Build Trust For You</p>
+            <p style="color: #ecfdf5; margin: 10px 0 0 0; font-size: 16px;">The Digital Trust Standard</p>
         </div>
 
         <!-- Content -->
@@ -22,50 +22,56 @@ export const getMarketingHtml = (businessName = "Business Owner") => `
             <h2 style="color: #111827; font-size: 22px; font-weight: 700; margin-top: 0;">Hi ${businessName},</h2>
             
             <p style="font-size: 16px; color: #4b5563;">
-                We invited you to CheckItSA because you run a legitimate business. But you might be wondering: <strong>"How does this actually help me get more clients?"</strong>
+                You may have heard of <strong>CheckItSA</strong> recently. We are building South Africa's most advanced digital safety and verification platform.
+            </p>
+            
+            <p style="font-size: 16px; color: #4b5563;">
+                 Our goal is simple: <strong>Eliminate uncertainty</strong> in the South African economy.
             </p>
 
-            <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 20px; margin: 30px 0; border-radius: 0 8px 8px 0;">
-                <p style="margin: 0; color: #1e3a8a; font-weight: 600;">The Problem: Scams are everywhere.</p>
-                <p style="margin: 10px 0 0 0; color: #1e40af; font-size: 14px;">Customers are scared. They ignore ads and emails because they don't know who is real.</p>
+            <h3 style="color: #111827; font-size: 18px; font-weight: 700; margin-top: 30px;">What We Do:</h3>
+
+            <div style="margin: 20px 0;">
+                <!-- Feature 1 -->
+                <div style="display: flex; margin-bottom: 20px;">
+                    <div style="min-width: 40px; height: 40px; background-color: #d1fae5; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 20px;">🛡️</div>
+                    <div>
+                        <strong style="color: #111827;">We Stop Scams</strong>
+                        <p style="margin: 5px 0 0 0; font-size: 14px; color: #6b7280;">Our real-time scanning engine protects thousands of users from fraudulent websites, fake stores, and phishing links every day.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div style="display: flex; margin-bottom: 20px;">
+                    <div style="min-width: 40px; height: 40px; background-color: #d1fae5; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 20px;">🆔</div>
+                    <div>
+                        <strong style="color: #111827;">We Verify Identities</strong>
+                        <p style="margin: 5px 0 0 0; font-size: 14px; color: #6b7280;">From ID Number validation to Traffic Fine checks, we give individuals the tools to check who they are dealing with.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div style="display: flex;">
+                    <div style="min-width: 40px; height: 40px; background-color: #d1fae5; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 20px;">🏢</div>
+                    <div>
+                        <strong style="color: #111827;">We Verify Businesses (Like Yours)</strong>
+                        <p style="margin: 5px 0 0 0; font-size: 14px; color: #6b7280;">Legitimate businesses get verified against CIPC data. Once verified, you earn our <strong>Trusted Badge</strong>, proving to every customer that you are real, registered, and safe to pay.</p>
+                    </div>
+                </div>
             </div>
 
-            <h3 style="color: #111827; font-size: 18px; font-weight: 700;">Here is how CheckItSA fixes that for you:</h3>
-
-            <div style="margin: 25px 0;">
-                <div style="display: flex; margin-bottom: 20px;">
-                    <div style="min-width: 40px; height: 40px; background-color: #d1fae5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-weight: bold; color: #059669;">1</div>
-                    <div>
-                        <strong style="color: #111827;">We Verify You (Deeply)</strong>
-                        <p style="margin: 5px 0 0 0; font-size: 14px; color: #6b7280;">We check your CIPC registration, ID, Banking, and Business Address to prove you exist.</p>
-                    </div>
-                </div>
-
-                <div style="display: flex; margin-bottom: 20px;">
-                    <div style="min-width: 40px; height: 40px; background-color: #d1fae5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-weight: bold; color: #059669;">2</div>
-                    <div>
-                        <strong style="color: #111827;">You Get The "Verified" Badge</strong>
-                        <p style="margin: 5px 0 0 0; font-size: 14px; color: #6b7280;">This badge tells every visitor instantly: "This business is SAFE to pay."</p>
-                    </div>
-                </div>
-
-                <div style="display: flex;">
-                    <div style="min-width: 40px; height: 40px; background-color: #d1fae5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-weight: bold; color: #059669;">3</div>
-                    <div>
-                        <strong style="color: #111827;">We Send You Traffic</strong>
-                        <p style="margin: 5px 0 0 0; font-size: 14px; color: #6b7280;">Verified businesses appear on our Homepage Carousel and top search results.</p>
-                    </div>
-                </div>
+            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; text-align: center; margin: 30px 0;">
+                <p style="margin: 0; color: #374151; font-weight: 600;">"In a high-risk digital world, trust is your most valuable asset."</p>
             </div>
 
             <div style="text-align: center; margin: 40px 0;">
                 <a href="https://checkitsa.co.za/advertise" style="background-color: #059669; color: #ffffff; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.4);">
-                    Claim Your Verified Profile
+                    Get Verified & Join the Network
                 </a>
             </div>
             
-             <p style="font-size: 14px; color: #6b7280; text-align: center;">
-                 It costs less than taking a client for coffee (R99/month).
+            <p style="font-size: 14px; color: #6b7280; text-align: center;">
+                 Join the platform that is securing South Africa, one transaction at a time.
             </p>
         </div>
 

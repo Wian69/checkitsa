@@ -46,7 +46,9 @@ export async function POST(req) {
         const db = getRequestContext().env.DB
 
         if (action === 'increment') {
-            await db.prepare("UPDATE user_meta SET usage_count = usage_count + 1, updated_at = CURRENT_TIMESTAMP WHERE email = ?").bind(email).run()
+            const stmt1 = db.prepare("UPDATE user_meta SET usage_count = usage_count + 1, updated_at = CURRENT_TIMESTAMP WHERE email = ?").bind(email)
+            const stmt2 = db.prepare("UPDATE users SET searches = searches + 1 WHERE email = ?").bind(email)
+            await db.batch([stmt1, stmt2])
         } else if (action === 'history') {
             await db.prepare(
                 "INSERT INTO search_history (user_email, search_type, query, result_status) VALUES (?, ?, ?, ?)"
@@ -57,7 +59,7 @@ export async function POST(req) {
             ).bind(data.tier, data.customLimit || 0, email).run()
 
             // Also sync back to main users table for consistency
-            await db.prepare("UPDATE users SET tier = ? WHERE email = ?").bind(data.tier, email).run()
+            await db.prepare("UPDATE users SET tier = ?, custom_limit = ? WHERE email = ?").bind(data.tier, data.customLimit || 0, email).run()
         }
 
         return NextResponse.json({ success: true })
