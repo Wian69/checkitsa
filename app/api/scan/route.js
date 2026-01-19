@@ -111,7 +111,11 @@ export async function POST(request) {
         } catch (e) { console.log('Google CSE error:', e) }
 
         // White-list Own Domain & Trusted Giants
-        const TRUSTED = ['checkitsa.co.za', 'google.com', 'microsoft.com', 'apple.com', 'fnb.co.za', 'standardbank.co.za', 'absa.co.za', 'capitec.co.za', 'nedbank.co.za']
+        const TRUSTED = [
+            'checkitsa.co.za', 'google.com', 'microsoft.com', 'apple.com',
+            'fnb.co.za', 'standardbank.co.za', 'absa.co.za', 'capitec.co.za', 'nedbank.co.za',
+            'betway.co.za', 'hollywoodbets.net', 'opera.com', 'operamini.com', 'lottostar.co.za'
+        ]
         if (TRUSTED.some(t => domain.includes(t))) {
             return NextResponse.json({
                 safe: true,
