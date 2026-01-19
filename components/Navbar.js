@@ -74,6 +74,7 @@ export default function Navbar() {
                         <Link href="/about" style={{ fontSize: '0.9375rem', opacity: 0.8 }}>About</Link>
                         <Link href="/trust" style={{ fontSize: '0.9375rem', opacity: 0.8 }}>Trust</Link>
                         <Link href="/advertise" style={{ fontSize: '0.9375rem', color: 'var(--color-primary-light)', fontWeight: 600 }}>Advertise</Link>
+                        <Link href="/directory" style={{ fontSize: '0.9375rem', opacity: 0.8 }}>Browse Businesses</Link>
                     </div>
 
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '2rem' }}>

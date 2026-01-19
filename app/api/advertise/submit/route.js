@@ -22,7 +22,7 @@ export async function POST(req) {
         return NextResponse.json({
             success: true,
             listingId: lastRowId,
-            amount: 150
+            amount: 99
         });
 
     } catch (error) {

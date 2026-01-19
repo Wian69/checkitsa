@@ -321,7 +321,7 @@ export default function AdvertisePage() {
                     <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>30-Day Listing</span>
                     <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Verified Badge + Top Spot</p>
                   </div>
-                  <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>R150.00</span>
+                  <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>R99.00</span>
                 </div>
               </div>
 
