@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /admin/
+Disallow: /confirm/
+
+# Sitemap
+Sitemap: https://checkitsa.co.za/sitemap.xml
