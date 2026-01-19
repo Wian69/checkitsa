@@ -3,8 +3,17 @@
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import LoadingOverlay from '@/components/LoadingOverlay';
+import AuthGuard from '@/components/AuthGuard';
 
 export default function BusinessVerificationPage() {
+    return (
+        <AuthGuard>
+            <BusinessContent />
+        </AuthGuard>
+    )
+}
+
+function BusinessContent() {
     const [user, setUser] = useState(null)
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);

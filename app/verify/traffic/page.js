@@ -4,8 +4,17 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import Script from 'next/script'
 import LoadingOverlay from '@/components/LoadingOverlay'
+import AuthGuard from '@/components/AuthGuard'
 
 export default function TrafficReporter() {
+    return (
+        <AuthGuard>
+            <TrafficContent />
+        </AuthGuard>
+    )
+}
+
+function TrafficContent() {
     const [image, setImage] = useState(null)
     const [loading, setLoading] = useState(false)
     const [result, setResult] = useState(null)

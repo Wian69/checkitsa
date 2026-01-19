@@ -6,8 +6,17 @@ import { useState, useEffect } from 'react'
 import { trackSearch, addToHistory, incrementSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
 import LoadingOverlay from '@/components/LoadingOverlay'
+import AuthGuard from '@/components/AuthGuard'
 
 export default function IDCheck() {
+    return (
+        <AuthGuard>
+            <IDContent />
+        </AuthGuard>
+    )
+}
+
+function IDContent() {
     const [idNumber, setIdNumber] = useState('')
     const [result, setResult] = useState(null)
     const [loading, setLoading] = useState(false)

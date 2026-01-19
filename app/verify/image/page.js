@@ -5,8 +5,17 @@ import ReportButton from '@/components/ReportButton'
 import { useState } from 'react'
 import { trackSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
+import AuthGuard from '@/components/AuthGuard'
 
 export default function ImageScanner() {
+    return (
+        <AuthGuard>
+            <ImageContent />
+        </AuthGuard>
+    )
+}
+
+function ImageContent() {
     const [file, setFile] = useState(null)
     const [result, setResult] = useState(null)
     const [loading, setLoading] = useState(false)

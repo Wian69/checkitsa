@@ -4,8 +4,17 @@ import Navbar from '@/components/Navbar'
 
 
 import { useState } from 'react'
+import AuthGuard from '@/components/AuthGuard'
 
 export default function FinesCheck() {
+    return (
+        <AuthGuard>
+            <FinesContent />
+        </AuthGuard>
+    )
+}
+
+function FinesContent() {
     const [inputType, setInputType] = useState('id')
     const [inputValue, setInputValue] = useState('')
 

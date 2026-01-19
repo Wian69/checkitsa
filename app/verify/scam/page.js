@@ -7,8 +7,17 @@ import { trackSearch, checkLimit, addToHistory, incrementSearch } from '@/utils/
 import { useRouter } from 'next/navigation'
 import LoadingOverlay from '@/components/LoadingOverlay'
 import ShareButton from '@/components/ShareButton'
+import AuthGuard from '@/components/AuthGuard'
 
 export default function ScamCheck() {
+    return (
+        <AuthGuard>
+            <ScamContent />
+        </AuthGuard>
+    )
+}
+
+function ScamContent() {
     const [input, setInput] = useState('')
     const [result, setResult] = useState(null)
     const [loading, setLoading] = useState(false)

@@ -3,8 +3,17 @@
 import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import Script from 'next/script'
+import AuthGuard from '@/components/AuthGuard'
 
 export default function AdvertisePage() {
+  return (
+    <AuthGuard>
+      <AdvertiseContent />
+    </AuthGuard>
+  )
+}
+
+function AdvertiseContent() {
   const [formData, setFormData] = useState({
     businessName: '',
     websiteUrl: '',

@@ -4,8 +4,17 @@ import AdBanner from '@/components/AdBanner'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import AuthGuard from '@/components/AuthGuard'
 
 export default function GamblingCheck() {
+    return (
+        <AuthGuard>
+            <GamblingContent />
+        </AuthGuard>
+    )
+}
+
+function GamblingContent() {
     const [searchTerm, setSearchTerm] = useState('')
     const router = useRouter()
 

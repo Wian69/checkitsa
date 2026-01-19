@@ -7,8 +7,17 @@ import { trackSearch, addToHistory, incrementSearch } from '@/utils/searchLimit'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import LoadingOverlay from '@/components/LoadingOverlay'
+import AuthGuard from '@/components/AuthGuard'
 
 export default function EmailVerify() {
+    return (
+        <AuthGuard>
+            <EmailContent />
+        </AuthGuard>
+    )
+}
+
+function EmailContent() {
     const [formData, setFormData] = useState({ sender: '', subject: '', content: '' })
     const [result, setResult] = useState(null)
     const [loading, setLoading] = useState(false)
