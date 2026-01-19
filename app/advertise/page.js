@@ -10,24 +10,65 @@ export default function AdvertisePage() {
     websiteUrl: '',
     description: '',
     category: 'Security',
-    logoUrl: ''
+    logoUrl: '',
+    registrationNumber: '',
+    images: []
   })
   const [status, setStatus] = useState('idle') // idle, submitting, paying, success, error
   const [message, setMessage] = useState('')
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    const localUser = localStorage.getItem('checkitsa_user')
+    if (localUser) {
+      setUser(JSON.parse(localUser))
+    }
+  }, [])
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files)
+    if (files.length + formData.images.length > 4) {
+      alert("Maximum 4 images allowed")
+      return
+    }
+
+    files.forEach(file => {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, reader.result]
+        }))
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
+  const removeImage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }))
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!user) {
+      setStatus('error')
+      setMessage('Please log in to submit a listing.')
+      return
+    }
     setStatus('submitting')
 
     try {
       const res = await fetch('/api/advertise/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, email: user?.email })
+        body: JSON.stringify({ ...formData, email: user.email })
       })
 
       const data = await res.json()
@@ -168,6 +209,27 @@ export default function AdvertisePage() {
               </div>
 
               <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#a5b4fc' }}>Registration Number (CIPC)</label>
+                <input
+                  type="text"
+                  name="registrationNumber"
+                  required
+                  value={formData.registrationNumber}
+                  onChange={handleChange}
+                  placeholder="e.g. 2021/123456/07"
+                  style={{
+                    width: '100%',
+                    padding: '0.8rem 1rem',
+                    background: 'rgba(0,0,0,0.3)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '0.5rem',
+                    color: 'white',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#a5b4fc' }}>Category</label>
                 <select
                   name="category"
@@ -189,6 +251,47 @@ export default function AdvertisePage() {
                   <option value="Retail">Retail & E-commerce</option>
                   <option value="Other">Other Services</option>
                 </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#a5b4fc' }}>Business Photos (Max 4)</label>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  gap: '1rem',
+                  marginBottom: '1rem'
+                }}>
+                  {formData.images.map((img, idx) => (
+                    <div key={idx} style={{ position: 'relative', aspectRatio: '1', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid var(--color-border)' }}>
+                      <img src={img} alt="Business" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(idx)}
+                        style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(239, 68, 68, 0.8)', border: 'none', borderRadius: '50%', color: 'white', width: '20px', height: '20px', cursor: 'pointer', fontSize: '12px' }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  {formData.images.length < 4 && (
+                    <label style={{
+                      aspectRatio: '1',
+                      border: '2px dashed var(--color-border)',
+                      borderRadius: '0.5rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                      color: 'var(--color-text-muted)',
+                      background: 'rgba(255,255,255,0.02)'
+                    }}>
+                      <span>+ Add</span>
+                      <input type="file" accept="image/*" multiple onChange={handleImageUpload} style={{ display: 'none' }} />
+                    </label>
+                  )}
+                </div>
               </div>
 
               <div>

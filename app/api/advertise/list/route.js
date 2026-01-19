@@ -12,7 +12,7 @@ export async function GET(req) {
         const q = searchParams.get('q');
         const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
 
-        let query = `SELECT id, business_name, website_url, description, category, logo_url 
+        let query = `SELECT id, business_name, website_url, description, category, logo_url, registration_number, images 
                  FROM listings 
                  WHERE status = 'active' AND expires_at > ?`;
         let params = [now];

@@ -36,6 +36,8 @@ CREATE TABLE IF NOT EXISTS listings (
     logo_url TEXT,
     description TEXT,
     category TEXT,
+    registration_number TEXT, -- Added for business verification
+    images TEXT, -- Added for multi-image support (JSON string)
     status TEXT DEFAULT 'unpaid', -- unpaid, pending_review, active, expired
     payment_ref TEXT UNIQUE,
     amount_paid FLOAT,

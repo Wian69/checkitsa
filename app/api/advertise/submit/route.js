@@ -4,7 +4,7 @@ export const runtime = 'edge';
 
 export async function POST(req) {
     try {
-        const { businessName, websiteUrl, description, category, logoUrl, email } = await req.json();
+        const { businessName, websiteUrl, description, category, logoUrl, email, registrationNumber, images } = await req.json();
         const db = req.context?.env?.DB || process.env.DB;
 
         if (!db) {
@@ -12,10 +12,12 @@ export async function POST(req) {
             return NextResponse.json({ error: 'Database connection failed' }, { status: 500 });
         }
 
+        const imagesJson = Array.isArray(images) ? JSON.stringify(images) : null;
+
         const { lastRowId } = await db.prepare(
-            `INSERT INTO listings (user_email, business_name, website_url, description, category, logo_url, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
-        ).bind(email, businessName, websiteUrl, description, category, logoUrl, 'unpaid').run();
+            `INSERT INTO listings (user_email, business_name, website_url, description, category, logo_url, registration_number, images, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(email, businessName, websiteUrl, description, category, logoUrl, registrationNumber, imagesJson, 'unpaid').run();
 
         return NextResponse.json({
             success: true,

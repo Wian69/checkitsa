@@ -126,22 +126,35 @@ export default function AdminDashboard() {
                 {activeTab === 'listings' ? (
                     <div style={{ display: 'grid', gap: '1rem' }}>
                         {listings.map(l => (
-                            <div key={l.id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div>
-                                    <h3 style={{ margin: 0 }}>{l.business_name}</h3>
-                                    <p style={{ margin: '0.2rem 0', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>{l.website_url}</p>
-                                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                                        <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: '4px', background: l.status === 'active' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)', color: l.status === 'active' ? '#10b981' : 'white' }}>
-                                            {l.status.toUpperCase()}
-                                        </span>
-                                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Expires: {l.expires_at || 'Never'}</span>
+                            <div key={l.id} className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                    <div>
+                                        <h3 style={{ margin: 0, fontSize: '1.4rem' }}>{l.business_name}</h3>
+                                        <p style={{ margin: '0.2rem 0', fontSize: '0.95rem', color: 'var(--color-primary)' }}>{l.website_url}</p>
+                                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: '4px', background: l.status === 'active' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)', color: l.status === 'active' ? '#10b981' : 'white', fontWeight: 'bold' }}>
+                                                {l.status.toUpperCase()}
+                                            </span>
+                                            <span style={{ fontSize: '0.85rem', color: 'white', fontWeight: 600 }}>CIPC: {l.registration_number || 'N/A'}</span>
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>• Expires: {l.expires_at ? new Date(l.expires_at).toLocaleDateString() : 'Never'}</span>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        {l.status !== 'active' && <button onClick={() => handleUpdateStatus(l.id, 'active')} className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>Approve</button>}
+                                        {l.status === 'active' && <button onClick={() => handleUpdateStatus(l.id, 'expired')} className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>Expire</button>}
+                                        <button onClick={() => handleDeleteListing(l.id)} className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }}>Delete</button>
                                     </div>
                                 </div>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    {l.status !== 'active' && <button onClick={() => handleUpdateStatus(l.id, 'active')} className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>Approve</button>}
-                                    {l.status === 'active' && <button onClick={() => handleUpdateStatus(l.id, 'expired')} className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>Expire</button>}
-                                    <button onClick={() => handleDeleteListing(l.id)} className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }}>Delete</button>
-                                </div>
+
+                                {l.images && (
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '1rem' }}>
+                                        {JSON.parse(l.images).map((img, idx) => (
+                                            <a key={idx} href={img} target="_blank" rel="noopener noreferrer" style={{ aspectRatio: '1', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid var(--color-border)', display: 'block' }}>
+                                                <img src={img} alt="Business Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         ))}
                         {listings.length === 0 && <p style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>No ad listings found.</p>}

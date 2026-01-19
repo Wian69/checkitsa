@@ -111,31 +111,50 @@ export default function BusinessVerificationPage() {
                             <span style={{ fontSize: '1rem' }}>🛡️</span> Verified Promoted Recommendations
                         </h3>
                         {promoted.map(p => (
-                            <a key={p.id} href={p.website_url} target="_blank" rel="noopener noreferrer"
+                            <div key={p.id}
                                 style={{
                                     display: 'flex',
-                                    alignItems: 'center',
+                                    flexDirection: 'column',
                                     gap: '1.5rem',
                                     background: 'linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.02) 100%)',
-                                    padding: '1.5rem',
-                                    borderRadius: '1rem',
+                                    padding: '2rem',
+                                    borderRadius: '1.5rem',
                                     border: '1px solid rgba(16, 185, 129, 0.2)',
-                                    textDecoration: 'none',
-                                    color: 'inherit',
                                     marginBottom: '1rem',
-                                    transition: 'transform 0.2s ease',
+                                    position: 'relative',
+                                    overflow: 'hidden'
                                 }}
-                                className="hover-card"
                             >
-                                <div style={{ width: '3rem', height: '3rem', background: 'rgba(255,255,255,0.05)', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
-                                    {p.business_name.charAt(0)}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                                    <div style={{ width: '3.5rem', height: '3.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        {p.business_name.charAt(0)}
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <h4 style={{ margin: 0, fontSize: '1.3rem', color: 'white' }}>{p.business_name}</h4>
+                                        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginTop: '0.25rem' }}>
+                                            <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 'bold' }}>{p.category}</span>
+                                            {p.registration_number && (
+                                                <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.05)', padding: '0.1rem 0.5rem', borderRadius: '4px' }}>
+                                                    CIPC: {p.registration_number}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <a href={p.website_url} target="_blank" rel="noopener noreferrer" style={{ padding: '0.6rem 1.2rem', borderRadius: '0.5rem', background: '#10b981', color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.85rem' }}>Visit Site</a>
                                 </div>
-                                <div style={{ flex: 1 }}>
-                                    <h4 style={{ margin: 0, fontSize: '1.1rem' }}>{p.business_name}</h4>
-                                    <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{p.description}</p>
-                                </div>
-                                <div style={{ color: '#10b981', fontWeight: 'bold', fontSize: '0.8rem' }}>Visit Official Site →</div>
-                            </a>
+
+                                <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>{p.description}</p>
+
+                                {p.images && (
+                                    <div style={{ display: 'flex', gap: '0.75rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+                                        {JSON.parse(p.images).map((img, idx) => (
+                                            <a key={idx} href={img} target="_blank" rel="noopener noreferrer" style={{ flex: '0 0 100px', height: '100px', borderRadius: '0.75rem', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                <img src={img} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         ))}
                     </div>
                 )}

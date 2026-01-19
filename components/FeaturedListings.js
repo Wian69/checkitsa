@@ -42,7 +42,7 @@ export default function FeaturedListings() {
                 gap: '1.5rem'
             }}>
                 {listings.map((item) => (
-                    <a key={item.id} href={item.website_url} target="_blank" rel="noopener noreferrer" className="glass-panel hover-card" style={{
+                    <div key={item.id} className="glass-panel hover-card" style={{
                         padding: '2rem',
                         textDecoration: 'none',
                         color: 'inherit',
@@ -72,24 +72,47 @@ export default function FeaturedListings() {
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             <div style={{
-                                width: '3rem',
-                                height: '3rem',
+                                width: '3.5rem',
+                                height: '3.5rem',
                                 background: 'rgba(255,255,255,0.05)',
                                 borderRadius: '0.75rem',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                fontSize: '1.2rem'
+                                fontSize: '1.4rem',
+                                border: '1px solid rgba(255,255,255,0.1)'
                             }}>{item.business_name.charAt(0)}</div>
                             <div>
-                                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.1rem' }}>{item.business_name}</h3>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--color-primary)', fontWeight: 'bold', textTransform: 'uppercase' }}>{item.category}</span>
+                                <h3 style={{ fontSize: '1.2rem', marginBottom: '0.1rem' }}>{item.business_name}</h3>
+                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '0.7rem', color: 'var(--color-primary)', fontWeight: 'bold' }}>{item.category}</span>
+                                    {item.registration_number && (
+                                        <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.05)', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>
+                                            Reg: {item.registration_number}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
                         <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', lineHeight: 1.5, flex: 1 }}>{item.description}</p>
 
-                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-primary)' }}>Visit Website →</div>
+                        {item.images && (
+                            <div style={{ display: 'flex', gap: '0.5rem', margin: '0.5rem 0' }}>
+                                {JSON.parse(item.images).slice(0, 3).map((img, idx) => (
+                                    <div key={idx} style={{ width: '60px', height: '60px', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        <img src={img} alt="Business" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    </div>
+                                ))}
+                                {JSON.parse(item.images).length > 3 && (
+                                    <div style={{ width: '60px', height: '60px', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                                        +{JSON.parse(item.images).length - 3}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        <a href={item.website_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-primary)', textDecoration: 'none' }} className="hover:underline">Visit Website →</a>
 
                         <div style={{
                             position: 'absolute',
@@ -100,7 +123,7 @@ export default function FeaturedListings() {
                             background: 'linear-gradient(90deg, #10b981 0%, transparent 100%)',
                             opacity: 0.3
                         }}></div>
-                    </a>
+                    </div>
                 ))}
             </div>
         </section>
