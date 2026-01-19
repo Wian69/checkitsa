@@ -99,11 +99,20 @@ function LeadsContent() {
     const seedLeads = async () => {
         if (!confirm("This will add 5 demo leads. Continue?")) return
         const demoLeads = [
-            { business_name: 'PlumbingCenturion', email: 'info@plumbingcenturion.co.za', source: 'Web Search' },
-            { business_name: 'Centurion Plumbers', email: 'info@centurionplumbers.africa', source: 'Web Search' },
-            { business_name: 'Cape Town Electricians', email: 'heath@electriciancapetown.co.za', source: 'Web Search' },
-            { business_name: 'Richie Rich Elec', email: 'richierichelec@gmail.com', source: 'Web Search' },
-            { business_name: 'Abcord Electrical', email: 'abcord@mweb.co.za', source: 'Web Search' }
+            // Plumbers
+            { business_name: 'Plumbers SA', email: 'contact@plumbers.co.za', source: 'Web Search' },
+            { business_name: 'Bettafix Plumbing', email: 'stephen@bettafixplumbing.co.za', source: 'Web Search' },
+            { business_name: 'A Plumbing King', email: 'plumbingking.hh@gmail.com', source: 'Web Search' },
+            { business_name: 'Mokopane Plumbing', email: 'jeffrey@kekana.com', source: 'Web Search' },
+            { business_name: 'EC Plumbers', email: 'echitau@yahoo.com', source: 'Web Search' },
+            { business_name: 'Bonjanala Emergence', email: 'faraimaketo7@gmail.com', source: 'Web Search' },
+            // Hair & Beauty
+            { business_name: 'Elite Hair & Beauty', email: 'info@elitehair.co.za', source: 'Web Search' },
+            { business_name: 'Partners Hair Design', email: 'hello@partnershair.co.za', source: 'Web Search' },
+            { business_name: 'Relaxatia Beauty', email: 'relaxatiasalon@gmail.com', source: 'Web Search' },
+            // Real Estate
+            { business_name: 'Property Inspector', email: 'propertyinspectorbloemfontein@gmail.com', source: 'Web Search' },
+            { business_name: 'Global Estates', email: 'henda@globalestates.co.za', source: 'Web Search' }
         ]
 
         for (const l of demoLeads) {
