@@ -266,11 +266,25 @@ export async function POST(request) {
             if (dataIdentity.knowledgeGraph.ratingCount) extracted.reviews = dataIdentity.knowledgeGraph.ratingCount;
         }
 
-        // DB: Increment Usage
+        // DB: Increment Usage and Sync Meta
         if (env.DB && email) {
             try {
-                await env.DB.prepare("UPDATE users SET searches = searches + 1 WHERE email = ?").bind(email).run();
-                console.log(`[Verify] Incremented search count for ${email}`);
+                // Update both 'users' (Primary) and 'user_meta' (Dashboard Stats)
+                // Using lower(email) to ensure case-insensitive match
+                const stmt1 = env.DB.prepare("UPDATE users SET searches = searches + 1 WHERE lower(email) = lower(?)").bind(email);
+                const stmt2 = env.DB.prepare("UPDATE user_meta SET usage_count = usage_count + 1, updated_at = CURRENT_TIMESTAMP WHERE lower(email) = lower(?)").bind(email);
+
+                const batchResult = await env.DB.batch([stmt1, stmt2]);
+
+                // Check if rows were actually modified
+                const changes = batchResult.reduce((acc, r) => acc + (r.meta?.changes || 0), 0);
+
+                if (changes > 0) {
+                    console.log(`[Verify] Incremented search count for ${email}. Total DB changes: ${changes}`);
+                } else {
+                    console.warn(`[Verify] Warning: No rows updated for ${email}. User might not exist in simple DB lookup.`);
+                }
+
             } catch (e) {
                 console.error("[Verify] Failed to increment usage:", e);
             }
