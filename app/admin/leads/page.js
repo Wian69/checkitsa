@@ -3,7 +3,15 @@ import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import AuthGuard from '@/components/AuthGuard'
 
-function LeadsPage() {
+export default function LeadsPage() {
+    return (
+        <AuthGuard>
+            <LeadsContent />
+        </AuthGuard>
+    )
+}
+
+function LeadsContent() {
     const [leads, setLeads] = useState([])
     const [loading, setLoading] = useState(true)
     const [newLead, setNewLead] = useState({ business_name: '', email: '', source: 'Manual' })
@@ -201,5 +209,3 @@ function LeadsPage() {
         </main>
     )
 }
-
-export default AuthGuard(LeadsPage)
