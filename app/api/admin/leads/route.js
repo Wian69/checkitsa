@@ -14,6 +14,25 @@ export async function GET(req) {
         }
 
         const db = req.context?.env?.DB || process.env.DB;
+
+        // Ensure table exists (lazy migration for dev speed)
+        try {
+            await db.prepare("SELECT 1 FROM leads LIMIT 1").first();
+        } catch (e) {
+            console.log("Creating leads table...");
+            await db.prepare(`
+                CREATE TABLE IF NOT EXISTS leads (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    business_name TEXT NOT NULL,
+                    email TEXT UNIQUE NOT NULL,
+                    source TEXT DEFAULT 'Manual',
+                    status TEXT DEFAULT 'New',
+                    last_contacted_at DATETIME,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            `).run();
+        }
+
         const { results } = await db.prepare("SELECT * FROM leads ORDER BY created_at DESC").all();
 
         return NextResponse.json({ leads: results || [] });
