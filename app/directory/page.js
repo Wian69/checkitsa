@@ -135,7 +135,9 @@ export default function DirectoryPage() {
                                                 <a href={l.website_url} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }}>
                                                     Visit Website
                                                 </a>
-                                                {/* Future: View Profile */}
+                                                <Link href={`/business/${l.id}`} className="btn btn-outline" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }}>
+                                                    View Profile
+                                                </Link>
                                             </div>
                                         </div>
                                     </div>

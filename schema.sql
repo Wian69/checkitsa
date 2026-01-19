@@ -46,5 +46,18 @@ CREATE TABLE IF NOT EXISTS listings (
     click_count INTEGER DEFAULT 0
 );
 
+-- Products/Services Table (e.g. Real Estate Houses, Products)
+CREATE TABLE IF NOT EXISTS listing_products (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    listing_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    price FLOAT,
+    image_url TEXT,
+    category TEXT, -- e.g. 'For Sale', 'To Let', 'Electronics'
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(listing_id) REFERENCES listings(id) ON DELETE CASCADE
+);
+
 -- Initial Data (Optional - Admin User)
 -- INSERT INTO users (fullName, email, password, tier) VALUES ('Wian', 'wiandurandt69@gmail.com', 'admin123', 'ultimate');
