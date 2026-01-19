@@ -94,7 +94,7 @@ export default function AdminDashboard() {
         e.preventDefault()
         setSendingInvite(true)
         try {
-            const res = await fetch(`/api/admin/invite?test_email=${encodeURIComponent(inviteEmail)}&business_name=${encodeURIComponent(inviteName)}`)
+            const res = await fetch(`/api/admin/invite?test_email=${encodeURIComponent(inviteEmail)}&business_name=${encodeURIComponent(inviteName)}&sender_email=${encodeURIComponent(ADMIN_EMAIL)}`)
             const data = await res.json()
             if (res.ok) {
                 alert(`Invitation sent to ${inviteEmail}!`)

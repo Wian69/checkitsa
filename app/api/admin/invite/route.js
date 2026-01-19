@@ -9,6 +9,11 @@ export async function GET(req) {
     try {
         const { searchParams } = new URL(req.url);
         const testEmail = searchParams.get('test_email');
+        const senderEmail = searchParams.get('sender_email'); // Add check
+
+        if (senderEmail !== 'wiandurandt69@gmail.com') {
+            return NextResponse.json({ error: 'Unauthorized: Admin access only.' }, { status: 403 });
+        }
 
         // 1. Get Access to Secrets (Cloudflare or Local)
         // In Edge Runtime, process.env works for vars defined in .env.local during dev
