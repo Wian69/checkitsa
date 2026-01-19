@@ -23,7 +23,7 @@ export async function GET(req) {
         // If query param 'test_email' is present, send only to that one.
         // Otherwise, this could be adapted to read from a DB or request body.
         const recipientEmail = testEmail || 'wiandurandt69@gmail.com';
-        const recipientName = 'Business Owner';
+        const recipientName = searchParams.get('business_name') || 'Business Owner';
 
         console.log(`[Invite] Sending test to ${recipientEmail}...`);
 
