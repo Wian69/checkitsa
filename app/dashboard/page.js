@@ -353,20 +353,22 @@ export default function Dashboard() {
                                         </div>
                                         <div style={{ textAlign: 'right', display: 'flex', gap: '1rem', alignItems: 'center' }}>
                                             {ad.status === 'active' ? (
-                                                <button
-                                                    onClick={() => setManagingListing(ad)}
-                                                    className="btn btn-outline"
-                                                    style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
-                                                >
-                                                    📦 Manage Products
-                                                </button>
-                                                <button
-                                                    onClick={() => setEditingListing(ad)}
-                                                    className="btn btn-outline"
-                                                    style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
-                                                >
-                                                    ✏️ Edit
-                                                </button>
+                                                <>
+                                                    <button
+                                                        onClick={() => setManagingListing(ad)}
+                                                        className="btn btn-outline"
+                                                        style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
+                                                    >
+                                                        📦 Manage Products
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setEditingListing(ad)}
+                                                        className="btn btn-outline"
+                                                        style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
+                                                    >
+                                                        ✏️ Edit
+                                                    </button>
+                                                </>
                                             ) : ad.status === 'expired' ? (
                                                 <button
                                                     onClick={() => handleRenew(ad)}
