@@ -122,13 +122,31 @@ export default function BusinessProfilePage() {
                         {products.map(product => (
                             <div key={product.id} className="glass-panel" style={{ padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                                 <div style={{ height: '180px', background: '#222', position: 'relative' }}>
-                                    {product.image_url && (
-                                        <img
-                                            src={product.image_url}
-                                            alt={product.title}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        />
-                                    )}
+                                    {(() => {
+                                        let images = [];
+                                        try {
+                                            const parsed = JSON.parse(product.image_url);
+                                            images = Array.isArray(parsed) ? parsed : [product.image_url].filter(Boolean);
+                                        } catch (e) {
+                                            images = [product.image_url].filter(Boolean);
+                                        }
+                                        const cover = images[0];
+
+                                        return cover ? (
+                                            <>
+                                                <img
+                                                    src={cover}
+                                                    alt={product.title}
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                />
+                                                {images.length > 1 && (
+                                                    <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem' }}>
+                                                        📷 {images.length}
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : null;
+                                    })()}
                                     <div style={{ position: 'absolute', bottom: '10px', right: '10px', background: 'rgba(0,0,0,0.8)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '0.5rem', fontWeight: 'bold', fontSize: '0.9rem' }}>
                                         R{product.price?.toFixed(2)}
                                     </div>

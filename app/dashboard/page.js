@@ -840,7 +840,7 @@ function ProductManagerModal({ user, listing, onClose }) {
         price: '',
         description: '',
         category: 'Product',
-        image_url: ''
+        images: [] // Changed from image_url to images array
     })
     const [submitting, setSubmitting] = useState(false)
 
@@ -855,19 +855,41 @@ function ProductManagerModal({ user, listing, onClose }) {
     }, [listing.id])
 
     const handleImageUpload = (e) => {
-        const file = e.target.files[0]
-        if (!file) return
+        const files = Array.from(e.target.files)
+        if (files.length === 0) return
 
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
-            alert("File is too large. Max 5MB.")
+        if (formData.images.length + files.length > 20) {
+            alert("Maximum 20 images allowed.")
             return
         }
 
-        const reader = new FileReader()
-        reader.onloadend = () => {
-            setFormData({ ...formData, image_url: reader.result })
-        }
-        reader.readAsDataURL(file)
+        const newImages = []
+        let processed = 0
+
+        files.forEach(file => {
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                alert(`File ${file.name} is too large. Max 5MB.`)
+                processed++
+                return
+            }
+
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                newImages.push(reader.result)
+                processed++
+                if (processed === files.length) {
+                    setFormData(prev => ({ ...prev, images: [...prev.images, ...newImages] }))
+                }
+            }
+            reader.readAsDataURL(file)
+        })
+    }
+
+    const removeImage = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            images: prev.images.filter((_, i) => i !== index)
+        }))
     }
 
     const handleSubmit = async (e) => {
@@ -888,10 +910,10 @@ function ProductManagerModal({ user, listing, onClose }) {
 
             if (res.ok) {
                 // Refresh list
-                const newProduct = { ...formData, id: Date.now(), price: parseFloat(formData.price) } // Optimistic update
+                const newProduct = { ...formData, id: Date.now(), price: parseFloat(formData.price), image_url: JSON.stringify(formData.images) } // Optimistic update
                 setProducts([newProduct, ...products])
                 setView('list') // Go back to list
-                setFormData({ title: '', price: '', description: '', category: 'Product', image_url: '' }) // Reset
+                setFormData({ title: '', price: '', description: '', category: 'Product', images: [] }) // Reset
             } else {
                 alert("Failed to add product.")
             }
@@ -968,7 +990,14 @@ function ProductManagerModal({ user, listing, onClose }) {
                                     {products.map(p => (
                                         <div key={p.id} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '0.5rem', overflow: 'hidden' }}>
                                             <div style={{ height: '120px', background: '#000' }}>
-                                                {p.image_url && <img src={p.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                                                {(() => {
+                                                    let img = p.image_url;
+                                                    try {
+                                                        const parsed = JSON.parse(p.image_url);
+                                                        if (Array.isArray(parsed)) img = parsed[0];
+                                                    } catch (e) { }
+                                                    return img ? <img src={img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null;
+                                                })()}
                                             </div>
                                             <div style={{ padding: '1rem' }}>
                                                 <div style={{ fontWeight: 'bold' }}>{p.title}</div>
@@ -1042,16 +1071,33 @@ function ProductManagerModal({ user, listing, onClose }) {
                                     />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Photo</label>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Photos (Up to 20)</label>
                                     <input
                                         type="file"
                                         accept="image/*"
+                                        multiple
                                         onChange={handleImageUpload}
                                         style={{ color: 'var(--color-text-muted)' }}
                                     />
-                                    {formData.image_url && (
-                                        <img src={formData.image_url} style={{ height: '100px', marginTop: '1rem', borderRadius: '0.5rem' }} />
-                                    )}
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '0.5rem', marginTop: '1rem' }}>
+                                        {formData.images.map((img, idx) => (
+                                            <div key={idx} style={{ position: 'relative', height: '80px', borderRadius: '0.5rem', overflow: 'hidden' }}>
+                                                <img src={img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeImage(idx)}
+                                                    style={{
+                                                        position: 'absolute', top: 0, right: 0,
+                                                        background: 'rgba(0,0,0,0.7)', color: 'white',
+                                                        border: 'none', cursor: 'pointer', padding: '0.2rem 0.4rem',
+                                                        fontSize: '0.8rem'
+                                                    }}
+                                                >
+                                                    &times;
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 <button

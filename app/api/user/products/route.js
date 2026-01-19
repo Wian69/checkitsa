@@ -6,7 +6,7 @@ export const runtime = 'edge';
 export async function POST(req) {
     try {
         const body = await req.json();
-        const { email, listing_id, title, description, price, category, image_url } = body;
+        const { email, listing_id, title, description, price, category, images } = body;
 
         if (!email || !listing_id || !title) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -25,10 +25,13 @@ export async function POST(req) {
         }
 
         // 2. Insert Product
+        // We store the images array as a JSON string in the image_url column
+        const imagesJson = JSON.stringify(images || []);
+
         const { meta } = await db.prepare(
             `INSERT INTO listing_products (listing_id, title, description, price, category, image_url) 
              VALUES (?, ?, ?, ?, ?, ?)`
-        ).bind(listing_id, title, description, price, category, image_url).run();
+        ).bind(listing_id, title, description, price, category, imagesJson).run();
 
         return NextResponse.json({ success: true, productId: meta.last_row_id });
 
