@@ -181,7 +181,49 @@ function LeadsContent() {
             { business_name: 'Norma and Co', email: 'genevieve@norma-vilma.co.za', source: 'Web Search' },
             { business_name: 'The Real Food Co', email: 'info@real-food.co.za', source: 'Web Search' },
             { business_name: 'Fresh Creative', email: 'hello@freshfood.co.za', source: 'Web Search' },
-            { business_name: 'Adeles Catering', email: 'adele.catering@gmail.com', source: 'Web Search' }
+            { business_name: 'Adeles Catering', email: 'adele.catering@gmail.com', source: 'Web Search' },
+
+            // Solar Power (Nationwide)
+            { business_name: 'Caltec Solar', email: 'duran@caltecsolar.africa', source: 'Web Search' },
+            { business_name: 'Cape Electrician', email: '7814e39702z@gmail.com', source: 'Web Search' },
+            { business_name: 'EnergyOn', email: 'info@EnergyOn.co.za', source: 'Web Search' },
+            { business_name: 'EnergyVest', email: 'andrew@energyvest.co.za', source: 'Web Search' },
+            { business_name: '360 Degs Projects', email: '360degsprojects@gmail.com', source: 'Web Search' },
+            { business_name: 'El Rachun Holdings', email: 'prenetcomm@gmail.com', source: 'Web Search' },
+            { business_name: 'Elcheck', email: 'info@elcheck.co.za', source: 'Web Search' },
+            { business_name: 'Eleksol', email: 'kobusvanbiljon@gmail.com', source: 'Web Search' },
+            { business_name: 'Emtech Solar', email: 'info@emtechsolar.co.za', source: 'Web Search' },
+            { business_name: 'Energy Sense', email: 'yolandi@energysense.co.za', source: 'Web Search' },
+            { business_name: 'Quantum Solar', email: 'info@quantum-solar.co.za', source: 'Web Search' },
+            { business_name: 'Swartland Solar', email: 'swartlandsolar@gmail.com', source: 'Web Search' },
+            { business_name: 'Solar Vision', email: 'jakes@solarvision.co.za', source: 'Web Search' },
+
+            // Security Services
+            { business_name: 'SSG Holdings', email: 'info@ssgsa.co.za', source: 'Web Search' },
+            { business_name: 'Mezuzah Security', email: 'feelsafe@mezuzahsecurity.co.za', source: 'Web Search' },
+            { business_name: 'Prime African', email: 'info@primeafrican.co.za', source: 'Web Search' },
+            { business_name: 'Protea Coin', email: 'info@proteacoin.co.za', source: 'Web Search' },
+            { business_name: 'ABC Security', email: 'morne@abcsecurity.co.za', source: 'Web Search' },
+            { business_name: 'Afri Guard', email: 'wanda@afri-guard.co.za', source: 'Web Search' },
+            { business_name: 'All 4 Security', email: 'shira@all4security.co.za', source: 'Web Search' },
+            { business_name: 'Amabuso Security', email: 'admin@amabusosecurity.co.za', source: 'Web Search' },
+            { business_name: 'ISEC Security', email: 'craig@isecsecurity.co.za', source: 'Web Search' },
+            { business_name: 'Kallvest', email: 'salaries@kallvest.co.za', source: 'Web Search' },
+
+            // Landscaping
+            { business_name: 'Clean Cut Gardens', email: 'info@cleancut.co.za', source: 'Web Search' },
+            { business_name: 'Grounded Landscaping', email: 'designs@groundedlandscaping.co.za', source: 'Web Search' },
+            { business_name: 'The Friendly Plant', email: 'info@thefriendlyplant.co.za', source: 'Web Search' },
+            { business_name: 'EcoScapes', email: 'admin@ecoscapes.co.za', source: 'Web Search' },
+            { business_name: 'Rooted SA', email: 'rootedabr@gmail.com', source: 'Web Search' },
+            { business_name: 'Jerrys Garden Service', email: 'jerrysgardenservice@gmail.com', source: 'Web Search' },
+            { business_name: 'Vianathi Landscaping', email: 'ashley@vianathi.co.za', source: 'Web Search' },
+            { business_name: 'Petro Landscaping', email: 'info@petrolandscaping.co.za', source: 'Web Search' },
+
+            // Weddings & Events
+            { business_name: 'Weddings In Africa', email: 'cindy.weddingsinafrica@gmail.com', source: 'Web Search' },
+            { business_name: 'Orion Hotels Events', email: 'events@orionhotels.co.za', source: 'Web Search' },
+            { business_name: 'Wedding Venue Co', email: 'contact@weddingvenue.co.za', source: 'Web Search' }
         ]
 
         for (const l of demoLeads) {
