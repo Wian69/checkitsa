@@ -5,6 +5,8 @@ import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 
+export const runtime = 'edge';
+
 export default function BusinessProfilePage() {
     const params = useParams()
     const [business, setBusiness] = useState(null)
