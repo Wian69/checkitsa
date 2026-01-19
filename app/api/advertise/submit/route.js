@@ -4,7 +4,7 @@ export const runtime = 'edge';
 
 export async function POST(req) {
     try {
-        const { businessName, websiteUrl, description, category, logoUrl } = await req.json();
+        const { businessName, websiteUrl, description, category, logoUrl, email } = await req.json();
         const db = req.context?.env?.DB || process.env.DB;
 
         if (!db) {
@@ -13,9 +13,9 @@ export async function POST(req) {
         }
 
         const { lastRowId } = await db.prepare(
-            `INSERT INTO listings (business_name, website_url, description, category, logo_url, status) 
-       VALUES (?, ?, ?, ?, ?, ?)`
-        ).bind(businessName, websiteUrl, description, category, logoUrl, 'unpaid').run();
+            `INSERT INTO listings (user_email, business_name, website_url, description, category, logo_url, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+        ).bind(email, businessName, websiteUrl, description, category, logoUrl, 'unpaid').run();
 
         return NextResponse.json({
             success: true,

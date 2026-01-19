@@ -8,6 +8,7 @@ export default function Dashboard() {
     const [stats, setStats] = useState({ count: 0, limit: 5, tier: 'free', resetType: 'lifetime' })
     const [history, setHistory] = useState({ searches: [], reports: [] })
     const [myReviews, setMyReviews] = useState([])
+    const [myAds, setMyAds] = useState([])
     const [user, setUser] = useState(null)
     const [historyPage, setHistoryPage] = useState(1)
 
@@ -26,6 +27,11 @@ export default function Dashboard() {
 
             // Fetch reviews
             fetchMyReviews(userData.email)
+
+            // Fetch My Ads
+            fetch(`/api/user/listings?email=${encodeURIComponent(userData.email)}`)
+                .then(res => res.json())
+                .then(data => setMyAds(data.listings || []))
 
             // Fetch Preferences
             fetch(`/api/user/preferences?email=${encodeURIComponent(userData.email)}`)
@@ -271,275 +277,323 @@ export default function Dashboard() {
                         )}
                     </div>
                 </div>
-            </div>
 
-
-            {/* Promotion & Growth Hub */}
-            <div style={{ marginTop: '3rem' }}>
-                <div className="glass-panel" style={{
-                    padding: '2.5rem',
-                    background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%)',
-                    border: '1px solid rgba(99, 102, 241, 0.2)'
-                }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
-                        <div style={{ flex: '1', minWidth: '300px' }}>
-                            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <span>🚀</span> Help Grow CheckItSA
+                {/* My Ad Listings */}
+                <div style={{ marginTop: '2rem' }}>
+                    <div className="glass-panel" style={{ padding: '2rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <h3 style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span>🚀</span> My Ad Listings
                             </h3>
-                            <p style={{ color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>
-                                The more people use our platform, the safer South Africa becomes.
-                                Share your experience and prevent more people from getting scammed.
-                            </p>
+                            <Link href="/advertise" className="btn btn-outline" style={{ fontSize: '0.8rem' }}>Create New Ad</Link>
                         </div>
-                        <div style={{ minWidth: '250px' }}>
-                            <div style={{ fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--color-primary)' }}>📢 Spread the Word:</div>
-                            <div style={{
-                                background: 'rgba(0,0,0,0.2)',
-                                padding: '1rem',
-                                borderRadius: '0.5rem',
-                                border: '1px solid var(--color-border)',
-                                marginBottom: '1rem'
-                            }}>
-                                <code style={{ fontSize: '0.9rem', color: '#fff' }}>
-                                    https://checkitsa.co.za
-                                </code>
+
+                        {myAds.length === 0 ? (
+                            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)', border: '1px dashed var(--color-border)', borderRadius: '1rem' }}>
+                                <p>You haven't promoted any businesses yet.</p>
+                                <Link href="/advertise" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 'bold' }}>Start Advertising →</Link>
                             </div>
-                            <button
-                                onClick={() => {
-                                    const msg = `⚠️ South Africans! Stop getting scammed. I use CheckItSA to verify everything before I trust it. Check it out: https://checkitsa.co.za`;
-                                    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank')
-                                }}
-                                className="btn btn-primary"
-                                style={{ width: '100%', justifyContent: 'center' }}
-                            >
-                                💬 Share to WhatsApp
-                            </button>
+                        ) : (
+                            <div style={{ display: 'grid', gap: '1rem' }}>
+                                {myAds.map(ad => (
+                                    <div key={ad.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '0.75rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div>
+                                            <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{ad.business_name}</div>
+                                            <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{ad.category} • {ad.website_url}</div>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <span style={{
+                                                fontSize: '0.7rem',
+                                                padding: '0.2rem 0.6rem',
+                                                borderRadius: '4px',
+                                                background: ad.status === 'active' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+                                                color: ad.status === 'active' ? '#10b981' : 'white',
+                                                textTransform: 'uppercase',
+                                                fontWeight: 'bold'
+                                            }}>
+                                                {ad.status}
+                                            </span>
+                                            {ad.expires_at && (
+                                                <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: '0.3rem' }}>
+                                                    Ends: {new Date(ad.expires_at).toLocaleDateString()}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+
+                {/* Promotion & Growth Hub */}
+                <div style={{ marginTop: '3rem' }}>
+                    <div className="glass-panel" style={{
+                        padding: '2.5rem',
+                        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%)',
+                        border: '1px solid rgba(99, 102, 241, 0.2)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
+                            <div style={{ flex: '1', minWidth: '300px' }}>
+                                <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <span>🚀</span> Help Grow CheckItSA
+                                </h3>
+                                <p style={{ color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>
+                                    The more people use our platform, the safer South Africa becomes.
+                                    Share your experience and prevent more people from getting scammed.
+                                </p>
+                            </div>
+                            <div style={{ minWidth: '250px' }}>
+                                <div style={{ fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--color-primary)' }}>📢 Spread the Word:</div>
+                                <div style={{
+                                    background: 'rgba(0,0,0,0.2)',
+                                    padding: '1rem',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid var(--color-border)',
+                                    marginBottom: '1rem'
+                                }}>
+                                    <code style={{ fontSize: '0.9rem', color: '#fff' }}>
+                                        https://checkitsa.co.za
+                                    </code>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        const msg = `⚠️ South Africans! Stop getting scammed. I use CheckItSA to verify everything before I trust it. Check it out: https://checkitsa.co.za`;
+                                        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank')
+                                    }}
+                                    className="btn btn-primary"
+                                    style={{ width: '100%', justifyContent: 'center' }}
+                                >
+                                    💬 Share to WhatsApp
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Search History */}
-            <div style={{ marginTop: '3rem' }}>
-                <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Search History</h2>
-                <div className="glass-panel" style={{ overflow: 'hidden' }}>
-                    {history.searches.length === 0 ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                            No recent searches found.
-                        </div>
-                    ) : (
-                        <>
+                {/* Search History */}
+                <div style={{ marginTop: '3rem' }}>
+                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Search History</h2>
+                    <div className="glass-panel" style={{ overflow: 'hidden' }}>
+                        {history.searches.length === 0 ? (
+                            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                                No recent searches found.
+                            </div>
+                        ) : (
+                            <>
+                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead>
+                                        <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
+                                            <th style={{ padding: '1rem' }}>Type</th>
+                                            <th style={{ padding: '1rem' }}>Query</th>
+                                            <th style={{ padding: '1rem' }}>Status</th>
+                                            <th style={{ padding: '1rem' }}>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {history.searches.slice((historyPage - 1) * 10, historyPage * 10).map(s => (
+                                            <tr key={s.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                                <td style={{ padding: '1rem' }}>{s.type}</td>
+                                                <td style={{ padding: '1rem', fontFamily: 'monospace' }}>{s.query}</td>
+                                                <td style={{ padding: '1rem' }}>
+                                                    <span style={{
+                                                        padding: '0.25rem 0.5rem',
+                                                        borderRadius: '1rem',
+                                                        fontSize: '0.8rem',
+                                                        background: s.status === 'Dangerous' ? 'rgba(220, 38, 38, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                                                        color: s.status === 'Dangerous' ? '#fca5a5' : '#6ee7b7'
+                                                    }}>
+                                                        {s.status}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
+                                                    {new Date(s.date).toLocaleDateString()}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                <div style={{ padding: '1rem', display: 'flex', justifyContent: 'center', gap: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <button
+                                        onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
+                                        disabled={historyPage === 1}
+                                        className="btn btn-outline"
+                                        style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', opacity: historyPage === 1 ? 0.5 : 1 }}
+                                    >
+                                        Previous
+                                    </button>
+                                    <span style={{ display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)' }}>Page {historyPage}</span>
+                                    <button
+                                        onClick={() => setHistoryPage(p => p + 1)}
+                                        disabled={historyPage * 10 >= history.searches.length}
+                                        className="btn btn-outline"
+                                        style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', opacity: historyPage * 10 >= history.searches.length ? 0.5 : 1 }}
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                {/* Report History */}
+                <div style={{ marginTop: '3rem' }}>
+                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>My Reports</h2>
+                    <div className="glass-panel" style={{ overflow: 'hidden' }}>
+                        {history.reports.length === 0 ? (
+                            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                                You haven't submitted any reports yet.
+                            </div>
+                        ) : (
                             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead>
                                     <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
                                         <th style={{ padding: '1rem' }}>Type</th>
-                                        <th style={{ padding: '1rem' }}>Query</th>
+                                        <th style={{ padding: '1rem' }}>Details</th>
+                                        <th style={{ padding: '1rem' }}>Evidence</th>
                                         <th style={{ padding: '1rem' }}>Status</th>
                                         <th style={{ padding: '1rem' }}>Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {history.searches.slice((historyPage - 1) * 10, historyPage * 10).map(s => (
-                                        <tr key={s.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <td style={{ padding: '1rem' }}>{s.type}</td>
-                                            <td style={{ padding: '1rem', fontFamily: 'monospace' }}>{s.query}</td>
+                                    {history.reports.map(r => (
+                                        <tr key={r.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <td style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <span>
+                                                    {r.type.includes('WhatsApp') && '💬'}
+                                                    {r.type.includes('Social Media') && '🌐'}
+                                                    {r.type.includes('SMS') && '📱'}
+                                                    {r.type.includes('Email') && '📧'}
+                                                    {r.type.includes('Gambling') && '🎰'}
+                                                    {r.type.includes('Bank') && '🏦'}
+                                                </span>
+                                                {r.type}
+                                            </td>
+                                            <td style={{ padding: '1rem', fontFamily: 'monospace' }}>{r.details}</td>
+                                            <td style={{ padding: '1rem' }}>{r.evidence ? '📎 Attached' : '-'}</td>
                                             <td style={{ padding: '1rem' }}>
                                                 <span style={{
                                                     padding: '0.25rem 0.5rem',
                                                     borderRadius: '1rem',
                                                     fontSize: '0.8rem',
-                                                    background: s.status === 'Dangerous' ? 'rgba(220, 38, 38, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                                                    color: s.status === 'Dangerous' ? '#fca5a5' : '#6ee7b7'
+                                                    background: 'rgba(251, 191, 36, 0.1)',
+                                                    color: '#fcd34d'
                                                 }}>
-                                                    {s.status}
+                                                    {r.status}
                                                 </span>
                                             </td>
                                             <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-                                                {new Date(s.date).toLocaleDateString()}
+                                                {new Date(r.date).toLocaleDateString()}
+                                            </td>
+                                            <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                                <button
+                                                    onClick={async () => {
+                                                        if (confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+                                                            try {
+                                                                const res = await fetch('/api/report', {
+                                                                    method: 'DELETE',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({ id: r.id, email: user.email })
+                                                                })
+                                                                if (res.ok) {
+                                                                    setHistory(prev => ({ ...prev, reports: prev.reports.filter(item => item.id !== r.id) }))
+                                                                    alert('Report deleted.')
+                                                                } else {
+                                                                    alert('Failed to delete report.')
+                                                                }
+                                                            } catch (e) {
+                                                                console.error(e)
+                                                                alert('Error deleting report.')
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="btn"
+                                                    style={{
+                                                        padding: '0.25rem 0.75rem',
+                                                        fontSize: '0.8rem',
+                                                        background: 'rgba(220, 38, 38, 0.1)',
+                                                        color: '#fca5a5',
+                                                        border: '1px solid var(--color-danger)',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    🗑️ Delete
+                                                </button>
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
-                            <div style={{ padding: '1rem', display: 'flex', justifyContent: 'center', gap: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                <button
-                                    onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
-                                    disabled={historyPage === 1}
-                                    className="btn btn-outline"
-                                    style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', opacity: historyPage === 1 ? 0.5 : 1 }}
-                                >
-                                    Previous
-                                </button>
-                                <span style={{ display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)' }}>Page {historyPage}</span>
-                                <button
-                                    onClick={() => setHistoryPage(p => p + 1)}
-                                    disabled={historyPage * 10 >= history.searches.length}
-                                    className="btn btn-outline"
-                                    style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', opacity: historyPage * 10 >= history.searches.length ? 0.5 : 1 }}
-                                >
-                                    Next
-                                </button>
+                        )}
+                    </div>
+                </div>
+                {/* Business Review History */}
+                <div style={{ marginTop: '3rem' }}>
+                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>My Business Reviews</h2>
+                    <div className="glass-panel" style={{ overflow: 'hidden' }}>
+                        {myReviews.length === 0 ? (
+                            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                                You haven't submitted any business reviews yet.
                             </div>
-                        </>
-                    )}
-                </div>
-            </div>
-
-            {/* Report History */}
-            <div style={{ marginTop: '3rem' }}>
-                <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>My Reports</h2>
-                <div className="glass-panel" style={{ overflow: 'hidden' }}>
-                    {history.reports.length === 0 ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                            You haven't submitted any reports yet.
-                        </div>
-                    ) : (
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                                    <th style={{ padding: '1rem' }}>Type</th>
-                                    <th style={{ padding: '1rem' }}>Details</th>
-                                    <th style={{ padding: '1rem' }}>Evidence</th>
-                                    <th style={{ padding: '1rem' }}>Status</th>
-                                    <th style={{ padding: '1rem' }}>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {history.reports.map(r => (
-                                    <tr key={r.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                        <td style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <span>
-                                                {r.type.includes('WhatsApp') && '💬'}
-                                                {r.type.includes('Social Media') && '🌐'}
-                                                {r.type.includes('SMS') && '📱'}
-                                                {r.type.includes('Email') && '📧'}
-                                                {r.type.includes('Gambling') && '🎰'}
-                                                {r.type.includes('Bank') && '🏦'}
-                                            </span>
-                                            {r.type}
-                                        </td>
-                                        <td style={{ padding: '1rem', fontFamily: 'monospace' }}>{r.details}</td>
-                                        <td style={{ padding: '1rem' }}>{r.evidence ? '📎 Attached' : '-'}</td>
-                                        <td style={{ padding: '1rem' }}>
-                                            <span style={{
-                                                padding: '0.25rem 0.5rem',
-                                                borderRadius: '1rem',
-                                                fontSize: '0.8rem',
-                                                background: 'rgba(251, 191, 36, 0.1)',
-                                                color: '#fcd34d'
-                                            }}>
-                                                {r.status}
-                                            </span>
-                                        </td>
-                                        <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-                                            {new Date(r.date).toLocaleDateString()}
-                                        </td>
-                                        <td style={{ padding: '1rem', textAlign: 'right' }}>
-                                            <button
-                                                onClick={async () => {
-                                                    if (confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
-                                                        try {
-                                                            const res = await fetch('/api/report', {
-                                                                method: 'DELETE',
-                                                                headers: { 'Content-Type': 'application/json' },
-                                                                body: JSON.stringify({ id: r.id, email: user.email })
-                                                            })
-                                                            if (res.ok) {
-                                                                setHistory(prev => ({ ...prev, reports: prev.reports.filter(item => item.id !== r.id) }))
-                                                                alert('Report deleted.')
-                                                            } else {
-                                                                alert('Failed to delete report.')
-                                                            }
-                                                        } catch (e) {
-                                                            console.error(e)
-                                                            alert('Error deleting report.')
-                                                        }
-                                                    }
-                                                }}
-                                                className="btn"
-                                                style={{
-                                                    padding: '0.25rem 0.75rem',
-                                                    fontSize: '0.8rem',
-                                                    background: 'rgba(220, 38, 38, 0.1)',
-                                                    color: '#fca5a5',
-                                                    border: '1px solid var(--color-danger)',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                🗑️ Delete
-                                            </button>
-                                        </td>
+                        ) : (
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
+                                        <th style={{ padding: '1rem' }}>Business</th>
+                                        <th style={{ padding: '1rem' }}>Rating</th>
+                                        <th style={{ padding: '1rem' }}>Title</th>
+                                        <th style={{ padding: '1rem' }}>Date</th>
+                                        <th style={{ padding: '1rem' }}>Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
+                                </thead>
+                                <tbody>
+                                    {myReviews.map(r => (
+                                        <tr key={r.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <td style={{ padding: '1rem', fontWeight: 'bold' }}>{r.business_name}</td>
+                                            <td style={{ padding: '1rem' }}>
+                                                <span style={{ color: '#fbbf24' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
+                                            </td>
+                                            <td style={{ padding: '1rem' }}>{r.title}</td>
+                                            <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
+                                                {new Date(r.created_at).toLocaleDateString()}
+                                            </td>
+                                            <td style={{ padding: '1rem' }}>
+                                                <button
+                                                    onClick={() => handleDeleteReview(r.id)}
+                                                    className="btn"
+                                                    style={{
+                                                        padding: '0.25rem 0.75rem',
+                                                        fontSize: '0.8rem',
+                                                        background: 'rgba(220, 38, 38, 0.1)',
+                                                        color: '#fca5a5',
+                                                        border: '1px solid var(--color-danger)',
+                                                        cursor: 'pointer',
+                                                        borderRadius: '0.5rem'
+                                                    }}
+                                                >
+                                                    🗑️ Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
                 </div>
-            </div>
-            {/* Business Review History */}
-            <div style={{ marginTop: '3rem' }}>
-                <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>My Business Reviews</h2>
-                <div className="glass-panel" style={{ overflow: 'hidden' }}>
-                    {myReviews.length === 0 ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                            You haven't submitted any business reviews yet.
-                        </div>
-                    ) : (
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                                    <th style={{ padding: '1rem' }}>Business</th>
-                                    <th style={{ padding: '1rem' }}>Rating</th>
-                                    <th style={{ padding: '1rem' }}>Title</th>
-                                    <th style={{ padding: '1rem' }}>Date</th>
-                                    <th style={{ padding: '1rem' }}>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {myReviews.map(r => (
-                                    <tr key={r.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                        <td style={{ padding: '1rem', fontWeight: 'bold' }}>{r.business_name}</td>
-                                        <td style={{ padding: '1rem' }}>
-                                            <span style={{ color: '#fbbf24' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
-                                        </td>
-                                        <td style={{ padding: '1rem' }}>{r.title}</td>
-                                        <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-                                            {new Date(r.created_at).toLocaleDateString()}
-                                        </td>
-                                        <td style={{ padding: '1rem' }}>
-                                            <button
-                                                onClick={() => handleDeleteReview(r.id)}
-                                                className="btn"
-                                                style={{
-                                                    padding: '0.25rem 0.75rem',
-                                                    fontSize: '0.8rem',
-                                                    background: 'rgba(220, 38, 38, 0.1)',
-                                                    color: '#fca5a5',
-                                                    border: '1px solid var(--color-danger)',
-                                                    cursor: 'pointer',
-                                                    borderRadius: '0.5rem'
-                                                }}
-                                            >
-                                                🗑️ Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
-            </div>
 
-            {/* Payout Modal */}
-            {showPayoutModal && (
-                <PayoutModal
-                    user={user}
-                    onClose={() => setShowPayoutModal(false)}
-                    setUser={setUser}
-                />
-            )}
-        </main >
+                {/* Payout Modal */}
+                {showPayoutModal && (
+                    <PayoutModal
+                        user={user}
+                        onClose={() => setShowPayoutModal(false)}
+                        setUser={setUser}
+                    />
+                )}
+            </div>
+        </main>
     )
 }
 

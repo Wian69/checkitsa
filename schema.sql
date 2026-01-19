@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS reports (
 -- Listings Table for Ad Portal
 CREATE TABLE IF NOT EXISTS listings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_email TEXT, -- Added to track owner
     business_name TEXT NOT NULL,
     website_url TEXT,
     logo_url TEXT,
