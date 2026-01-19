@@ -10,6 +10,7 @@ export default function DirectoryPage() {
     const [selectedCategory, setSelectedCategory] = useState('All')
     const [searchQuery, setSearchQuery] = useState('')
     const [activeSearch, setActiveSearch] = useState('') // The search term actually applied
+    const [showCategories, setShowCategories] = useState(false)
 
     const categories = ['All', 'Security', 'Finance', 'Legal', 'Retail', 'Real Estate', 'Automotive', 'Healthcare', 'Technology', 'Construction', 'Travel', 'Hospitality', 'Other']
 
@@ -84,12 +85,33 @@ export default function DirectoryPage() {
                     {/* Sidebar / Top Bar Filters */}
                     <aside style={{ marginBottom: '2rem' }}>
                         <div className="glass-panel" style={{ padding: '1.5rem', position: 'sticky', top: '6rem' }}>
-                            <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'var(--color-primary)' }}>Categories</h3>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            <div
+                                onClick={() => setShowCategories(!showCategories)}
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    cursor: 'pointer',
+                                    marginBottom: showCategories ? '1rem' : 0
+                                }}
+                                className="lg:cursor-default lg:mb-4"
+                            >
+                                <h3 style={{ fontSize: '1.2rem', color: 'var(--color-primary)', margin: 0 }}>
+                                    Categories {selectedCategory !== 'All' && <span style={{ fontSize: '0.8rem', color: 'white' }}>({selectedCategory})</span>}
+                                </h3>
+                                <span className="lg:hidden" style={{ fontSize: '1.2rem', transition: 'transform 0.3s' }}>
+                                    {showCategories ? '▲' : '▼'}
+                                </span>
+                            </div>
+
+                            <div className={`flex flex-col gap-2 overflow-hidden transition-all duration-300 ${showCategories ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 lg:max-h-[none] lg:opacity-100'}`}>
                                 {categories.map(cat => (
                                     <button
                                         key={cat}
-                                        onClick={() => setSelectedCategory(cat)}
+                                        onClick={() => {
+                                            setSelectedCategory(cat);
+                                            setShowCategories(false); // Auto-close on selection for mobile
+                                        }}
                                         style={{
                                             padding: '0.75rem 1rem',
                                             textAlign: 'left',
@@ -115,6 +137,21 @@ export default function DirectoryPage() {
                             @media (min-width: 1024px) {
                                 .directory-layout {
                                     grid-template-columns: 250px 1fr !important;
+                                }
+                                .lg\\:hidden {
+                                    display: none !important;
+                                }
+                                .lg\\:cursor-default {
+                                    cursor: default !important;
+                                }
+                                .lg\\:mb-4 {
+                                    margin-bottom: 1rem !important;
+                                }
+                                .lg\\:max-h-\\[none\\] {
+                                    max-height: none !important;
+                                }
+                                .lg\\:opacity-100 {
+                                    opacity: 1 !important;
                                 }
                             }
                         `}</style>
