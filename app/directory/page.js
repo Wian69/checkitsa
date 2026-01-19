@@ -8,8 +8,10 @@ export default function DirectoryPage() {
     const [listings, setListings] = useState([])
     const [loading, setLoading] = useState(true)
     const [selectedCategory, setSelectedCategory] = useState('All')
+    const [searchQuery, setSearchQuery] = useState('')
+    const [activeSearch, setActiveSearch] = useState('') // The search term actually applied
 
-    const categories = ['All', 'Security', 'Finance', 'Legal', 'Retail', 'Other']
+    const categories = ['All', 'Security', 'Finance', 'Legal', 'Retail', 'Real Estate', 'Automotive', 'Healthcare', 'Technology', 'Construction', 'Travel', 'Hospitality', 'Other']
 
     useEffect(() => {
         fetch('/api/advertise/list') // Reuse existing list API
@@ -24,9 +26,18 @@ export default function DirectoryPage() {
             })
     }, [])
 
-    const filteredListings = selectedCategory === 'All'
-        ? listings
-        : listings.filter(l => l.category === selectedCategory)
+    const filteredListings = listings.filter(l => {
+        // Category Filter
+        const catMatch = selectedCategory === 'All' || l.category === selectedCategory
+
+        // Search Filter
+        const searchMatch = !activeSearch
+            ? true
+            : (l.business_name?.toLowerCase().includes(activeSearch.toLowerCase()) ||
+                l.description?.toLowerCase().includes(activeSearch.toLowerCase()))
+
+        return catMatch && searchMatch
+    })
 
     return (
         <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
@@ -43,9 +54,30 @@ export default function DirectoryPage() {
                     }}>
                         Verified Business Directory
                     </h1>
-                    <p style={{ color: 'var(--color-text-muted)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto', marginBottom: '2rem' }}>
                         Browse South Africa's most trusted businesses. All listings are verified for your safety.
                     </p>
+
+                    {/* Search Bar */}
+                    <div style={{ maxWidth: '500px', margin: '0 auto', display: 'flex', gap: '0.5rem' }}>
+                        <input
+                            type="text"
+                            placeholder="Search businesses..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && setActiveSearch(searchQuery)}
+                            style={{
+                                flex: 1, padding: '1rem', borderRadius: '0.5rem',
+                                border: '1px solid var(--color-border)', background: 'rgba(255,255,255,0.05)', color: 'white'
+                            }}
+                        />
+                        <button
+                            onClick={() => setActiveSearch(searchQuery)}
+                            className="btn btn-primary"
+                        >
+                            Search
+                        </button>
+                    </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', lg: '250px 1fr', gap: '2rem' }} className="directory-layout">

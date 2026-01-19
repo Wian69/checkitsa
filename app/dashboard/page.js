@@ -3,6 +3,7 @@ import Navbar from '@/components/Navbar'
 import { useState, useEffect } from 'react'
 import { trackSearch, getHistory, syncFromCloud } from '@/utils/searchLimit'
 import Link from 'next/link'
+import Script from 'next/script'
 
 export default function Dashboard() {
     const [stats, setStats] = useState({ count: 0, limit: 5, tier: 'free', resetType: 'lifetime' })
@@ -92,13 +93,57 @@ export default function Dashboard() {
     const [payoutLoading, setPayoutLoading] = useState(false)
     const [managingListing, setManagingListing] = useState(null) // New state for modal
 
-    // Payout Handler - Open Modal
+    // Payout Handler
     const handlePayoutClick = () => {
         if (!user || user.wallet_balance < 200) {
             alert("Minimum payout amount is R200.")
             return
         }
         setShowPayoutModal(true)
+    }
+
+    // Renewal Handler
+    const handleRenew = (listing) => {
+        if (typeof window.YocoSDK === 'undefined') {
+            alert('Yoco SDK not loaded. Please refresh.')
+            return
+        }
+
+        const yoco = new window.YocoSDK({
+            publicKey: process.env.NEXT_PUBLIC_YOCO_PUBLIC_KEY
+        })
+
+        yoco.showPopup({
+            amountInCents: 9900,
+            currency: 'ZAR',
+            name: 'Ad Renewal',
+            description: `Renewing ${listing.business_name} for 30 days`,
+            callback: async (result) => {
+                if (result.error) {
+                    alert("Payment Failed: " + result.error.message)
+                } else {
+                    // Send token to backend
+                    try {
+                        const res = await fetch('/api/advertise/renew', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ listingId: listing.id, token: result.id })
+                        })
+
+                        if (res.ok) {
+                            alert("Success! Your ad is active again.")
+                            // Optimistic Update
+                            setMyAds(prev => prev.map(ad => ad.id === listing.id ? { ...ad, status: 'active' } : ad))
+                        } else {
+                            alert("Renewal failed after payment. Please contact support.")
+                        }
+
+                    } catch (err) {
+                        alert("Error processing renewal.")
+                    }
+                }
+            }
+        })
     }
 
     const handleDeleteReview = async (reviewId) => {
@@ -152,6 +197,9 @@ export default function Dashboard() {
                         )}
                     </div>
                 </div>
+
+                <Script src="https://js.yoco.com/sdk/v1/yoco-sdk-web.js" />
+
 
                 <div className="grid-responsive" style={{ gap: '2rem' }}>
 
@@ -303,7 +351,7 @@ export default function Dashboard() {
                                             <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{ad.category} • {ad.website_url}</div>
                                         </div>
                                         <div style={{ textAlign: 'right', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                                            {ad.status === 'active' && (
+                                            {ad.status === 'active' ? (
                                                 <button
                                                     onClick={() => setManagingListing(ad)}
                                                     className="btn btn-outline"
@@ -311,7 +359,16 @@ export default function Dashboard() {
                                                 >
                                                     📦 Manage Products
                                                 </button>
-                                            )}
+                                            ) : ad.status === 'expired' ? (
+                                                <button
+                                                    onClick={() => handleRenew(ad)}
+                                                    className="btn btn-primary"
+                                                    style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem', background: '#3b82f6', borderColor: '#3b82f6' }}
+                                                >
+                                                    🔄 Renew (R99)
+                                                </button>
+                                            ) : null}
+
                                             <div>
                                                 <span style={{
                                                     fontSize: '0.7rem',
