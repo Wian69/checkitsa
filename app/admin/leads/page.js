@@ -16,6 +16,7 @@ function LeadsContent() {
     const [loading, setLoading] = useState(true)
     const [newLead, setNewLead] = useState({ business_name: '', email: '', source: 'Manual' })
     const [user, setUser] = useState(null)
+    const [inviteProgress, setInviteProgress] = useState(null) // "Sending 1/5..."
 
     useEffect(() => {
         const u = JSON.parse(localStorage.getItem('checkitsa_user'))
@@ -79,6 +80,50 @@ function LeadsContent() {
         }
     }
 
+    const handleInviteAll = async () => {
+        const toInvite = leads.filter(l => l.status !== 'Contacted');
+        if (toInvite.length === 0) return alert("All leads have already been contacted! 🎉");
+
+        if (!confirm(`You are about to send ${toInvite.length} invitations. This might take a moment. Proceed?`)) return;
+
+        let sentCount = 0;
+        let failCount = 0;
+
+        for (let i = 0; i < toInvite.length; i++) {
+            const lead = toInvite[i];
+            setInviteProgress(`Sending ${i + 1} of ${toInvite.length}...`);
+
+            try {
+                // 1. Send Email
+                const res = await fetch(`/api/admin/invite?test_email=${encodeURIComponent(lead.email)}&sender_email=${encodeURIComponent(user.email)}&business_name=${encodeURIComponent(lead.business_name)}`);
+                const data = await res.json();
+
+                if (data.success) {
+                    // 2. Update Status
+                    await fetch('/api/admin/leads', {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: user.email, leadId: lead.id, status: 'Contacted', contacted: true })
+                    });
+                    sentCount++;
+                } else {
+                    console.error(`Failed to invite ${lead.email}:`, data.error);
+                    failCount++;
+                }
+            } catch (err) {
+                console.error(`Error inviting ${lead.email}`, err);
+                failCount++;
+            }
+
+            // Small delay to be nice to the API
+            await new Promise(r => setTimeout(r, 500));
+        }
+
+        setInviteProgress(null);
+        alert(`Batch Complete!\n✅ Sent: ${sentCount}\n❌ Failed: ${failCount}`);
+        fetchLeads(user.email);
+    }
+
     const sendTestPreview = async () => {
         if (!user || !user.email) return
         if (!confirm(`Send a test invitation email to yourself (${user.email})?`)) return
@@ -97,7 +142,7 @@ function LeadsContent() {
     }
 
     const seedLeads = async () => {
-        if (!confirm("This will add 5 demo leads. Continue?")) return
+        if (!confirm("This will add demo/found leads. Continue?")) return
         const demoLeads = [
             // Plumbers
             { business_name: 'Plumbers SA', email: 'contact@plumbers.co.za', source: 'Web Search' },
@@ -161,8 +206,17 @@ function LeadsContent() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h1 style={{ fontSize: '2rem' }}>📢 Lead Acquisition</h1>
                 <div>
-                    <button onClick={sendTestPreview} className="btn btn-outline" style={{ marginRight: '1rem' }}>📧 Send Test Preview</button>
-                    <button onClick={seedLeads} className="btn btn-outline">🌱 Import Demo Leads</button>
+                    {inviteProgress ? (
+                        <span className="btn" style={{ background: '#3b82f6', color: 'white', marginRight: '1rem', cursor: 'wait' }}>
+                            ⏳ {inviteProgress}
+                        </span>
+                    ) : (
+                        <button onClick={handleInviteAll} className="btn btn-primary" style={{ marginRight: '1rem', background: '#ec4899', borderColor: '#be185d' }}>
+                            🚀 Send Invite to All
+                        </button>
+                    )}
+                    <button onClick={sendTestPreview} className="btn btn-outline" style={{ marginRight: '1rem' }}>📧 Test Preview</button>
+                    <button onClick={seedLeads} className="btn btn-outline">🌱 Import</button>
                 </div>
             </div>
 
