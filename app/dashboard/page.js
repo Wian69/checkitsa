@@ -92,6 +92,7 @@ export default function Dashboard() {
     const [showPayoutModal, setShowPayoutModal] = useState(false)
     const [payoutLoading, setPayoutLoading] = useState(false)
     const [managingListing, setManagingListing] = useState(null) // New state for modal
+    const [editingListing, setEditingListing] = useState(null) // New state for edit modal
 
     // Payout Handler
     const handlePayoutClick = () => {
@@ -358,6 +359,13 @@ export default function Dashboard() {
                                                     style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
                                                 >
                                                     📦 Manage Products
+                                                </button>
+                                                <button
+                                                    onClick={() => setEditingListing(ad)}
+                                                    className="btn btn-outline"
+                                                    style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
+                                                >
+                                                    ✏️ Edit
                                                 </button>
                                             ) : ad.status === 'expired' ? (
                                                 <button
@@ -672,11 +680,153 @@ export default function Dashboard() {
                         onClose={() => setManagingListing(null)}
                     />
                 )}
+
+                {/* Edit Listing Modal */}
+                {editingListing && (
+                    <EditListingModal
+                        user={user}
+                        listing={editingListing}
+                        onClose={() => setEditingListing(null)}
+                        onUpdate={(updatedDetails) => {
+                            setMyAds(prev => prev.map(ad => ad.id === editingListing.id ? { ...ad, ...updatedDetails } : ad))
+                            setEditingListing(null)
+                        }}
+                    />
+                )}
             </div>
         </main>
     )
 }
 
+
+
+// --- Edit Listing Modal ---
+function EditListingModal({ user, listing, onClose, onUpdate }) {
+    const [formData, setFormData] = useState({
+        business_name: listing.business_name,
+        website_url: listing.website_url,
+        description: listing.description,
+        category: listing.category,
+        registration_number: listing.registration_number
+    })
+    const [loading, setLoading] = useState(false)
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        setLoading(true)
+        try {
+            const res = await fetch('/api/advertise/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    listingId: listing.id,
+                    email: user.email,
+                    ...formData
+                })
+            })
+
+            if (res.ok) {
+                alert("Listing updated successfully!")
+                onUpdate(formData)
+            } else {
+                alert("Failed to update listing.")
+            }
+        } catch (err) {
+            console.error(err)
+            alert("Error updating listing.")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+            background: 'rgba(3, 7, 18, 0.95)', backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 2000, animation: 'fadeIn 0.3s ease-out'
+        }}>
+            <div className="glass-panel" style={{
+                width: '100%', maxWidth: '500px',
+                padding: '2rem',
+                background: '#111', border: '1px solid var(--color-border)'
+            }}>
+                <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Edit Listing</h2>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#a5b4fc' }}>Business Name</label>
+                        <input
+                            type="text"
+                            value={formData.business_name}
+                            onChange={e => setFormData({ ...formData, business_name: e.target.value })}
+                            required
+                            style={{ width: '100%', padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', borderRadius: '0.5rem', color: 'white' }}
+                        />
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#a5b4fc' }}>Registration Number</label>
+                        <input
+                            type="text"
+                            value={formData.registration_number}
+                            onChange={e => setFormData({ ...formData, registration_number: e.target.value })}
+                            required
+                            style={{ width: '100%', padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', borderRadius: '0.5rem', color: 'white' }}
+                        />
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#a5b4fc' }}>Category</label>
+                        <select
+                            value={formData.category}
+                            onChange={e => setFormData({ ...formData, category: e.target.value })}
+                            style={{ width: '100%', padding: '0.8rem', background: '#111', border: '1px solid var(--color-border)', borderRadius: '0.5rem', color: 'white' }}
+                        >
+                            <option value="Security">Security</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Legal">Legal</option>
+                            <option value="Retail">Retail</option>
+                            <option value="Real Estate">Real Estate</option>
+                            <option value="Automotive">Automotive</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#a5b4fc' }}>Website URL</label>
+                        <input
+                            type="url"
+                            value={formData.website_url}
+                            onChange={e => setFormData({ ...formData, website_url: e.target.value })}
+                            required
+                            style={{ width: '100%', padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', borderRadius: '0.5rem', color: 'white' }}
+                        />
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#a5b4fc' }}>Description</label>
+                        <textarea
+                            value={formData.description}
+                            onChange={e => setFormData({ ...formData, description: e.target.value })}
+                            required
+                            style={{ width: '100%', padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', borderRadius: '0.5rem', color: 'white', height: '100px' }}
+                        />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                        <button type="button" onClick={onClose} className="btn btn-outline" style={{ flex: 1 }}>Cancel</button>
+                        <button type="submit" disabled={loading} className="btn btn-primary" style={{ flex: 1 }}>
+                            {loading ? 'Saving...' : 'Save Changes'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    )
+}
 
 // --- Product Management Modal ---
 function ProductManagerModal({ user, listing, onClose }) {
