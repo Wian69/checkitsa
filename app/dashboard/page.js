@@ -588,87 +588,8 @@ export default function Dashboard() {
                                                                 console.error(e)
                                                                 alert('Error deleting report.')
                                                             }
-                                    <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-                                        {new Date(r.created_at).toLocaleDateString()}
-                                    </td>
-                                    <td style={{ padding: '1rem' }}>
-                                        <button
-                                            onClick={() => {
-                                                if (confirm('Delete this review?')) {
-                                                    // Add delete logic here if needed
-                                                    alert('Delete functionality coming soon')
-                                                }
-                                            }}
-                                            className="btn"
-                                            style={{
-                                                padding: '0.25rem 0.75rem',
-                                                fontSize: '0.8rem',
-                                                background: 'rgba(220, 38, 38, 0.1)',
-                                                color: '#fca5a5',
-                                                border: '1px solid var(--color-danger)',
-                                                cursor: 'pointer'
-                                            }}
-                                        >
-                                            🗑️ Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
-                </div>
-
-                {/* ADMIN SHORTCUTS - ADDED MANUAL OVERRIDE */}
-                {user && user.email === 'wiandurandt69@gmail.com' && (
-                    <div style={{ marginTop: '3rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
-                        <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#f87171' }}>Admin Keypad</h2>
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                            <Link href="/admin/leads" style={{
-                                display: 'flex', alignItems: 'center', gap: '0.5rem',
-                                background: '#dc2626', color: 'white', textDecoration: 'none',
-                                padding: '0.75rem 1.5rem', borderRadius: '0.5rem', fontWeight: 'bold'
-                            }}>
-                                📢 Manage Leads & Invites
-                            </Link>
-                        </div>
-                    </div>
-                )}
-
-                {/* Business Review History */}
-                <div style={{ marginTop: '3rem' }}>
-                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>My Business Reviews</h2>
-                    <div className="glass-panel" style={{ overflow: 'hidden' }}>
-                        {myReviews.length === 0 ? (
-                            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                                You haven't submitted any business reviews yet.
-                            </div>
-                        ) : (
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead>
-                                    <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                                        <th style={{ padding: '1rem' }}>Business</th>
-                                        <th style={{ padding: '1rem' }}>Rating</th>
-                                        <th style={{ padding: '1rem' }}>Title</th>
-                                        <th style={{ padding: '1rem' }}>Date</th>
-                                        <th style={{ padding: '1rem' }}>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {myReviews.map(r => (
-                                        <tr key={r.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <td style={{ padding: '1rem', fontWeight: 'bold' }}>{r.business_name}</td>
-                                            <td style={{ padding: '1rem' }}>
-                                                <span style={{ color: '#fbbf24' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
-                                            </td>
-                                            <td style={{ padding: '1rem' }}>{r.title}</td>
-                                            <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-                                                {new Date(r.created_at).toLocaleDateString()}
-                                            </td>
-                                            <td style={{ padding: '1rem' }}>
-                                                <button
-                                                    onClick={() => handleDeleteReview(r.id)}
+                                                        }
+                                                    }}
                                                     className="btn"
                                                     style={{
                                                         padding: '0.25rem 0.75rem',
@@ -676,8 +597,7 @@ export default function Dashboard() {
                                                         background: 'rgba(220, 38, 38, 0.1)',
                                                         color: '#fca5a5',
                                                         border: '1px solid var(--color-danger)',
-                                                        cursor: 'pointer',
-                                                        borderRadius: '0.5rem'
+                                                        cursor: 'pointer'
                                                     }}
                                                 >
                                                     🗑️ Delete
@@ -690,39 +610,126 @@ export default function Dashboard() {
                         )}
                     </div>
                 </div>
+            </tr>
+                                    ))}
+        </tbody>
+                            </table >
+                        )
+}
+                    </div >
+                </div >
 
-                {/* Payout Modal */}
-                {showPayoutModal && (
-                    <PayoutModal
-                        user={user}
-                        onClose={() => setShowPayoutModal(false)}
-                        setUser={setUser}
-                    />
-                )}
-
-                {/* Product Manager Modal */}
-                {managingListing && (
-                    <ProductManagerModal
-                        user={user}
-                        listing={managingListing}
-                        onClose={() => setManagingListing(null)}
-                    />
-                )}
-
-                {/* Edit Listing Modal */}
-                {editingListing && (
-                    <EditListingModal
-                        user={user}
-                        listing={editingListing}
-                        onClose={() => setEditingListing(null)}
-                        onUpdate={(updatedDetails) => {
-                            setMyAds(prev => prev.map(ad => ad.id === editingListing.id ? { ...ad, ...updatedDetails } : ad))
-                            setEditingListing(null)
-                        }}
-                    />
-                )}
+    {/* ADMIN SHORTCUTS - ADDED MANUAL OVERRIDE */ }
+{
+    user && user.email === 'wiandurandt69@gmail.com' && (
+        <div style={{ marginTop: '3rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
+            <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#f87171' }}>Admin Keypad</h2>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+                <Link href="/admin/leads" style={{
+                    display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    background: '#dc2626', color: 'white', textDecoration: 'none',
+                    padding: '0.75rem 1.5rem', borderRadius: '0.5rem', fontWeight: 'bold'
+                }}>
+                    📢 Manage Leads & Invites
+                </Link>
             </div>
-        </main>
+        </div>
+    )
+}
+
+{/* Business Review History */ }
+<div style={{ marginTop: '3rem' }}>
+    <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>My Business Reviews</h2>
+    <div className="glass-panel" style={{ overflow: 'hidden' }}>
+        {myReviews.length === 0 ? (
+            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                You haven't submitted any business reviews yet.
+            </div>
+        ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                    <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
+                        <th style={{ padding: '1rem' }}>Business</th>
+                        <th style={{ padding: '1rem' }}>Rating</th>
+                        <th style={{ padding: '1rem' }}>Title</th>
+                        <th style={{ padding: '1rem' }}>Date</th>
+                        <th style={{ padding: '1rem' }}>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {myReviews.map(r => (
+                        <tr key={r.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                            <td style={{ padding: '1rem', fontWeight: 'bold' }}>{r.business_name}</td>
+                            <td style={{ padding: '1rem' }}>
+                                <span style={{ color: '#fbbf24' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
+                            </td>
+                            <td style={{ padding: '1rem' }}>{r.title}</td>
+                            <td style={{ padding: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
+                                {new Date(r.created_at).toLocaleDateString()}
+                            </td>
+                            <td style={{ padding: '1rem' }}>
+                                <button
+                                    onClick={() => handleDeleteReview(r.id)}
+                                    className="btn"
+                                    style={{
+                                        padding: '0.25rem 0.75rem',
+                                        fontSize: '0.8rem',
+                                        background: 'rgba(220, 38, 38, 0.1)',
+                                        color: '#fca5a5',
+                                        border: '1px solid var(--color-danger)',
+                                        cursor: 'pointer',
+                                        borderRadius: '0.5rem'
+                                    }}
+                                >
+                                    🗑️ Delete
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        )}
+    </div>
+</div>
+
+{/* Payout Modal */ }
+{
+    showPayoutModal && (
+        <PayoutModal
+            user={user}
+            onClose={() => setShowPayoutModal(false)}
+            setUser={setUser}
+        />
+    )
+}
+
+{/* Product Manager Modal */ }
+{
+    managingListing && (
+        <ProductManagerModal
+            user={user}
+            listing={managingListing}
+            onClose={() => setManagingListing(null)}
+        />
+    )
+}
+
+{/* Edit Listing Modal */ }
+{
+    editingListing && (
+        <EditListingModal
+            user={user}
+            listing={editingListing}
+            onClose={() => setEditingListing(null)}
+            onUpdate={(updatedDetails) => {
+                setMyAds(prev => prev.map(ad => ad.id === editingListing.id ? { ...ad, ...updatedDetails } : ad))
+                setEditingListing(null)
+            }}
+        />
+    )
+}
+            </div >
+        </main >
     )
 }
 
