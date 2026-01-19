@@ -73,6 +73,7 @@ export default function Navbar() {
                         <Link href="/subscription" style={{ fontSize: '0.9375rem', opacity: 0.8 }}>Pricing</Link>
                         <Link href="/about" style={{ fontSize: '0.9375rem', opacity: 0.8 }}>About</Link>
                         <Link href="/trust" style={{ fontSize: '0.9375rem', opacity: 0.8 }}>Trust</Link>
+                        <Link href="/advertise" style={{ fontSize: '0.9375rem', color: 'var(--color-primary-light)', fontWeight: 600 }}>Advertise</Link>
                     </div>
 
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '2rem' }}>
@@ -81,6 +82,11 @@ export default function Navbar() {
                                 <Link href="/dashboard" style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', textDecoration: 'none', borderBottom: '1px solid transparent', transition: 'border-color 0.2s' }} className="hover:text-white">
                                     Dashboard
                                 </Link>
+                                {user.email === 'wiandurandt69@gmail.com' && (
+                                    <Link href="/admin" style={{ fontSize: '0.875rem', color: 'var(--color-primary-light)', textDecoration: 'none' }}>
+                                        Admin
+                                    </Link>
+                                )}
                                 <span style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
                                     Hi, <span style={{ color: '#fff', fontWeight: 600 }}>{user.fullName.split(' ')[0]}</span>
                                 </span>
@@ -127,7 +133,8 @@ export default function Navbar() {
                 <Link href="/subscription" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600 }}>Pricing</Link>
                 <Link href="/about" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600 }}>About</Link>
                 <Link href="/trust" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600 }}>Trust</Link>
-                <Link href="/report" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-primary-light)' }}>Report Incident</Link>
+                <Link href="/advertise" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-primary-light)' }}>Advertise</Link>
+                <Link href="/report" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-danger)' }}>Report Incident</Link>
                 <div style={{ height: '1px', background: 'var(--color-border)', margin: '1rem 0' }}></div>
 
                 {user ? (
@@ -138,6 +145,11 @@ export default function Navbar() {
                         <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', margin: '1rem 0' }}>
                             Go to Dashboard
                         </Link>
+                        {user.email === 'wiandurandt69@gmail.com' && (
+                            <Link href="/admin" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-primary-light)', padding: '1rem 0' }}>
+                                Admin Panel
+                            </Link>
+                        )}
                         <button onClick={handleLogout} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }}>
                             Logout
                         </button>

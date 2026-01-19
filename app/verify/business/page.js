@@ -11,6 +11,7 @@ export default function BusinessVerificationPage() {
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
     const [expanded, setExpanded] = useState(false);
+    const [promoted, setPromoted] = useState([]);
 
     useEffect(() => {
         const u = localStorage.getItem('checkitsa_user')
@@ -30,7 +31,15 @@ export default function BusinessVerificationPage() {
                 body: JSON.stringify({ input, email: user?.email || 'guest' }),
             });
             const data = await res.json();
-            if (data.valid) setResult(data.data);
+            if (data.valid) {
+                setResult(data.data);
+                // Also fetch matching promoted listings
+                const pRes = await fetch(`/api/advertise/list?q=${encodeURIComponent(input)}`);
+                if (pRes.ok) {
+                    const pData = await pRes.json();
+                    setPromoted(pData.listings || []);
+                }
+            }
             else setError(data.data?.message);
         } catch (err) {
             setError(err.message);
@@ -93,6 +102,41 @@ export default function BusinessVerificationPage() {
                 {error && (
                     <div style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.2)', color: '#fca5a5', borderRadius: '0.5rem', marginBottom: '2rem', border: '1px solid #ef4444' }}>
                         Error: {error}
+                    </div>
+                )}
+
+                {promoted.length > 0 && (
+                    <div style={{ marginBottom: '2.5rem', animation: 'fadeIn 0.5s ease' }}>
+                        <h3 style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span style={{ fontSize: '1rem' }}>🛡️</span> Verified Promoted Recommendations
+                        </h3>
+                        {promoted.map(p => (
+                            <a key={p.id} href={p.website_url} target="_blank" rel="noopener noreferrer"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '1.5rem',
+                                    background: 'linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.02) 100%)',
+                                    padding: '1.5rem',
+                                    borderRadius: '1rem',
+                                    border: '1px solid rgba(16, 185, 129, 0.2)',
+                                    textDecoration: 'none',
+                                    color: 'inherit',
+                                    marginBottom: '1rem',
+                                    transition: 'transform 0.2s ease',
+                                }}
+                                className="hover-card"
+                            >
+                                <div style={{ width: '3rem', height: '3rem', background: 'rgba(255,255,255,0.05)', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+                                    {p.business_name.charAt(0)}
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <h4 style={{ margin: 0, fontSize: '1.1rem' }}>{p.business_name}</h4>
+                                    <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{p.description}</p>
+                                </div>
+                                <div style={{ color: '#10b981', fontWeight: 'bold', fontSize: '0.8rem' }}>Visit Official Site →</div>
+                            </a>
+                        ))}
                     </div>
                 )}
 

@@ -27,5 +27,20 @@ CREATE TABLE IF NOT EXISTS reports (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Listings Table for Ad Portal
+CREATE TABLE IF NOT EXISTS listings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    business_name TEXT NOT NULL,
+    website_url TEXT,
+    logo_url TEXT,
+    description TEXT,
+    category TEXT,
+    status TEXT DEFAULT 'unpaid', -- unpaid, pending_review, active, expired
+    payment_ref TEXT UNIQUE,
+    amount_paid FLOAT,
+    expires_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Initial Data (Optional - Admin User)
 -- INSERT INTO users (fullName, email, password, tier) VALUES ('Wian', 'wiandurandt69@gmail.com', 'admin123', 'ultimate');
