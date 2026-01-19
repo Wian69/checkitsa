@@ -9,19 +9,45 @@ export default function FeaturedListings() {
     useEffect(() => {
         async function fetchListings() {
             try {
-                const res = await fetch('/api/advertise/list')
+                console.log('Fetching listings...');
+                const res = await fetch('/api/advertise/list');
                 if (res.ok) {
-                    const data = await res.json()
-                    setListings(data.listings || [])
+                    const data = await res.json();
+                    console.log('Listings fetched:', data.listings);
+                    if (data.listings && data.listings.length > 0) {
+                        setListings(data.listings);
+                    } else {
+                        // Client-side fallback if API returns empty
+                        setUseFallback(true);
+                    }
+                } else {
+                    console.error('API Error:', res.status);
+                    setUseFallback(true);
                 }
             } catch (err) {
-                console.error('Failed to fetch listings:', err)
+                console.error('Fetch Failed:', err);
+                setUseFallback(true);
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
         }
-        fetchListings()
+        fetchListings();
     }, [])
+
+    const setUseFallback = (use) => {
+        if (use) {
+            setListings([{
+                id: 999,
+                business_name: 'CheckItSA',
+                website_url: 'https://checkitsa.co.za',
+                description: 'South Africa\'s leading fraud prevention and verification platform. We empower citizens with tools to verify businesses, detect scams, and report fraudulent activity in real-time. Verify everything, trust no one.',
+                category: 'Security',
+                registration_number: '2024/CHECK/SA',
+                images: JSON.stringify(["/partners/checkitsa_preview.png", "/partners/checkitsa_mobile.png"]),
+                click_count: 0
+            }]);
+        }
+    }
 
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isPaused, setIsPaused] = useState(false)

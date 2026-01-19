@@ -62,7 +62,7 @@ export default function Home() {
       </section>
 
       {/* Featured Listings Section (Promoted Businesses) */}
-      <div style={{ marginTop: '-4rem', position: 'relative', zIndex: 10 }}>
+      <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
         <FeaturedListings />
       </div>
 

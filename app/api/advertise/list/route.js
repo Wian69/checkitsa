@@ -6,7 +6,21 @@ export async function GET(req) {
     try {
         const db = req.context?.env?.DB || process.env.DB;
 
-        if (!db) return NextResponse.json({ listings: [] });
+        if (!db) {
+            // Fallback for local dev without D1 binding
+            return NextResponse.json({
+                listings: [{
+                    id: 999,
+                    business_name: 'CheckItSA',
+                    website_url: 'https://checkitsa.co.za',
+                    description: 'South Africa\'s leading fraud prevention and verification platform. We empower citizens with tools to verify businesses, detect scams, and report fraudulent activity in real-time. Join our community in building a safer digital South Africa.',
+                    category: 'Security',
+                    registration_number: '2024/CHECK/SA',
+                    images: '["/partners/checkitsa_preview.png", "/partners/checkitsa_mobile.png"]',
+                    click_count: 0
+                }]
+            });
+        }
 
         const { searchParams } = new URL(req.url);
         const q = searchParams.get('q');
