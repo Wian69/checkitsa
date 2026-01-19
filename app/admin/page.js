@@ -17,7 +17,78 @@ export default function AdminDashboard() {
     const [inviteName, setInviteName] = useState('')
     const [sendingInvite, setSendingInvite] = useState(false)
 
-    // ... existing handlers ...
+    const [error, setError] = useState(null)
+    const router = useRouter()
+
+    useEffect(() => {
+        const u = localStorage.getItem('checkitsa_user')
+        if (u) {
+            const parsedUser = JSON.parse(u)
+            if (parsedUser.email !== ADMIN_EMAIL) {
+                router.push('/')
+                return
+            }
+            setUser(parsedUser)
+            fetchData(parsedUser.email)
+        } else {
+            router.push('/login')
+        }
+    }, [])
+
+    const fetchData = async (email) => {
+        setLoading(true)
+        try {
+            const [lRes, rRes] = await Promise.all([
+                fetch(`/api/admin/listings?email=${email}`),
+                fetch(`/api/admin/reports?email=${email}`)
+            ])
+
+            const lData = await lRes.json()
+            const rData = await rRes.json()
+
+            if (lRes.ok) setListings(lData.listings || [])
+            if (rRes.ok) setReports(rData.reports || [])
+        } catch (err) {
+            setError('Failed to load admin data')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleUpdateStatus = async (id, status) => {
+        try {
+            const res = await fetch('/api/admin/listings', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: user.email, id, status })
+            })
+            if (res.ok) {
+                setListings(listings.map(l => l.id === id ? { ...l, status } : l))
+            }
+        } catch (err) {
+            alert('Update failed')
+        }
+    }
+
+    const handleDeleteListing = async (id) => {
+        if (!confirm('Are you sure you want to delete this listing?')) return
+        try {
+            const res = await fetch(`/api/admin/listings?email=${user.email}&id=${id}`, { method: 'DELETE' })
+            if (res.ok) setListings(listings.filter(l => l.id !== id))
+        } catch (err) {
+            alert('Delete failed')
+        }
+    }
+
+    const handleDeleteReport = async (id) => {
+        if (!confirm('Are you sure you want to delete this report?')) return
+        try {
+            const res = await fetch(`/api/admin/reports?email=${user.email}&id=${id}`, { method: 'DELETE' })
+            if (res.ok) setReports(reports.filter(r => r.id !== id))
+        } catch (err) {
+            alert('Delete failed')
+        }
+    }
 
     const handleSendInvite = async (e) => {
         e.preventDefault()
