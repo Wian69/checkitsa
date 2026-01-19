@@ -177,18 +177,25 @@ export default function FeaturedListings() {
                                 </div>
 
                                 {item.images && (
-                                    <div style={{ flex: '1.5', minWidth: '300px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-                                        {JSON.parse(item.images).slice(0, 4).map((img, idx) => (
-                                            <div key={idx} style={{
-                                                aspectRatio: '4/3',
-                                                borderRadius: '1rem',
-                                                overflow: 'hidden',
-                                                border: '1px solid rgba(255,255,255,0.1)',
-                                                boxShadow: 'var(--shadow-lg)'
-                                            }}>
-                                                <img src={img} alt="Showcase" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                            </div>
-                                        ))}
+                                    <div style={{ flex: '1.5', minWidth: '250px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                                        {(() => {
+                                            try {
+                                                const imgs = JSON.parse(item.images);
+                                                return Array.isArray(imgs) ? imgs.slice(0, 4).map((img, idx) => (
+                                                    <div key={idx} style={{
+                                                        aspectRatio: '4/3',
+                                                        borderRadius: '1rem',
+                                                        overflow: 'hidden',
+                                                        border: '1px solid rgba(255,255,255,0.1)',
+                                                        boxShadow: 'var(--shadow-lg)'
+                                                    }}>
+                                                        <img src={img} alt="Showcase" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    </div>
+                                                )) : null;
+                                            } catch (e) {
+                                                return null;
+                                            }
+                                        })()}
                                     </div>
                                 )}
 

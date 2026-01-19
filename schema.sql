@@ -61,3 +61,14 @@ CREATE TABLE IF NOT EXISTS listing_products (
 
 -- Initial Data (Optional - Admin User)
 -- INSERT INTO users (fullName, email, password, tier) VALUES ('Wian', 'wiandurandt69@gmail.com', 'admin123', 'ultimate');
+
+-- Leads Table for Outreach
+CREATE TABLE IF NOT EXISTS leads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    business_name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    source TEXT DEFAULT 'Manual',
+    status TEXT DEFAULT 'New', -- New, Contacted, Converted, Uninterested
+    last_contacted_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
