@@ -91,9 +91,9 @@ export default function BusinessProfilePage() {
                             <button onClick={() => window.open(`https://wa.me/?text=Hi, saw your verified listing on CheckItSA.`, '_blank')} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 💬 WhatsApp
                             </button>
-                            <button onClick={() => alert("Verification Certificate download coming soon!")} className="btn btn-outline" style={{ borderColor: 'var(--color-border)' }}>
+                            {/* <button onClick={() => alert("Verification Certificate download coming soon!")} className="btn btn-outline" style={{ borderColor: 'var(--color-border)' }}>
                                 📜 View Certificate
-                            </button>
+                            </button> */}
                         </div>
                     </div>
                     {/* Trust Score Badge */}

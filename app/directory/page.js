@@ -124,8 +124,13 @@ export default function DirectoryPage() {
                                 Loading directory...
                             </div>
                         ) : filteredListings.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--color-text-muted)', border: '1px dashed var(--color-border)', borderRadius: '1rem' }}>
-                                No verified businesses found in this category.
+                            <div style={{ textAlign: 'center', padding: '4rem 2rem', color: 'var(--color-text-muted)', border: '1px dashed var(--color-border)', borderRadius: '1rem', background: 'rgba(255,255,255,0.02)' }}>
+                                <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>📢</div>
+                                <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'white' }}>No businesses found here yet.</h3>
+                                <p style={{ marginBottom: '2rem' }}>Be the first verified business in this category!</p>
+                                <Link href="/advertise" className="btn btn-primary" style={{ display: 'inline-block' }}>
+                                    List Your Business for R99
+                                </Link>
                             </div>
                         ) : (
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
