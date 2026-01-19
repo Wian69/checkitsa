@@ -23,6 +23,19 @@ export default function FeaturedListings() {
         fetchListings()
     }, [])
 
+    const [currentIndex, setCurrentIndex] = useState(0)
+
+    useEffect(() => {
+        if (listings.length <= 1) return
+        const interval = setInterval(() => {
+            setCurrentIndex(prev => (prev + 1) % listings.length)
+        }, 5000)
+        return () => clearInterval(interval)
+    }, [listings.length])
+
+    const nextSlide = () => setCurrentIndex(prev => (prev + 1) % listings.length)
+    const prevSlide = () => setCurrentIndex(prev => (prev - 1 + listings.length) % listings.length)
+
     if (loading) return null
     if (listings.length === 0) return null
 
@@ -31,100 +44,116 @@ export default function FeaturedListings() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
                 <div>
                     <h2 style={{ fontSize: '2rem' }}>Verified Business Partners</h2>
-                    <p style={{ color: 'var(--color-text-muted)' }}>Trustworthy services vetted by the CheckItSA community.</p>
+                    <p style={{ color: 'var(--color-text-muted)' }}>Trustworthy services vetted by the CheckItSA community. {listings.length > 1 && `(${currentIndex + 1}/${listings.length})`}</p>
                 </div>
-                <a href="/advertise" style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.9rem' }}>Promote Your Business →</a>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <button onClick={prevSlide} className="btn btn-outline" style={{ padding: '0.5rem', borderRadius: '50%', width: '2.5rem', height: '2.5rem' }}>←</button>
+                    <button onClick={nextSlide} className="btn btn-outline" style={{ padding: '0.5rem', borderRadius: '50%', width: '2.5rem', height: '2.5rem' }}>→</button>
+                    <a href="/advertise" style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.9rem', marginLeft: '1rem' }}>Promote Your Business →</a>
+                </div>
             </div>
 
             <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '1.5rem'
+                position: 'relative',
+                overflow: 'hidden',
+                borderRadius: 'var(--radius-lg)'
             }}>
-                {listings.map((item) => (
-                    <div key={item.id} className="glass-panel hover-card" style={{
-                        padding: '2rem',
-                        textDecoration: 'none',
-                        color: 'inherit',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '1rem',
-                        border: '1px solid rgba(16, 185, 129, 0.2)',
-                        position: 'relative',
-                        overflow: 'hidden'
-                    }}>
-                        {/* Verified Badge */}
-                        <div style={{
-                            position: 'absolute',
-                            top: '1rem',
-                            right: '1rem',
-                            background: 'rgba(16, 185, 129, 0.1)',
-                            color: '#10b981',
-                            padding: '0.3rem 0.7rem',
-                            borderRadius: '2rem',
-                            fontSize: '0.7rem',
-                            fontWeight: 'bold',
-                            border: '1px solid rgba(16, 185, 129, 0.2)',
-                            textTransform: 'uppercase'
-                        }}>
-                            ✓ Verified
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            <div style={{
-                                width: '3.5rem',
-                                height: '3.5rem',
-                                background: 'rgba(255,255,255,0.05)',
-                                borderRadius: '0.75rem',
+                <div style={{
+                    display: 'flex',
+                    transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                    transform: `translateX(-${currentIndex * 100}%)`,
+                }}>
+                    {listings.map((item) => (
+                        <div key={item.id} style={{ flex: '0 0 100%', padding: '0 0.5rem' }}>
+                            <div className="glass-panel hover-card" style={{
+                                padding: '3rem',
+                                color: 'inherit',
                                 display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '1.4rem',
-                                border: '1px solid rgba(255,255,255,0.1)'
-                            }}>{item.business_name.charAt(0)}</div>
-                            <div>
-                                <h3 style={{ fontSize: '1.2rem', marginBottom: '0.1rem' }}>{item.business_name}</h3>
-                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                    <span style={{ fontSize: '0.7rem', color: 'var(--color-primary)', fontWeight: 'bold' }}>{item.category}</span>
-                                    {item.registration_number && (
-                                        <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.05)', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>
-                                            Reg: {item.registration_number}
-                                        </span>
-                                    )}
+                                flexWrap: 'wrap',
+                                gap: '3rem',
+                                border: '1px solid rgba(16, 185, 129, 0.2)',
+                                position: 'relative',
+                                minHeight: '300px'
+                            }}>
+                                {/* Verified Badge */}
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '1.5rem',
+                                    right: '1.5rem',
+                                    background: 'rgba(16, 185, 129, 0.1)',
+                                    color: '#10b981',
+                                    padding: '0.4rem 1rem',
+                                    borderRadius: '2rem',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 'bold',
+                                    border: '1px solid rgba(16, 185, 129, 0.2)',
+                                    textTransform: 'uppercase'
+                                }}>
+                                    ✓ Verified Partner
                                 </div>
-                            </div>
-                        </div>
 
-                        <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', lineHeight: 1.5, flex: 1 }}>{item.description}</p>
-
-                        {item.images && (
-                            <div style={{ display: 'flex', gap: '0.5rem', margin: '0.5rem 0' }}>
-                                {JSON.parse(item.images).slice(0, 3).map((img, idx) => (
-                                    <div key={idx} style={{ width: '60px', height: '60px', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                        <img src={img} alt="Business" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <div style={{ flex: '1', minWidth: '300px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                                        <div style={{
+                                            width: '4.5rem',
+                                            height: '4.5rem',
+                                            background: 'rgba(255,255,255,0.05)',
+                                            borderRadius: '1rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '2rem',
+                                            border: '1px solid rgba(255,255,255,0.1)'
+                                        }}>{item.business_name.charAt(0)}</div>
+                                        <div>
+                                            <h3 style={{ fontSize: '1.8rem', marginBottom: '0.2rem' }}>{item.business_name}</h3>
+                                            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                                                <span style={{ fontSize: '0.8rem', color: 'var(--color-primary)', fontWeight: 'bold', textTransform: 'uppercase' }}>{item.category}</span>
+                                                {item.registration_number && (
+                                                    <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.05)', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>
+                                                        CIPC: {item.registration_number}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
-                                ))}
-                                {JSON.parse(item.images).length > 3 && (
-                                    <div style={{ width: '60px', height: '60px', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                                        +{JSON.parse(item.images).length - 3}
+
+                                    <p style={{ fontSize: '1.1rem', color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: '2rem' }}>{item.description}</p>
+
+                                    <a href={item.website_url} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ padding: '0.8rem 2rem' }}>
+                                        Visit Official Website →
+                                    </a>
+                                </div>
+
+                                {item.images && (
+                                    <div style={{ flex: '1', minWidth: '250px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                                        {JSON.parse(item.images).slice(0, 4).map((img, idx) => (
+                                            <div key={idx} style={{
+                                                aspectRatio: '4/3',
+                                                borderRadius: '1rem',
+                                                overflow: 'hidden',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                boxShadow: 'var(--shadow-lg)'
+                                            }}>
+                                                <img src={img} alt="Showcase" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
+
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: '0',
+                                    left: '0',
+                                    width: '100%',
+                                    height: '3px',
+                                    background: 'linear-gradient(90deg, #10b981 0%, transparent 100%)',
+                                    opacity: 0.5
+                                }}></div>
                             </div>
-                        )}
-
-                        <a href={item.website_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-primary)', textDecoration: 'none' }} className="hover:underline">Visit Website →</a>
-
-                        <div style={{
-                            position: 'absolute',
-                            bottom: '0',
-                            left: '0',
-                            width: '100%',
-                            height: '2px',
-                            background: 'linear-gradient(90deg, #10b981 0%, transparent 100%)',
-                            opacity: 0.3
-                        }}></div>
-                    </div>
-                ))}
+                        </div>
+                    ))}
+                </div>
             </div>
         </section>
     )

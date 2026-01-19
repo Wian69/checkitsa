@@ -22,7 +22,7 @@ export async function GET(req) {
             params.push(`%${q}%`, `%${q}%`, `%${q}%`);
         }
 
-        query += ` ORDER BY created_at DESC LIMIT 3`;
+        query += ` ORDER BY created_at DESC LIMIT 20`;
 
         const { results } = await db.prepare(query).bind(...params).all();
 
