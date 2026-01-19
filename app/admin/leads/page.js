@@ -17,6 +17,7 @@ function LeadsContent() {
     const [newLead, setNewLead] = useState({ business_name: '', email: '', source: 'Manual' })
     const [user, setUser] = useState(null)
     const [inviteProgress, setInviteProgress] = useState(null) // "Sending 1/5..."
+    const [marketingProgress, setMarketingProgress] = useState(null)
 
     useEffect(() => {
         const u = JSON.parse(localStorage.getItem('checkitsa_user'))
@@ -124,15 +125,53 @@ function LeadsContent() {
         fetchLeads(user.email);
     }
 
-    const sendTestPreview = async () => {
+    const handleMarketingAll = async () => {
+        // Filter for leads that HAVE been contacted but haven't bought yet (assumption: all 'Contacted' are eligible)
+        const toMarket = leads.filter(l => l.status === 'Contacted');
+        if (toMarket.length === 0) return alert("No contacted leads found to send marketing to.");
+
+        if (!confirm(`Send "How CheckItSA Works" marketing email to ${toMarket.length} leads?`)) return;
+
+        let sentCount = 0;
+        let failCount = 0;
+
+        for (let i = 0; i < toMarket.length; i++) {
+            const lead = toMarket[i];
+            setMarketingProgress(`Emailing ${i + 1} of ${toMarket.length}...`);
+
+            try {
+                // Send Marketing Email (type=marketing)
+                const res = await fetch(`/api/admin/invite?type=marketing&test_email=${encodeURIComponent(lead.email)}&sender_email=${encodeURIComponent(user.email)}&business_name=${encodeURIComponent(lead.business_name)}`);
+                const data = await res.json();
+
+                if (data.success) {
+                    sentCount++;
+                } else {
+                    console.error(`Failed to market to ${lead.email}:`, data.error);
+                    failCount++;
+                }
+            } catch (err) {
+                console.error(`Error marketing to ${lead.email}`, err);
+                failCount++;
+            }
+
+            // Small delay
+            await new Promise(r => setTimeout(r, 500));
+        }
+
+        setMarketingProgress(null);
+        alert(`Marketing Campaign Complete!\n✅ Sent: ${sentCount}\n❌ Failed: ${failCount}`);
+    }
+
+    const sendTestPreview = async (type = 'invite') => {
         if (!user || !user.email) return
-        if (!confirm(`Send a test invitation email to yourself (${user.email})?`)) return
+        if (!confirm(`Send a test ${type} email to yourself (${user.email})?`)) return
 
         try {
-            const res = await fetch(`/api/admin/invite?test_email=${encodeURIComponent(user.email)}&sender_email=${encodeURIComponent(user.email)}&business_name=CheckItSA Demo`)
+            const res = await fetch(`/api/admin/invite?type=${type}&test_email=${encodeURIComponent(user.email)}&sender_email=${encodeURIComponent(user.email)}&business_name=CheckItSA Demo`)
             const data = await res.json()
             if (data.success) {
-                alert(`Test email sent to ${user.email}! Check your inbox (and spam folder).`)
+                alert(`Test ${type} email sent to ${user.email}!`)
             } else {
                 alert('Failed to send test: ' + (data.details || data.error))
             }
@@ -292,10 +331,22 @@ function LeadsContent() {
                         </span>
                     ) : (
                         <button onClick={handleInviteAll} className="btn btn-primary" style={{ marginRight: '1rem', background: '#ec4899', borderColor: '#be185d' }}>
-                            🚀 Send Invite to All
+                            🚀 Invite All
                         </button>
                     )}
-                    <button onClick={sendTestPreview} className="btn btn-outline" style={{ marginRight: '1rem' }}>📧 Test Preview</button>
+
+                    {marketingProgress ? (
+                        <span className="btn" style={{ background: '#059669', color: 'white', marginRight: '1rem', cursor: 'wait' }}>
+                            ⏳ {marketingProgress}
+                        </span>
+                    ) : (
+                        <button onClick={handleMarketingAll} className="btn btn-primary" style={{ marginRight: '1rem', background: '#10b981', borderColor: '#059669' }}>
+                            📣 Send Marketing
+                        </button>
+                    )}
+
+                    <button onClick={() => sendTestPreview('invite')} className="btn btn-outline" style={{ marginRight: '0.5rem' }}>📧 Test Invite</button>
+                    <button onClick={() => sendTestPreview('marketing')} className="btn btn-outline" style={{ marginRight: '1rem' }}>📧 Test Marketing</button>
                     <button onClick={seedLeads} className="btn btn-outline">🌱 Import</button>
                 </div>
             </div>
