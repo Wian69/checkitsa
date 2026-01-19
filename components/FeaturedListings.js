@@ -108,11 +108,11 @@ export default function FeaturedListings() {
                     {listings.map((item) => (
                         <div key={item.id} style={{ flex: '0 0 100%', padding: '0 0.5rem' }}>
                             <div className="glass-panel" style={{
-                                padding: '3rem',
+                                padding: 'clamp(1.5rem, 5vw, 3rem)',
                                 color: 'inherit',
                                 display: 'flex',
                                 flexWrap: 'wrap',
-                                gap: '3rem',
+                                gap: '2rem',
                                 border: '1px solid rgba(16, 185, 129, 0.2)',
                                 background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%)',
                                 position: 'relative',
@@ -136,7 +136,7 @@ export default function FeaturedListings() {
                                     ✓ Verified Partner
                                 </div>
 
-                                <div style={{ flex: '2', minWidth: '300px' }}>
+                                <div style={{ flex: '2', minWidth: '280px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
                                         <div style={{
                                             width: '4.5rem',

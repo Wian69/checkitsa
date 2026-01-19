@@ -160,7 +160,7 @@ function AdvertiseContent() {
           </p>
         </div>
 
-        <div className="glass-panel" style={{ maxWidth: '600px', margin: '0 auto', padding: '3rem' }}>
+        <div className="glass-panel" style={{ maxWidth: '600px', margin: '0 auto', padding: 'clamp(1.5rem, 5vw, 3rem)' }}>
           {status === 'success' ? (
             <div style={{ textAlign: 'center', padding: '2rem 0' }}>
               <div style={{ fontSize: '4rem', marginBottom: '1.5rem' }}>✅</div>
@@ -266,7 +266,7 @@ function AdvertiseContent() {
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#a5b4fc' }}>Business Photos (Max 4)</label>
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
                   gap: '1rem',
                   marginBottom: '1rem'
                 }}>
