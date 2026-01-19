@@ -12,76 +12,30 @@ export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('listings')
     const [listings, setListings] = useState([])
     const [reports, setReports] = useState([])
-    const [error, setError] = useState(null)
-    const router = useRouter()
+    // Invitation State
+    const [inviteEmail, setInviteEmail] = useState('')
+    const [inviteName, setInviteName] = useState('')
+    const [sendingInvite, setSendingInvite] = useState(false)
 
-    useEffect(() => {
-        const u = localStorage.getItem('checkitsa_user')
-        if (u) {
-            const parsedUser = JSON.parse(u)
-            if (parsedUser.email !== ADMIN_EMAIL) {
-                router.push('/')
-                return
-            }
-            setUser(parsedUser)
-            fetchData(parsedUser.email)
-        } else {
-            router.push('/login')
-        }
-    }, [])
+    // ... existing handlers ...
 
-    const fetchData = async (email) => {
-        setLoading(true)
+    const handleSendInvite = async (e) => {
+        e.preventDefault()
+        setSendingInvite(true)
         try {
-            const [lRes, rRes] = await Promise.all([
-                fetch(`/api/admin/listings?email=${email}`),
-                fetch(`/api/admin/reports?email=${email}`)
-            ])
-
-            const lData = await lRes.json()
-            const rData = await rRes.json()
-
-            if (lRes.ok) setListings(lData.listings)
-            if (rRes.ok) setReports(rData.reports)
-        } catch (err) {
-            setError('Failed to load admin data')
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const handleUpdateStatus = async (id, status) => {
-        try {
-            const res = await fetch('/api/admin/listings', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: user.email, id, status })
-            })
+            const res = await fetch(`/api/admin/invite?test_email=${inviteEmail}`)
+            const data = await res.json()
             if (res.ok) {
-                setListings(listings.map(l => l.id === id ? { ...l, status } : l))
+                alert(`Invitation sent to ${inviteEmail}!`)
+                setInviteEmail('')
+                setInviteName('')
+            } else {
+                alert('Failed to send: ' + JSON.stringify(data))
             }
         } catch (err) {
-            alert('Update failed')
-        }
-    }
-
-    const handleDeleteListing = async (id) => {
-        if (!confirm('Are you sure you want to delete this listing?')) return
-        try {
-            const res = await fetch(`/api/admin/listings?email=${user.email}&id=${id}`, { method: 'DELETE' })
-            if (res.ok) setListings(listings.filter(l => l.id !== id))
-        } catch (err) {
-            alert('Delete failed')
-        }
-    }
-
-    const handleDeleteReport = async (id) => {
-        if (!confirm('Are you sure you want to delete this report?')) return
-        try {
-            const res = await fetch(`/api/admin/reports?email=${user.email}&id=${id}`, { method: 'DELETE' })
-            if (res.ok) setReports(reports.filter(r => r.id !== id))
-        } catch (err) {
-            alert('Delete failed')
+            alert('Error sending invitation')
+        } finally {
+            setSendingInvite(false)
         }
     }
 
@@ -120,6 +74,17 @@ export default function AdminDashboard() {
                         }}
                     >
                         Community Reports ({reports.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('invites')}
+                        style={{
+                            background: 'none', border: 'none', color: activeTab === 'invites' ? 'var(--color-primary)' : 'white',
+                            fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer',
+                            borderBottom: activeTab === 'invites' ? '2px solid var(--color-primary)' : 'none',
+                            paddingBottom: '0.5rem'
+                        }}
+                    >
+                        Send Invitations 📧
                     </button>
                 </div>
 
@@ -160,7 +125,7 @@ export default function AdminDashboard() {
                         ))}
                         {listings.length === 0 && <p style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>No ad listings found.</p>}
                     </div>
-                ) : (
+                ) : activeTab === 'reports' ? (
                     <div style={{ display: 'grid', gap: '1rem' }}>
                         {reports.map(r => (
                             <div key={r.id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -178,6 +143,48 @@ export default function AdminDashboard() {
                             </div>
                         ))}
                         {reports.length === 0 && <p style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>No community reports found.</p>}
+                    </div>
+                ) : (
+                    <div className="glass-panel" style={{ padding: '3rem', maxWidth: '600px', margin: '0 auto' }}>
+                        <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem' }}>Send Verification Invite</h2>
+                        <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>
+                            Send a professional email invitation to businesses, urging them to verify their status on CheckItSA.
+                        </p>
+                        <form onSubmit={handleSendInvite}>
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Business Name</label>
+                                <input
+                                    type="text"
+                                    value={inviteName}
+                                    onChange={(e) => setInviteName(e.target.value)}
+                                    placeholder="e.g. Acme Security"
+                                    className="input-field"
+                                    required
+                                />
+                            </div>
+                            <div style={{ marginBottom: '2rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Email Address</label>
+                                <input
+                                    type="email"
+                                    value={inviteEmail}
+                                    onChange={(e) => setInviteEmail(e.target.value)}
+                                    placeholder="contact@business.co.za"
+                                    className="input-field"
+                                    required
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={sendingInvite}
+                                className="btn btn-primary"
+                                style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }}
+                            >
+                                {sendingInvite ? 'Sending...' : 'Send Invitation 🚀'}
+                            </button>
+                            <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--color-text-muted)', textAlign: 'center' }}>
+                                Creates a verified sender invitation using Cloudflare & Brevo.
+                            </p>
+                        </form>
                     </div>
                 )}
             </section>
