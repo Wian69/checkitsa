@@ -112,7 +112,31 @@ function LeadsContent() {
             { business_name: 'Relaxatia Beauty', email: 'relaxatiasalon@gmail.com', source: 'Web Search' },
             // Real Estate
             { business_name: 'Property Inspector', email: 'propertyinspectorbloemfontein@gmail.com', source: 'Web Search' },
-            { business_name: 'Global Estates', email: 'henda@globalestates.co.za', source: 'Web Search' }
+            { business_name: 'Global Estates', email: 'henda@globalestates.co.za', source: 'Web Search' },
+
+            // Electricians
+            { business_name: 'ECA SA', email: 'info@ecasa.co.za', source: 'Web Search' },
+            { business_name: 'LJ Trading', email: 'jabulani.sibanda@ljtrading.co.za', source: 'Web Search' },
+            { business_name: 'Lefhumo Electrical', email: 'manager@lefhumo.co.za', source: 'Web Search' },
+            { business_name: 'Ampd Electrical', email: 'jono@ampdelectrical.co.za', source: 'Web Search' },
+            { business_name: 'Halls Electrical', email: 'Hallselec@gmail.com', source: 'Web Search' },
+            { business_name: 'Springs Electrical', email: 'springselectrical@yahoo.com', source: 'Web Search' },
+            { business_name: 'Johans Electrical', email: 'Shirley@skytec.co.za', source: 'Web Search' },
+            { business_name: 'Lights By William', email: 'William@lightzbywilliam.co.za', source: 'Web Search' },
+            { business_name: 'Softech Electrical', email: 'Softechelectrical@gmail.com', source: 'Web Search' },
+            { business_name: 'Valley Electrical', email: 'info@valleyelectrical.co.za', source: 'Web Search' },
+
+            // Moving Companies
+            { business_name: 'Mint Movers', email: 'housemoversmint@gmail.com', source: 'Web Search' },
+            { business_name: 'Mr Cheap Transport', email: 'sales@mrcheaptransport.co.za', source: 'Web Search' },
+            { business_name: 'Moving24', email: 'southafrica@moving24.com', source: 'Web Search' },
+
+            // Catering
+            { business_name: 'Caterfood SA', email: 'info@caterfoodsa.co.za', source: 'Web Search' },
+            { business_name: 'Norma and Co', email: 'genevieve@norma-vilma.co.za', source: 'Web Search' },
+            { business_name: 'The Real Food Co', email: 'info@real-food.co.za', source: 'Web Search' },
+            { business_name: 'Fresh Creative', email: 'hello@freshfood.co.za', source: 'Web Search' },
+            { business_name: 'Adeles Catering', email: 'adele.catering@gmail.com', source: 'Web Search' }
         ]
 
         for (const l of demoLeads) {
