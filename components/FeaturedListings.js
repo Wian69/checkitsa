@@ -24,26 +24,42 @@ export default function FeaturedListings() {
     }, [])
 
     const [currentIndex, setCurrentIndex] = useState(0)
+    const [isPaused, setIsPaused] = useState(false)
 
     useEffect(() => {
-        if (listings.length <= 1) return
+        if (listings.length <= 1 || isPaused) return
         const interval = setInterval(() => {
             setCurrentIndex(prev => (prev + 1) % listings.length)
         }, 5000)
         return () => clearInterval(interval)
-    }, [listings.length])
+    }, [listings.length, isPaused])
 
     const nextSlide = () => setCurrentIndex(prev => (prev + 1) % listings.length)
     const prevSlide = () => setCurrentIndex(prev => (prev - 1 + listings.length) % listings.length)
+
+    const handleTrackClick = async (id) => {
+        try {
+            await fetch('/api/advertise/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            })
+        } catch (err) {
+            console.error('Click tracking failed:', err)
+        }
+    }
 
     if (loading) return null
     if (listings.length === 0) return null
 
     return (
-        <section className="container content-section">
+        <section className="container content-section"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+        >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
                 <div>
-                    <h2 style={{ fontSize: '2rem' }}>Verified Business Partners</h2>
+                    <h2 style={{ fontSize: '2rem' }}>Verified Business Partners {isPaused && <span style={{ fontSize: '0.8rem', verticalAlign: 'middle', opacity: 0.5 }}>⏸ Paused</span>}</h2>
                     <p style={{ color: 'var(--color-text-muted)' }}>Trustworthy services vetted by the CheckItSA community. {listings.length > 1 && `(${currentIndex + 1}/${listings.length})`}</p>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -65,15 +81,17 @@ export default function FeaturedListings() {
                 }}>
                     {listings.map((item) => (
                         <div key={item.id} style={{ flex: '0 0 100%', padding: '0 0.5rem' }}>
-                            <div className="glass-panel hover-card" style={{
+                            <div className="glass-panel" style={{
                                 padding: '3rem',
                                 color: 'inherit',
                                 display: 'flex',
                                 flexWrap: 'wrap',
                                 gap: '3rem',
                                 border: '1px solid rgba(16, 185, 129, 0.2)',
+                                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%)',
                                 position: 'relative',
-                                minHeight: '300px'
+                                minHeight: '300px',
+                                transition: 'all 0.3s ease'
                             }}>
                                 {/* Verified Badge */}
                                 <div style={{
@@ -92,7 +110,7 @@ export default function FeaturedListings() {
                                     ✓ Verified Partner
                                 </div>
 
-                                <div style={{ flex: '1', minWidth: '300px' }}>
+                                <div style={{ flex: '2', minWidth: '300px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
                                         <div style={{
                                             width: '4.5rem',
@@ -108,7 +126,7 @@ export default function FeaturedListings() {
                                         <div>
                                             <h3 style={{ fontSize: '1.8rem', marginBottom: '0.2rem' }}>{item.business_name}</h3>
                                             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                                                <span style={{ fontSize: '0.8rem', color: 'var(--color-primary)', fontWeight: 'bold', textTransform: 'uppercase' }}>{item.category}</span>
+                                                <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 'bold', textTransform: 'uppercase' }}>{item.category}</span>
                                                 {item.registration_number && (
                                                     <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.05)', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>
                                                         CIPC: {item.registration_number}
@@ -118,15 +136,22 @@ export default function FeaturedListings() {
                                         </div>
                                     </div>
 
-                                    <p style={{ fontSize: '1.1rem', color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: '2rem' }}>{item.description}</p>
+                                    <p style={{ fontSize: '1.1rem', color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: '2.5rem' }}>{item.description}</p>
 
-                                    <a href={item.website_url} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ padding: '0.8rem 2rem' }}>
+                                    <a
+                                        href={item.website_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn btn-primary"
+                                        onClick={() => handleTrackClick(item.id)}
+                                        style={{ padding: '1rem 2.5rem', background: '#10b981', fontWeight: 'bold' }}
+                                    >
                                         Visit Official Website →
                                     </a>
                                 </div>
 
                                 {item.images && (
-                                    <div style={{ flex: '1', minWidth: '250px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                                    <div style={{ flex: '1.5', minWidth: '300px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
                                         {JSON.parse(item.images).slice(0, 4).map((img, idx) => (
                                             <div key={idx} style={{
                                                 aspectRatio: '4/3',
@@ -146,7 +171,7 @@ export default function FeaturedListings() {
                                     bottom: '0',
                                     left: '0',
                                     width: '100%',
-                                    height: '3px',
+                                    height: '4px',
                                     background: 'linear-gradient(90deg, #10b981 0%, transparent 100%)',
                                     opacity: 0.5
                                 }}></div>

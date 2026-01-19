@@ -136,6 +136,7 @@ export default function AdminDashboard() {
                                                 {l.status.toUpperCase()}
                                             </span>
                                             <span style={{ fontSize: '0.85rem', color: 'white', fontWeight: 600 }}>CIPC: {l.registration_number || 'N/A'}</span>
+                                            <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold', marginLeft: '0.5rem' }}>🖱️ {l.click_count || 0} Clicks</span>
                                             <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>• Expires: {l.expires_at ? new Date(l.expires_at).toLocaleDateString() : 'Never'}</span>
                                         </div>
                                     </div>

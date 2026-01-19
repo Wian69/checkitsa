@@ -116,8 +116,8 @@ export default function BusinessVerificationPage() {
                                     display: 'flex',
                                     flexDirection: 'column',
                                     gap: '1.5rem',
-                                    background: 'linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.02) 100%)',
-                                    padding: '2rem',
+                                    background: 'linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%)',
+                                    padding: '2.5rem',
                                     borderRadius: '1.5rem',
                                     border: '1px solid rgba(16, 185, 129, 0.2)',
                                     marginBottom: '1rem',
@@ -125,14 +125,14 @@ export default function BusinessVerificationPage() {
                                     overflow: 'hidden'
                                 }}
                             >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
                                     <div style={{ width: '3.5rem', height: '3.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', border: '1px solid rgba(255,255,255,0.1)' }}>
                                         {p.business_name.charAt(0)}
                                     </div>
-                                    <div style={{ flex: 1 }}>
-                                        <h4 style={{ margin: 0, fontSize: '1.3rem', color: 'white' }}>{p.business_name}</h4>
+                                    <div style={{ flex: 1, minWidth: '200px' }}>
+                                        <h4 style={{ margin: 0, fontSize: '1.4rem', color: 'white' }}>{p.business_name}</h4>
                                         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginTop: '0.25rem' }}>
-                                            <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 'bold' }}>{p.category}</span>
+                                            <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 'bold', textTransform: 'uppercase' }}>{p.category}</span>
                                             {p.registration_number && (
                                                 <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.05)', padding: '0.1rem 0.5rem', borderRadius: '4px' }}>
                                                     CIPC: {p.registration_number}
@@ -140,15 +140,31 @@ export default function BusinessVerificationPage() {
                                             )}
                                         </div>
                                     </div>
-                                    <a href={p.website_url} target="_blank" rel="noopener noreferrer" style={{ padding: '0.6rem 1.2rem', borderRadius: '0.5rem', background: '#10b981', color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.85rem' }}>Visit Site</a>
+                                    <a
+                                        href={p.website_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={async () => {
+                                            try {
+                                                await fetch('/api/advertise/track', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ id: p.id })
+                                                })
+                                            } catch (e) { }
+                                        }}
+                                        style={{ padding: '0.8rem 1.5rem', borderRadius: '0.5rem', background: '#10b981', color: 'white', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem' }}
+                                    >
+                                        Visit Official Website →
+                                    </a>
                                 </div>
 
-                                <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>{p.description}</p>
+                                <p style={{ margin: 0, fontSize: '1rem', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>{p.description}</p>
 
                                 {p.images && (
-                                    <div style={{ display: 'flex', gap: '0.75rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+                                    <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem', scrollbarWidth: 'thin' }}>
                                         {JSON.parse(p.images).map((img, idx) => (
-                                            <a key={idx} href={img} target="_blank" rel="noopener noreferrer" style={{ flex: '0 0 100px', height: '100px', borderRadius: '0.75rem', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                            <a key={idx} href={img} target="_blank" rel="noopener noreferrer" style={{ flex: '0 0 120px', height: '90px', borderRadius: '0.75rem', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
                                                 <img src={img} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                             </a>
                                         ))}
@@ -157,7 +173,8 @@ export default function BusinessVerificationPage() {
                             </div>
                         ))}
                     </div>
-                )}
+                )
+                }
 
                 {result && (
                     <div style={{ animation: 'fadeIn 0.3s ease' }}>

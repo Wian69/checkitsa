@@ -42,7 +42,8 @@ CREATE TABLE IF NOT EXISTS listings (
     payment_ref TEXT UNIQUE,
     amount_paid FLOAT,
     expires_at DATETIME,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    click_count INTEGER DEFAULT 0
 );
 
 -- Initial Data (Optional - Admin User)
