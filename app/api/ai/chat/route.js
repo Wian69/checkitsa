@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
+import { getRequestContext } from '@cloudflare/next-on-pages';
 
 export const runtime = 'edge';
 
@@ -28,8 +29,11 @@ OUTPUT FORMAT: Return a JSON object ONLY. No markdown.
 export async function POST(req) {
     try {
         const { message } = await req.json();
-        const apiKey = process.env.GOOGLE_API_KEY;
-        const serperKey = process.env.SERPER_API_KEY;
+
+        // Cloudflare Env Access
+        const env = getRequestContext()?.env || {};
+        const apiKey = env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY;
+        const serperKey = env.SERPER_API_KEY || process.env.SERPER_API_KEY;
 
         if (!apiKey) {
             return NextResponse.json({
