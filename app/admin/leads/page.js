@@ -203,7 +203,17 @@ function LeadsContent() {
             if (data.success) {
                 alert(`Test ${type} email sent to ${testTarget}!`)
             } else {
-                alert('Failed to send test: ' + (data.details || data.error))
+                // Check if suspended
+                if (data.details && (data.details.includes('smtp account is not activated') || data.details.includes('suspended'))) {
+                    // Create a proper fake lead for the test fallback
+                    const testLead = { business_name: 'CheckItSA Demo', email: testTarget };
+
+                    if (confirm(`⚠️ Brevo API Error: "Account Suspended".\n\nTest the manual fallback? This will open your email app.`)) {
+                        openMailtoFallback(testLead, type);
+                    }
+                } else {
+                    alert('Failed to send test: ' + (data.details || data.error))
+                }
             }
         } catch (e) {
             alert('Error sending test email')
