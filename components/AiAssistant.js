@@ -7,7 +7,7 @@ export default function AiAssistant() {
     const [isOpen, setIsOpen] = useState(false)
     const [hasOpened, setHasOpened] = useState(false) // Track if it has already auto-opened
     const [messages, setMessages] = useState([
-        { role: 'bot', text: 'Hello! I\'m Cipher. How can we help today?', action: null }
+        { role: 'bot', text: 'Hello! I\'m Checkit Bot. How can we help today?', action: null }
     ])
     const [input, setInput] = useState('')
     const [loading, setLoading] = useState(false)
@@ -91,7 +91,7 @@ export default function AiAssistant() {
                     }}>
                         <div style={{ fontSize: '1.5rem' }}>🤖</div>
                         <div>
-                            <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>Cipher AI</div>
+                            <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>Checkit Bot</div>
                             <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>Security Assistant</div>
                         </div>
                         <button
@@ -146,7 +146,7 @@ export default function AiAssistant() {
                         ))}
                         {loading && (
                             <div style={{ alignSelf: 'flex-start', padding: '0.5rem 1rem', color: '#9ca3af', fontSize: '0.8rem' }}>
-                                Cipher is thinking...
+                                Checkit Bot is thinking...
                             </div>
                         )}
                         <div ref={messagesEndRef} />
