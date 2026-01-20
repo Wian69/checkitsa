@@ -80,16 +80,29 @@ function LeadsContent() {
         }
     }
 
+    // Helper for manual fallback when API is down/suspended
+    const openMailtoFallback = (lead, type) => {
+        const subject = type === 'marketing'
+            ? `How CheckItSA protects ${lead.business_name}`
+            : `Invitation to Verify: ${lead.business_name}`;
+
+        const bodyContent = type === 'marketing'
+            ? `Hi ${lead.business_name},\n\nCheckItSA helps South Africans verify legitimate businesses...\n\n(Full marketing content would go here)`
+            : `Hi ${lead.business_name},\n\nWe found your business online and have added it to the CheckItSA directory.\n\nSouth Africans use CheckItSA to verify legitimate businesses.\nYou can claim your "Verified Business" badge for free here:\n\nhttps://checkitsa.co.za/verify/business\n\nRegards,\nCheckItSA Team`;
+
+        const body = encodeURIComponent(bodyContent);
+        const sub = encodeURIComponent(subject);
+
+        window.open(`mailto:${lead.email}?subject=${sub}&body=${body}`, '_blank');
+    }
+
     const handleInvite = async (lead) => {
         if (!confirm(`Send invitation to ${lead.email}?`)) return
-
         try {
             const res = await fetch(`/api/admin/invite?test_email=${encodeURIComponent(lead.email)}&sender_email=${encodeURIComponent(user.email)}&business_name=${encodeURIComponent(lead.business_name)}`)
             const data = await res.json()
-
             if (data.success) {
                 alert('Invite sent!')
-                // Update status locally
                 await fetch('/api/admin/leads', {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
@@ -97,7 +110,21 @@ function LeadsContent() {
                 })
                 fetchLeads(user.email)
             } else {
-                alert('Failed: ' + (data.details || data.error))
+                // Check for Brevo Suspension/Billing Validation
+                if (data.details && (data.details.includes('smtp account is not activated') || data.details.includes('suspended'))) {
+                    if (confirm(`⚠️ Brevo API Error: "Account Suspended/Not Activated".\n\nWould you like to send this manually via your Email App instead?`)) {
+                        openMailtoFallback(lead, 'invite');
+                        // Optimistically mark as contacted
+                        await fetch('/api/admin/leads', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: user.email, leadId: lead.id, status: 'Contacted', contacted: true })
+                        })
+                        fetchLeads(user.email);
+                    }
+                } else {
+                    alert('Failed: ' + (data.details || data.error));
+                }
             }
         } catch (e) {
             alert('Error sending invite')
@@ -107,7 +134,6 @@ function LeadsContent() {
     const handleInviteAll = async () => {
         const toInvite = leads.filter(l => l.status !== 'Contacted');
         if (toInvite.length === 0) return alert("All leads have already been contacted! 🎉");
-
         if (!confirm(`You are about to send ${toInvite.length} invitations. This might take a moment. Proceed?`)) return;
 
         let sentCount = 0;
@@ -116,14 +142,10 @@ function LeadsContent() {
         for (let i = 0; i < toInvite.length; i++) {
             const lead = toInvite[i];
             setInviteProgress(`Sending ${i + 1} of ${toInvite.length}...`);
-
             try {
-                // 1. Send Email
                 const res = await fetch(`/api/admin/invite?test_email=${encodeURIComponent(lead.email)}&sender_email=${encodeURIComponent(user.email)}&business_name=${encodeURIComponent(lead.business_name)}`);
                 const data = await res.json();
-
                 if (data.success) {
-                    // 2. Update Status
                     await fetch('/api/admin/leads', {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
@@ -131,28 +153,21 @@ function LeadsContent() {
                     });
                     sentCount++;
                 } else {
-                    console.error(`Failed to invite ${lead.email}:`, data.error);
                     failCount++;
                 }
             } catch (err) {
-                console.error(`Error inviting ${lead.email}`, err);
                 failCount++;
             }
-
-            // Small delay to be nice to the API
             await new Promise(r => setTimeout(r, 500));
         }
-
         setInviteProgress(null);
         alert(`Batch Complete!\n✅ Sent: ${sentCount}\n❌ Failed: ${failCount}`);
         fetchLeads(user.email);
     }
 
     const handleMarketingAll = async () => {
-        // Filter for leads that HAVE been contacted but haven't bought yet (assumption: all 'Contacted' are eligible)
         const toMarket = leads.filter(l => l.status === 'Contacted');
         if (toMarket.length === 0) return alert("No contacted leads found to send marketing to.");
-
         if (!confirm(`Send "How CheckItSA Works" marketing email to ${toMarket.length} leads?`)) return;
 
         let sentCount = 0;
@@ -161,40 +176,32 @@ function LeadsContent() {
         for (let i = 0; i < toMarket.length; i++) {
             const lead = toMarket[i];
             setMarketingProgress(`Emailing ${i + 1} of ${toMarket.length}...`);
-
             try {
-                // Send Marketing Email (type=marketing)
                 const res = await fetch(`/api/admin/invite?type=marketing&test_email=${encodeURIComponent(lead.email)}&sender_email=${encodeURIComponent(user.email)}&business_name=${encodeURIComponent(lead.business_name)}`);
                 const data = await res.json();
-
                 if (data.success) {
                     sentCount++;
                 } else {
-                    console.error(`Failed to market to ${lead.email}:`, data.error);
                     failCount++;
                 }
             } catch (err) {
-                console.error(`Error marketing to ${lead.email}`, err);
                 failCount++;
             }
-
-            // Small delay
             await new Promise(r => setTimeout(r, 500));
         }
-
         setMarketingProgress(null);
         alert(`Marketing Campaign Complete!\n✅ Sent: ${sentCount}\n❌ Failed: ${failCount}`);
     }
 
     const sendTestPreview = async (type = 'invite') => {
         if (!user || !user.email) return
-        if (!confirm(`Send a test ${type} email to yourself (${user.email})?`)) return
-
+        const testTarget = 'info@checkitsa.co.za';
+        if (!confirm(`Send a test ${type} email to ${testTarget}?`)) return
         try {
-            const res = await fetch(`/api/admin/invite?type=${type}&test_email=${encodeURIComponent(user.email)}&sender_email=${encodeURIComponent(user.email)}&business_name=CheckItSA Demo`)
+            const res = await fetch(`/api/admin/invite?type=${type}&test_email=${encodeURIComponent(testTarget)}&sender_email=${encodeURIComponent(user.email)}&business_name=CheckItSA Demo`)
             const data = await res.json()
             if (data.success) {
-                alert(`Test ${type} email sent to ${user.email}!`)
+                alert(`Test ${type} email sent to ${testTarget}!`)
             } else {
                 alert('Failed to send test: ' + (data.details || data.error))
             }

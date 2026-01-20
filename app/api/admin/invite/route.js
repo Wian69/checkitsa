@@ -24,7 +24,7 @@ export async function GET(req) {
         }
 
         // 2. Define Recipient(s)
-        const recipientEmail = testEmail || 'wiandurandt69@gmail.com';
+        const recipientEmail = testEmail || 'info@checkitsa.co.za';
         const recipientName = searchParams.get('business_name') || 'Business Owner';
 
         console.log(`[Invite] Sending ${type} to ${recipientEmail}...`);
