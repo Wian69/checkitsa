@@ -32,7 +32,8 @@ export async function POST(req) {
 
         // Cloudflare Env Access
         const env = getRequestContext()?.env || {};
-        const apiKey = env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY;
+        // Use GEMINI_API_KEY as established in other routes
+        const apiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY || env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY;
         const serperKey = env.SERPER_API_KEY || process.env.SERPER_API_KEY;
 
         if (!apiKey) {
