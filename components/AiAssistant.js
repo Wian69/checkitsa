@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 
 export default function AiAssistant() {
     const [isOpen, setIsOpen] = useState(false)
+    const [hasOpened, setHasOpened] = useState(false) // Track if it has already auto-opened
     const [messages, setMessages] = useState([
-        { role: 'bot', text: 'Hello! I\'m Cipher. What do you need to verify today?', action: null }
+        { role: 'bot', text: 'Hello! I\'m Cipher. How can we help today?', action: null }
     ])
     const [input, setInput] = useState('')
     const [loading, setLoading] = useState(false)
@@ -16,6 +17,17 @@ export default function AiAssistant() {
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
     }
+
+    // Auto-open after delay
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (!hasOpened) {
+                setIsOpen(true)
+                setHasOpened(true)
+            }
+        }, 1500)
+        return () => clearTimeout(timer)
+    }, [hasOpened])
 
     useEffect(() => {
         scrollToBottom()
