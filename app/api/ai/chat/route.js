@@ -44,23 +44,44 @@ export async function POST(req) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" });
+        const models = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
+        let chat;
+        let result;
+        let lastError;
 
-        const chat = model.startChat({
-            history: [
-                {
-                    role: "user",
-                    parts: [{ text: SYSTEM_PROMPT }],
-                },
-                {
-                    role: "model",
-                    parts: [{ text: "{\"reply\": \"Online and ready. How can I protect you today?\", \"action\": null}" }],
-                },
-            ],
-        });
+        for (const modelName of models) {
+            try {
+                console.log(`[AI Chat] Attempting model: ${modelName}`);
+                const model = genAI.getGenerativeModel({ model: modelName });
 
-        // 1. First Pass: Ask the model
-        let result = await chat.sendMessage(message);
+                chat = model.startChat({
+                    history: [
+                        {
+                            role: "user",
+                            parts: [{ text: SYSTEM_PROMPT }],
+                        },
+                        {
+                            role: "model",
+                            parts: [{ text: "{\"reply\": \"Online and ready. How can I protect you today?\", \"action\": null}" }],
+                        },
+                    ],
+                });
+
+                // 1. First Pass: Ask the model
+                result = await chat.sendMessage(message);
+                // If we get here, it worked
+                break;
+            } catch (e) {
+                console.warn(`[AI Chat] Model ${modelName} failed:`, e.message);
+                lastError = e;
+                continue;
+            }
+        }
+
+        if (!result) {
+            throw new Error(`All models failed. Last error: ${lastError?.message}`);
+        }
+
         let text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
         let json = {};
 
