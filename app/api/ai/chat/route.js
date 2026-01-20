@@ -111,7 +111,7 @@ export async function POST(req) {
     } catch (error) {
         console.error("AI Chat Error:", error);
         return NextResponse.json({
-            reply: "System overload. Please try again later.",
+            reply: `System Error: ${error.message || error.toString()}`,
             action: null
         }, { status: 500 });
     }
