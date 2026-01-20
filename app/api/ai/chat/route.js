@@ -5,8 +5,8 @@ export const runtime = 'edge';
 
 const SYSTEM_PROMPT = `
 You are Checkit Bot, the AI security guide for CheckItSA.co.za.
-Your goal is to help users find the right verification tool for their problem.
-Keep answers very short (under 20 words) and direct.
+Your goal is to help users find the right verification tool OR answer their security questions directly.
+Keep answers very short (under 40 words) and direct.
 
 Site Map:
 - "/verify/scam" -> Check if a website URL is safe.
@@ -17,18 +17,19 @@ Site Map:
 - "/report" -> Report a scammer to the community.
 - "/subscription" -> Upgrade their plan.
 
-If the user asks for help, suggest the most relevant tool.
+CAPABILITIES:
+- If you don't know the answer (e.g. "Is binance down?", "Who owns google?"), you can SEARCH the web.
+- To search, return: { "action": { "type": "SEARCH", "query": "keywords" } }
+- If you know the answer OR have search results, return: { "reply": "...", "action": { "label": "...", "url": "..." } } (or null action)
+
 OUTPUT FORMAT: Return a JSON object ONLY. No markdown.
-{
-  "reply": "Your friendly response here.",
-  "action": { "label": "Button Text", "url": "/relevant/link" } // or null
-}
 `;
 
 export async function POST(req) {
     try {
         const { message } = await req.json();
         const apiKey = process.env.GOOGLE_API_KEY;
+        const serperKey = process.env.SERPER_API_KEY;
 
         if (!apiKey) {
             return NextResponse.json({
@@ -53,23 +54,54 @@ export async function POST(req) {
             ],
         });
 
-        const result = await chat.sendMessage(message);
-        const response = result.response;
-        let text = response.text();
-
-        // Clean up markdown code blocks if the model adds them despite instructions
-        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        // 1. First Pass: Ask the model
+        let result = await chat.sendMessage(message);
+        let text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+        let json = {};
 
         try {
-            const json = JSON.parse(text);
-            return NextResponse.json(json);
+            json = JSON.parse(text);
         } catch (e) {
-            console.error("AI JSON Parse Error:", text);
-            return NextResponse.json({
-                reply: "I found a match, but my internal parser failed. Try the menu above.",
-                action: { label: "Explore Tools", url: "/#tools" }
-            });
+            console.error("AI First Pass JSON Error", text);
+            // Fallback
+            return NextResponse.json({ reply: "I understood, but my internal wiring got crossed. Try asking simpler.", action: null });
         }
+
+        // 2. Check for Search Request
+        if (json.action && json.action.type === 'SEARCH') {
+            console.log("AI Requested Search:", json.action.query);
+
+            // Perform Search (Serper)
+            let searchResults = "No results found.";
+            if (serperKey) {
+                try {
+                    const searchRes = await fetch('https://google.serper.dev/search', {
+                        method: 'POST',
+                        headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ q: json.action.query, gl: 'za' })
+                    });
+                    const searchData = await searchRes.json();
+                    if (searchData.organic) {
+                        searchResults = searchData.organic.slice(0, 3).map(r => `- ${r.title}: ${r.snippet}`).join('\n');
+                    }
+                } catch (err) {
+                    console.error("Search Error:", err);
+                }
+            }
+
+            // 3. Second Pass: Feed results back
+            const followUp = `SEARCH RESULTS for "${json.action.query}":\n${searchResults}\n\nNow answer the user's original question: "${message}" based on this. Keep it short.`;
+            result = await chat.sendMessage(followUp);
+            text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+            try {
+                json = JSON.parse(text);
+            } catch (e) {
+                // If it fails to return JSON 2nd time, just return text as reply
+                return NextResponse.json({ reply: text, action: null });
+            }
+        }
+
+        return NextResponse.json(json);
 
     } catch (error) {
         console.error("AI Chat Error:", error);
