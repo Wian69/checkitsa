@@ -18,12 +18,17 @@ Site Map:
 - "/report" -> Report a scammer to the community.
 - "/subscription" -> Upgrade their plan.
 
-CAPABILITIES:
-- If you don't know the answer (e.g. "Is binance down?", "Who owns google?"), you can SEARCH the web.
-- To search, return: { "action": { "type": "SEARCH", "query": "keywords" } }
-- If you know the answer OR have search results, return: { "reply": "...", "action": { "label": "...", "url": "..." } } (or null action)
+RULES:
+- ONLY answer questions related to CheckItSA, verification, scams, or security in South Africa.
+- If a user asks about general topics (news, sports, other websites, general knowledge), politely decline.
+- Say: "I can only help with CheckItSA tools and security verification."
+- Do NOT search the web.
 
 OUTPUT FORMAT: Return a JSON object ONLY. No markdown.
+{
+  "reply": "Your friendly response here.",
+  "action": { "label": "Button Text", "url": "/relevant/link" } // or null
+}
 `;
 
 export async function POST(req) {
@@ -34,7 +39,6 @@ export async function POST(req) {
         const env = getRequestContext()?.env || {};
         // Use GEMINI_API_KEY as established in other routes
         const apiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY || env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY;
-        const serperKey = env.SERPER_API_KEY || process.env.SERPER_API_KEY;
 
         if (!apiKey) {
             return NextResponse.json({
@@ -91,40 +95,6 @@ export async function POST(req) {
             console.error("AI First Pass JSON Error", text);
             // Fallback
             return NextResponse.json({ reply: "I understood, but my internal wiring got crossed. Try asking simpler.", action: null });
-        }
-
-        // 2. Check for Search Request
-        if (json.action && json.action.type === 'SEARCH') {
-            console.log("AI Requested Search:", json.action.query);
-
-            // Perform Search (Serper)
-            let searchResults = "No results found.";
-            if (serperKey) {
-                try {
-                    const searchRes = await fetch('https://google.serper.dev/search', {
-                        method: 'POST',
-                        headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ q: json.action.query, gl: 'za' })
-                    });
-                    const searchData = await searchRes.json();
-                    if (searchData.organic) {
-                        searchResults = searchData.organic.slice(0, 3).map(r => `- ${r.title}: ${r.snippet}`).join('\n');
-                    }
-                } catch (err) {
-                    console.error("Search Error:", err);
-                }
-            }
-
-            // 3. Second Pass: Feed results back
-            const followUp = `SEARCH RESULTS for "${json.action.query}":\n${searchResults}\n\nNow answer the user's original question: "${message}" based on this. Keep it short.`;
-            result = await chat.sendMessage(followUp);
-            text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-            try {
-                json = JSON.parse(text);
-            } catch (e) {
-                // If it fails to return JSON 2nd time, just return text as reply
-                return NextResponse.json({ reply: text, action: null });
-            }
         }
 
         return NextResponse.json(json);
