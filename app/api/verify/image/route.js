@@ -36,9 +36,9 @@ export async function POST(request) {
 
         // --- GEMINI VISION ANALYSIS (Robust Multi-Model Failover) ---
         const genAI = new GoogleGenerativeAI(geminiKey)
-        const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro-vision"]
+        const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro"]
         let result = null
-        let lastError = null
+        let errors = []
         let successModel = null
 
         // Try models in sequence
@@ -54,13 +54,13 @@ export async function POST(request) {
                 break // Success! Exit loop
             } catch (err) {
                 console.warn(`[Vision] Failed with ${modelName}:`, err.message)
-                lastError = err
+                errors.push(`${modelName}: ${err.message}`)
                 // Continue to next model...
             }
         }
 
-        if (!result && lastError) {
-            throw lastError // All models failed, throw the last error to be caught by main handler
+        if (!result) {
+            throw new Error(`All models failed. Errors: ${errors.join(' | ')}`) // All models failed, throw the accumulated errors
         }
 
         const responseText = result.response.text()

@@ -168,7 +168,7 @@ export async function POST(request) {
 
         if (geminiKey) {
             const genAI = new GoogleGenerativeAI(geminiKey);
-            const models = ["gemini-1.5-flash", "gemini-pro"];
+            const models = ["gemini-1.5-flash", "gemini-1.5-pro"];
 
             for (const m of models) {
                 try {

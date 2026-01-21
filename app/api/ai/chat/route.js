@@ -48,10 +48,10 @@ export async function POST(req) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const models = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
+        const models = ["gemini-1.5-flash", "gemini-1.5-pro"];
         let chat;
         let result;
-        let lastError;
+        let errors = [];
 
         for (const modelName of models) {
             try {
@@ -77,13 +77,13 @@ export async function POST(req) {
                 break;
             } catch (e) {
                 console.warn(`[AI Chat] Model ${modelName} failed:`, e.message);
-                lastError = e;
+                errors.push(`${modelName}: ${e.message}`);
                 continue;
             }
         }
 
         if (!result) {
-            throw new Error(`All models failed. Last error: ${lastError?.message}`);
+            throw new Error(`All models failed. Errors: ${errors.join(' | ')}`);
         }
 
         let text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
