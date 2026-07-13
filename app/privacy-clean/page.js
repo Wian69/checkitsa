@@ -211,6 +211,10 @@ export default function PrivacyCleanPage() {
               >
                 {isSearching ? 'Scanning Databases...' : 'Search My Details'}
               </button>
+              <p style={{ textAlign: 'center', color: 'var(--color-primary-light)', fontSize: '0.9rem', marginTop: '1.5rem', fontWeight: 500 }}>
+                ⚠️ This is a one-time deep clean for R199. <br/>
+                <span style={{color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 'normal'}}>Each new search and cleanup request requires a separate payment.</span>
+              </p>
               <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '1rem' }}>
                 By searching, you agree to our POPIA-compliant terms of service.
               </p>
