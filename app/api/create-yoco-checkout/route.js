@@ -37,9 +37,10 @@ export async function POST(req) {
             throw new Error(data.message || 'Failed to generate checkout URL from Yoco')
         }
 
-        return NextResponse.json({
-            success: true,
-            redirectUrl: data.redirectUrl
+        return NextResponse.json({ 
+            success: true, 
+            redirectUrl: data.redirectUrl,
+            checkoutId: data.id 
         })
 
     } catch (error) {

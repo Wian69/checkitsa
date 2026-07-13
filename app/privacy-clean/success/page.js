@@ -20,8 +20,28 @@ function SuccessContent() {
         }
 
         const data = localStorage.getItem('privacy_clean_target');
+        const checkoutId = localStorage.getItem('pending_privacy_checkout');
+        
         if (data) {
-            setTargetData(JSON.parse(data));
+            const parsedData = JSON.parse(data);
+            setTargetData(parsedData);
+            
+            // Trigger backend to verify and send email (fire and forget)
+            if (checkoutId) {
+                fetch('/api/verify-privacy-clean', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        checkoutId: checkoutId,
+                        targetName: parsedData.name,
+                        targetEmail: parsedData.email,
+                        targetPhone: parsedData.phoneNumber
+                    })
+                }).catch(e => console.error("Email verification trigger failed:", e));
+                
+                // Clear to prevent duplicate sends on refresh
+                localStorage.removeItem('pending_privacy_checkout');
+            }
         }
     }, [searchParams, router]);
 

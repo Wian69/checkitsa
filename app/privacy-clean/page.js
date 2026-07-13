@@ -44,6 +44,7 @@ export default function PrivacyCleanPage() {
 
         setCheckoutUrl(data.redirectUrl);
         localStorage.setItem('privacy_clean_target', JSON.stringify({ name, email, phoneNumber }));
+        localStorage.setItem('pending_privacy_checkout', data.checkoutId);
 
         // Ensure the "scan" takes at least 2.5 seconds for dramatic effect
         await new Promise(r => setTimeout(r, 2500));
