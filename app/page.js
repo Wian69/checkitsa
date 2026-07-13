@@ -134,6 +134,48 @@ export default function Home() {
         </div>
       </section>
 
+      {/* New Privacy Clean Banner */}
+      <section className="container content-section" style={{ position: 'relative', marginTop: '2rem' }}>
+        <div className="glass-panel" style={{
+          padding: '4rem 2rem',
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(3, 39, 29, 0.4) 100%)',
+          border: '1px solid rgba(16, 185, 129, 0.4)',
+          position: 'relative',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center'
+        }}>
+          {/* Decorative Background Elements */}
+          <div style={{ position: 'absolute', top: -50, right: -50, width: 200, height: 200, background: 'radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%)', borderRadius: '50%', filter: 'blur(40px)' }}></div>
+          <div style={{ position: 'absolute', bottom: -100, left: -50, width: 300, height: 300, background: 'radial-gradient(circle, rgba(52, 211, 153,0.15) 0%, transparent 70%)', borderRadius: '50%', filter: 'blur(40px)' }}></div>
+
+          <div style={{ position: 'relative', zIndex: 1, maxWidth: '800px' }}>
+            <div style={{
+              display: 'inline-block', padding: '0.5rem 1rem', borderRadius: '2rem',
+              background: 'rgba(16, 185, 129, 0.2)', color: '#6ee7b7',
+              fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '1.5rem',
+              border: '1px solid rgba(16, 185, 129, 0.3)'
+            }}>
+              ⭐ NEW FEATURE
+            </div>
+
+            <h2 style={{ fontSize: '2.5rem', marginBottom: '1.5rem', color: '#fff' }}>
+              Scrub Your Data from the Internet
+            </h2>
+
+            <p style={{ color: '#d1d5db', fontSize: '1.1rem', marginBottom: '2.5rem', lineHeight: 1.6 }}>
+              Data brokers are selling your personal information. Use our automated AI bots to force them to delete your number, email, and identity from their lists immediately.
+            </p>
+
+            <Link href="/privacy-clean" className="btn btn-primary" style={{ padding: '1rem 3rem', fontSize: '1.1rem', background: '#10b981', boxShadow: '0 4px 14px 0 rgba(16, 185, 129, 0.39)', borderRadius: '2rem' }}>
+              Clean My Data Now →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Affiliate Program Banner */}
       <section className="container content-section" style={{ position: 'relative' }}>
         <div className="glass-panel" style={{
