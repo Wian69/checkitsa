@@ -14,10 +14,11 @@ export default function PrivacyCleanPage() {
   const [checkoutUrl, setCheckoutUrl] = useState('');
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [exposedBrokers, setExposedBrokers] = useState([]);
+  const [hasAuthorized, setHasAuthorized] = useState(false);
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (!phoneNumber || !name || !email) return;
+    if (!phoneNumber || !name || !email || !hasAuthorized) return;
 
     // Simulate scanning to build anticipation
     setIsSearching(true);
@@ -212,10 +213,24 @@ export default function PrivacyCleanPage() {
                 />
               </div>
 
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '0.5rem', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                <input 
+                  type="checkbox" 
+                  id="legal-auth"
+                  checked={hasAuthorized}
+                  onChange={(e) => setHasAuthorized(e.target.checked)}
+                  required
+                  style={{ marginTop: '0.25rem', width: '1.2rem', height: '1.2rem', accentColor: '#10b981', cursor: 'pointer' }}
+                />
+                <label htmlFor="legal-auth" style={{ color: '#d1d5db', fontSize: '0.85rem', lineHeight: 1.5, cursor: 'pointer' }}>
+                  <strong>Legal Authorization:</strong> I authorize CheckIt SA to act as my legal agent to submit POPIA and GDPR data erasure requests on my behalf. I understand that CheckIt SA facilitates these requests but cannot guarantee third-party broker compliance, and is not liable for brokers who refuse to delete data.
+                </label>
+              </div>
+
               <div style={{ marginTop: '1rem' }}>
                 <button 
                   type="submit"
-                  disabled={isSearching}
+                  disabled={isSearching || !hasAuthorized}
                   className="btn btn-primary"
                   style={{
                     width: '100%',
@@ -232,11 +247,8 @@ export default function PrivacyCleanPage() {
                   {isSearching ? 'Scanning Databases...' : 'Search My Details'}
                 </button>
                 <p style={{ textAlign: 'center', color: 'var(--color-primary-light)', fontSize: '0.9rem', marginTop: '1.5rem', fontWeight: 500 }}>
-                  ⚠️ This is a one-time deep clean for R199. <br/>
-                  <span style={{color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 'normal'}}>Each new search and cleanup request requires a separate payment.</span>
-                </p>
-                <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '1rem' }}>
-                  By searching, you agree to our POPIA-compliant terms of service.
+                  ⚠️ This is a one-time dispatch service for R199. <br/>
+                  <span style={{color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 'normal'}}>CheckIt SA operates strictly as an authorized agent for POPIA compliance.</span>
                 </p>
               </div>
             </form>
@@ -295,13 +307,20 @@ export default function PrivacyCleanPage() {
                             color: '#fff',
                             boxShadow: isRedirecting ? 'none' : '0 4px 14px 0 rgba(16, 185, 129, 0.39)',
                             borderRadius: '2rem',
-                            fontWeight: 'bold'
+                            fontWeight: 'bold',
+                            marginBottom: '1rem'
                         }}
                     >
-                        {isRedirecting ? 'Connecting to Secure Checkout...' : 'Pay R199 to Scrub Your Data'}
+                        {isRedirecting ? 'Connecting to Secure Checkout...' : 'Pay R199 to Dispatch Legal Requests'}
                     </button>
+
+                    <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <p style={{ margin: 0, color: '#9ca3af', fontSize: '0.75rem', lineHeight: 1.6, textAlign: 'left' }}>
+                            <strong>Disclaimer:</strong> CheckIt SA acts as your Authorized Legal Agent to dispatch POPIA Data Erasure Requests. By proceeding, you authorize us to submit these requests to third-party data brokers on your behalf. While brokers are legally mandated by the South African POPI Act to comply within 30 days, CheckIt SA is an automation facilitator and is not liable for third-party non-compliance, refusal, or delays.
+                        </p>
+                    </div>
                     
-                    <p style={{ marginTop: '1rem', color: '#9ca3af', fontSize: '0.8rem' }}>
+                    <p style={{ marginTop: '1.5rem', color: '#6b7280', fontSize: '0.8rem' }}>
                         100% Secure Checkout via Yoco. Apple Pay & Google Pay accepted.
                     </p>
                 </div>
