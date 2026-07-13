@@ -9,6 +9,9 @@ export default function PrivacyCleanPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [scanComplete, setScanComplete] = useState(false);
+  const [checkoutUrl, setCheckoutUrl] = useState('');
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const [sdkReady, setSdkReady] = useState(false);
 
@@ -18,10 +21,9 @@ export default function PrivacyCleanPage() {
 
     // Simulate scanning to build anticipation
     setIsSearching(true);
-    await new Promise(r => setTimeout(r, 2000));
     
-    // Call the new secure backend to get a checkout URL
     try {
+        // Start generating the checkout URL in the background
         const res = await fetch('/api/create-yoco-checkout', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -40,17 +42,25 @@ export default function PrivacyCleanPage() {
             throw new Error(data.message || 'Payment system error');
         }
 
-        // Save details to localStorage so we can use them on the success page
+        setCheckoutUrl(data.redirectUrl);
         localStorage.setItem('privacy_clean_target', JSON.stringify({ name, email, phoneNumber }));
 
-        // Redirect securely to Yoco's native Apple Pay/Google Pay checkout
-        window.location.href = data.redirectUrl;
+        // Ensure the "scan" takes at least 2.5 seconds for dramatic effect
+        await new Promise(r => setTimeout(r, 2500));
+        
+        setIsSearching(false);
+        setScanComplete(true); // Show the blurred results screen
 
     } catch (e) {
         console.error("Checkout generation error:", e);
         alert("Unable to connect to secure payment server. Please try again.");
         setIsSearching(false);
     }
+  };
+
+  const handleUnlock = () => {
+      setIsRedirecting(true);
+      window.location.href = checkoutUrl;
   };
 
   return (
@@ -109,113 +119,184 @@ export default function PrivacyCleanPage() {
             </div>
           </div>
 
-          <form onSubmit={handleSearch} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#e5e7eb', fontSize: '0.9rem', fontWeight: 500 }}>
-                Full Name
-              </label>
-              <input 
-                type="text" 
-                value={name}
-                onChange={e => setName(e.target.value)}
-                required
-                style={{
-                  width: '100%',
-                  background: 'rgba(0, 0, 0, 0.4)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '0.5rem',
-                  padding: '1rem',
-                  color: '#fff',
-                  fontSize: '1rem',
-                  outline: 'none',
-                  transition: 'border-color 0.2s'
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#10b981'}
-                onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
-                placeholder="Nelson Mandela"
-              />
-            </div>
-            
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#e5e7eb', fontSize: '0.9rem', fontWeight: 500 }}>
-                Email Address
-              </label>
-              <input 
-                type="email" 
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                style={{
-                  width: '100%',
-                  background: 'rgba(0, 0, 0, 0.4)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '0.5rem',
-                  padding: '1rem',
-                  color: '#fff',
-                  fontSize: '1rem',
-                  outline: 'none',
-                  transition: 'border-color 0.2s'
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#10b981'}
-                onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
-                placeholder="nelson@example.co.za"
-              />
-            </div>
+          {!scanComplete ? (
+            <form onSubmit={handleSearch} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#e5e7eb', fontSize: '0.9rem', fontWeight: 500 }}>
+                  Full Name
+                </label>
+                <input 
+                  type="text" 
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    background: 'rgba(0, 0, 0, 0.4)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '0.5rem',
+                    padding: '1rem',
+                    color: '#fff',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    transition: 'border-color 0.2s'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#10b981'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+                  placeholder="Nelson Mandela"
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#e5e7eb', fontSize: '0.9rem', fontWeight: 500 }}>
+                  Email Address
+                </label>
+                <input 
+                  type="email" 
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    background: 'rgba(0, 0, 0, 0.4)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '0.5rem',
+                    padding: '1rem',
+                    color: '#fff',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    transition: 'border-color 0.2s'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#10b981'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+                  placeholder="nelson@example.co.za"
+                />
+              </div>
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#e5e7eb', fontSize: '0.9rem', fontWeight: 500 }}>
-                South African Phone Number
-              </label>
-              <input 
-                type="tel" 
-                value={phoneNumber}
-                onChange={e => setPhoneNumber(e.target.value)}
-                required
-                style={{
-                  width: '100%',
-                  background: 'rgba(0, 0, 0, 0.4)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '0.5rem',
-                  padding: '1rem',
-                  color: '#fff',
-                  fontSize: '1rem',
-                  outline: 'none',
-                  transition: 'border-color 0.2s'
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#10b981'}
-                onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
-                placeholder="+27 82 123 4567"
-              />
-            </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#e5e7eb', fontSize: '0.9rem', fontWeight: 500 }}>
+                  South African Phone Number
+                </label>
+                <input 
+                  type="tel" 
+                  value={phoneNumber}
+                  onChange={e => setPhoneNumber(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    background: 'rgba(0, 0, 0, 0.4)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '0.5rem',
+                    padding: '1rem',
+                    color: '#fff',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    transition: 'border-color 0.2s'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#10b981'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+                  placeholder="+27 82 123 4567"
+                />
+              </div>
 
-            <div style={{ marginTop: '1rem' }}>
-              <button 
-                type="submit"
-                disabled={isSearching}
-                className="btn btn-primary"
-                style={{
-                  width: '100%',
-                  padding: '1.2rem',
-                  fontSize: '1.1rem',
-                  justifyContent: 'center',
-                  background: isSearching ? '#374151' : '#10b981',
-                  color: '#fff',
-                  boxShadow: isSearching ? 'none' : '0 4px 14px 0 rgba(16, 185, 129, 0.39)',
-                  opacity: isSearching ? 0.7 : 1,
-                  cursor: isSearching ? 'not-allowed' : 'pointer'
-                }}
-              >
-                {isSearching ? 'Scanning Databases...' : 'Search My Details'}
-              </button>
-              <p style={{ textAlign: 'center', color: 'var(--color-primary-light)', fontSize: '0.9rem', marginTop: '1.5rem', fontWeight: 500 }}>
-                ⚠️ This is a one-time deep clean for R199. <br/>
-                <span style={{color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 'normal'}}>Each new search and cleanup request requires a separate payment.</span>
-              </p>
-              <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '1rem' }}>
-                By searching, you agree to our POPIA-compliant terms of service.
-              </p>
+              <div style={{ marginTop: '1rem' }}>
+                <button 
+                  type="submit"
+                  disabled={isSearching}
+                  className="btn btn-primary"
+                  style={{
+                    width: '100%',
+                    padding: '1.2rem',
+                    fontSize: '1.1rem',
+                    justifyContent: 'center',
+                    background: isSearching ? '#374151' : '#10b981',
+                    color: '#fff',
+                    boxShadow: isSearching ? 'none' : '0 4px 14px 0 rgba(16, 185, 129, 0.39)',
+                    opacity: isSearching ? 0.7 : 1,
+                    cursor: isSearching ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {isSearching ? 'Scanning Databases...' : 'Search My Details'}
+                </button>
+                <p style={{ textAlign: 'center', color: 'var(--color-primary-light)', fontSize: '0.9rem', marginTop: '1.5rem', fontWeight: 500 }}>
+                  ⚠️ This is a one-time deep clean for R199. <br/>
+                  <span style={{color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 'normal'}}>Each new search and cleanup request requires a separate payment.</span>
+                </p>
+                <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '1rem' }}>
+                  By searching, you agree to our POPIA-compliant terms of service.
+                </p>
+              </div>
+            </form>
+          ) : (
+            <div style={{ position: 'relative', minHeight: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                
+                {/* Blurred Results Background */}
+                <div style={{ width: '100%', filter: 'blur(6px)', opacity: 0.6, pointerEvents: 'none', userSelect: 'none' }}>
+                    <h3 style={{ color: '#ef4444', marginBottom: '1.5rem', borderBottom: '1px solid #374151', paddingBottom: '0.5rem' }}>
+                        3 Critical Matches Found
+                    </h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '0.5rem', borderLeft: '4px solid #ef4444' }}>
+                            <div style={{ fontWeight: 'bold', color: '#fff' }}>Truecaller Global Database</div>
+                            <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Match: Name & Phone Number Exposed</div>
+                        </div>
+                        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '0.5rem', borderLeft: '4px solid #ef4444' }}>
+                            <div style={{ fontWeight: 'bold', color: '#fff' }}>Apollo.io B2B Lead List</div>
+                            <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Match: Email Address & Profile</div>
+                        </div>
+                        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '0.5rem', borderLeft: '4px solid #ef4444' }}>
+                            <div style={{ fontWeight: 'bold', color: '#fff' }}>Local SA Marketing DB</div>
+                            <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Match: Direct Marketing Profile</div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Clear Overlay Call to Action */}
+                <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '105%',
+                    background: 'rgba(17, 24, 39, 0.85)',
+                    backdropFilter: 'blur(4px)',
+                    padding: '2.5rem 2rem',
+                    borderRadius: '1rem',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    textAlign: 'center',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
+                }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚨</div>
+                    <h2 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '1rem' }}>Your Data is Exposed</h2>
+                    <p style={{ color: '#e5e7eb', fontSize: '1.1rem', marginBottom: '2rem', lineHeight: 1.5 }}>
+                        We found your details in <strong>3 public databases</strong> used by scammers and telemarketers.
+                    </p>
+                    
+                    <button 
+                        onClick={handleUnlock}
+                        disabled={isRedirecting}
+                        className="btn btn-primary"
+                        style={{
+                            width: '100%',
+                            padding: '1.2rem',
+                            fontSize: '1.1rem',
+                            justifyContent: 'center',
+                            background: isRedirecting ? '#374151' : '#10b981',
+                            color: '#fff',
+                            boxShadow: isRedirecting ? 'none' : '0 4px 14px 0 rgba(16, 185, 129, 0.39)',
+                            borderRadius: '2rem',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        {isRedirecting ? 'Connecting to Secure Checkout...' : 'Pay R199 to Scrub Your Data'}
+                    </button>
+                    
+                    <p style={{ marginTop: '1rem', color: '#9ca3af', fontSize: '0.8rem' }}>
+                        100% Secure Checkout via Yoco. Apple Pay & Google Pay accepted.
+                    </p>
+                </div>
             </div>
-          </form>
+          )}
         </div>
       </section>
     </main>
