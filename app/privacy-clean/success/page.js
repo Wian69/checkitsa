@@ -165,15 +165,19 @@ function SuccessContent() {
                             boxShadow: '0 0 30px rgba(16, 185, 129, 0.3)'
                         }}>✓</div>
 
-                        <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: '#fff' }}>Deletion Initiated!</h1>
+                        <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: '#fff' }}>Legal Request Initiated!</h1>
                         
                         <p style={{ color: '#d1d5db', fontSize: '1.1rem', marginBottom: '2rem', lineHeight: 1.6 }}>
-                            Our automated bots have been successfully dispatched to scrub your personal data from these databases.
+                            We have officially dispatched a formal Data Erasure Request (POPIA/GDPR) to <strong>50+ data brokers</strong> on your behalf.
                         </p>
 
-                        <div style={{ padding: '1rem', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '0.5rem', border: '1px solid rgba(245, 158, 11, 0.2)', marginBottom: '3rem' }}>
-                            <span style={{ fontSize: '1.2rem', marginRight: '0.5rem' }}>⏳</span>
-                            <span style={{ color: '#fcd34d', fontSize: '0.95rem' }}>This process typically takes 24 to 48 hours to fully complete across all global servers.</span>
+                        <div style={{ padding: '1.5rem', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '0.5rem', border: '1px solid rgba(245, 158, 11, 0.2)', marginBottom: '3rem', textAlign: 'left' }}>
+                            <h4 style={{ color: '#fcd34d', margin: '0 0 1rem 0', fontSize: '1.1rem' }}>Next Steps & Important Info:</h4>
+                            <ul style={{ color: '#d1d5db', margin: 0, paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                                <li><strong>Proof Sent:</strong> A copy of the legal request has been sent to your inbox. The data brokers were BCC'd on that email.</li>
+                                <li><strong>30-Day ETA:</strong> Data brokers have a strict 30-day legal timeframe under POPIA/GDPR to fulfill the request.</li>
+                                <li><strong>Identity Verification:</strong> Some strict brokers may reply directly to the email to verify your identity. If they do, simply reply to confirm you want your data removed.</li>
+                            </ul>
                         </div>
 
                         <Link href="/dashboard" className="btn btn-primary" style={{ padding: '1rem 3rem', background: '#10b981', boxShadow: '0 4px 14px 0 rgba(16, 185, 129, 0.39)', borderRadius: '2rem' }}>

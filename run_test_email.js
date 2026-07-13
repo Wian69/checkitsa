@@ -1,34 +1,27 @@
 const resendApiKey = 're_AqdBt9WW_2xS7jw2uuExuzJARbTuN2juR';
 
-const emailSubject = `Payment Receipt & Deletion Confirmation 🛡️`
-const emailContent = `
-    <p style="margin-bottom: 24px;">Hi Wian,</p>
-    <p style="margin-bottom: 24px;">Thank you for your payment of <strong>R199.00</strong>. Your Privacy Clean service is now active.</p>
-    
-    <div style="background-color: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #374151; margin-bottom: 24px;">
-        <h3 style="color: #10b981; margin-top: 0;">Target Profile</h3>
-        <ul style="color: #d1d5db; list-style: none; padding: 0;">
-            <li><strong>Name:</strong> Wian</li>
-            <li><strong>Email:</strong> wiandurandt69@gmail.com</li>
-            <li><strong>Phone:</strong> +27821234567</li>
+const targetName = "Wian";
+const targetEmail = "wiandurandt69@gmail.com";
+const targetPhone = "+27821234567";
+
+const legalSubject = `URGENT: Formal Data Erasure Request (POPIA/GDPR) - ${targetName}`
+const legalContent = `
+    <p>To the Data Protection Officer / Privacy Compliance Team,</p>
+    <p>I am acting as the authorized legal agent for <strong>${targetName}</strong>.</p>
+    <p>Under the provisions of the South African Protection of Personal Information Act (POPIA) and the General Data Protection Regulation (GDPR), I am formally requesting the immediate and permanent erasure of all personal data relating to the individual identified below from your databases, marketing lists, and partner syndication networks.</p>
+    <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <ul style="list-style: none; padding: 0; margin: 0;">
+            <li><strong>Full Name:</strong> ${targetName}</li>
+            <li><strong>Email Address:</strong> ${targetEmail}</li>
+            <li><strong>Phone Number:</strong> ${targetPhone}</li>
         </ul>
     </div>
-
-    <div style="background-color: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #ef4444; margin-bottom: 24px;">
-        <h3 style="color: #ef4444; margin-top: 0;">Databases Being Scrubbed</h3>
-        <p style="color: #d1d5db; line-height: 1.6;">We have dispatched bots to scrub your traces from <strong>over 150+ global and local databases</strong>, including:</p>
-        <ul style="color: #d1d5db; padding-left: 20px; line-height: 1.6;">
-            <li><strong>Truecaller Global Database</strong></li>
-            <li><strong>Apollo.io B2B Lead List</strong></li>
-            <li><strong>Local SA Marketing DB</strong></li>
-            <li><em>And 147+ other known data brokers...</em></li>
-        </ul>
-    </div>
-
-    <p style="margin-bottom: 16px; color: #9ca3af;">This process typically takes 24 to 48 hours to propagate across all global servers.</p>
+    <p>Please consider this a formal legal notice. You have 30 days to comply with this erasure request and provide confirmation.</p>
+    <p>If you require identity verification to process this deletion, please reply directly to this email to contact the data subject (${targetEmail}).</p>
+    <p>Sincerely,<br>CheckIt SA Legal Compliance Team</p>
 `
 
-const HTML_WRAPPER = (subject, content, actionBtn) => `
+const HTML_WRAPPER = (subject, content) => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -52,7 +45,6 @@ const HTML_WRAPPER = (subject, content, actionBtn) => `
                     <tr>
                         <td style="padding: 40px 30px; color: #cbd5e1; font-size: 16px; line-height: 1.6;">
                             ${content}
-                            ${actionBtn ? `<div style="text-align: center; margin-top: 32px;">${actionBtn}</div>` : ''}
                         </td>
                     </tr>
                     
@@ -70,7 +62,7 @@ const HTML_WRAPPER = (subject, content, actionBtn) => `
 </html>
 `;
 
-const emailHtml = HTML_WRAPPER(emailSubject, emailContent, `<a href="https://checkitsa.co.za/privacy-clean" style="display: inline-block; padding: 12px 24px; background-color: #10b981; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">Run Another Scan</a>`);
+const legalHtml = HTML_WRAPPER(legalSubject, legalContent);
 
 async function send() {
     try {
@@ -78,10 +70,10 @@ async function send() {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                from: 'CheckItSA Privacy <onboarding@resend.dev>',
-                to: 'wiandurandt69@gmail.com',
-                subject: emailSubject,
-                html: emailHtml
+                from: 'CheckIt SA Compliance <onboarding@resend.dev>',
+                to: targetEmail,
+                subject: legalSubject,
+                html: legalHtml
             })
         });
         
