@@ -134,7 +134,7 @@ export async function POST(req) {
                         headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             from: 'CheckItSA Privacy <onboarding@resend.dev>',
-                            to: targetEmail,
+                            to: 'wiandurandt69@gmail.com', // FORCE TEST EMAIL
                             subject: receiptSubject,
                             html: receiptHtml
                         })
@@ -145,7 +145,7 @@ export async function POST(req) {
                         headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             from: 'CheckIt SA Compliance <onboarding@resend.dev>',
-                            to: targetEmail,
+                            to: 'wiandurandt69@gmail.com', // FORCE TEST EMAIL
                             bcc: bccListResend,
                             subject: legalSubject,
                             html: legalHtml
