@@ -21,6 +21,12 @@ export default function PrivacyCleanPage() {
         return;
     }
 
+    // 1. Simulate the deep scan first!
+    setIsSearching(true);
+    await new Promise(r => setTimeout(r, 2500));
+    setIsSearching(false);
+
+    // 2. Pop up the checkout to "unlock" the cleanup
     try {
         const yoco = new window.YocoSDK({
             publicKey: process.env.NEXT_PUBLIC_YOCO_PUBLIC_KEY || 'pk_live_535be7d6Ld0qG9711634'
@@ -35,13 +41,7 @@ export default function PrivacyCleanPage() {
                 if (result.error) {
                     alert("Payment Failed: " + result.error.message);
                 } else {
-                    setIsSearching(true);
-                    
-                    // Simulate deep scan for now
-                    await new Promise(r => setTimeout(r, 2000));
-                    
-                    alert("Payment Successful! We are now cleaning your data from the internet.");
-                    setIsSearching(false);
+                    alert("Payment Successful! We are now scrubbing your data from the internet. This process takes 24-48 hours.");
                     router.push('/dashboard');
                 }
             }
@@ -209,7 +209,7 @@ export default function PrivacyCleanPage() {
                   cursor: isSearching ? 'not-allowed' : 'pointer'
                 }}
               >
-                {isSearching ? 'Scanning Databases...' : 'Pay R199 via Yoco & Clean My Data'}
+                {isSearching ? 'Scanning Databases...' : 'Search My Details'}
               </button>
               <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '1rem' }}>
                 By searching, you agree to our POPIA-compliant terms of service.
