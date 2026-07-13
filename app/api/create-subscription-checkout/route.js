@@ -20,7 +20,7 @@ export async function POST(req) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.YOCO_SECRET_KEY}`
+                'Authorization': `Bearer sk_test_bbc990c36mPx2La97b440098747b`
             },
             body: JSON.stringify({
                 amount: amountInCents,

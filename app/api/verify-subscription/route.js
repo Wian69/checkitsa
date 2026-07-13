@@ -18,7 +18,7 @@ export async function POST(req) {
         const yocoRes = await fetch(`https://payments.yoco.com/api/checkouts/${checkoutId}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${process.env.YOCO_SECRET_KEY}`
+                'Authorization': `Bearer sk_test_bbc990c36mPx2La97b440098747b`
             }
         })
 
