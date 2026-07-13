@@ -2,7 +2,6 @@
 import Navbar from '@/components/Navbar'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Script from 'next/script'
 
 export default function Subscription() {
     const [user, setUser] = useState(null)
@@ -28,109 +27,55 @@ export default function Subscription() {
         setCustomPrice(price)
     }, [customScans])
 
-    // Manual Fallback Loader
-    const loadYocoManual = () => {
-        return new Promise((resolve) => {
-            if (window.YocoSDK) {
-                setSdkReady(true)
-                resolve(true)
-                return
-            }
-            console.log("Attempting manual Yoco load...")
-            const script = document.createElement('script')
-            script.src = "https://js.yoco.com/sdk/v1/yoco-sdk-web.js"
-            script.async = true
-            script.onload = () => {
-                setSdkReady(true)
-                resolve(true)
-            }
-            script.onerror = () => {
-                console.error("Manual Yoco load failed")
-                resolve(false)
-            }
-            document.body.appendChild(script)
-        })
-    }
+    // (Removed manual script loader since we now redirect natively)
 
     const handleUpgrade = async (plan) => {
-        if (!window.YocoSDK) {
-            setLoading(true)
-            // Attempt manual fallback if Next/Script failed
-            const success = await loadYocoManual()
-            if (!success) {
-                setLoading(false)
-                alert("Unable to initialize secure payment connection. Please check your internet connection and refresh the page.")
-                return
-            }
-        }
+        setLoading(true)
 
         let amount = 0
-        let desc = ''
-        let limit = 0
         let planName = 'CheckItSA Premium'
+        let limit = 0
 
         if (plan === 'pro') {
             amount = 7900
-            desc = 'Pro Subscription (100 Scans)'
             planName = 'CheckItSA Pro'
         } else if (plan === 'elite') {
             amount = 11900
-            desc = 'Elite Subscription (1k Scans)'
             planName = 'CheckItSA Elite'
         } else if (plan === 'custom') {
             amount = customPrice * 100
-            desc = `Custom Subscription (${customScans.toLocaleString()} Scans)`
             planName = 'CheckItSA Enterprise'
             limit = customScans
         }
 
         try {
-            const yoco = new window.YocoSDK({
-                publicKey: process.env.NEXT_PUBLIC_YOCO_PUBLIC_KEY || 'pk_live_535be7d6Ld0qG9711634'
+            const res = await fetch('/api/create-subscription-checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    planId: plan,
+                    amountInCents: amount,
+                    customLimit: limit,
+                    email: user?.email,
+                    returnUrl: window.location.origin + '/subscription'
+                })
             })
 
-            yoco.showPopup({
-                amountInCents: amount,
-                currency: 'ZAR',
-                name: planName,
-                description: desc,
-                callback: async (result) => {
-                    if (result.error) {
-                        alert("Payment Failed: " + result.error.message)
-                    } else {
-                        setLoading(true)
-                        try {
-                            const res = await fetch('/api/checkout', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    token: result.id,
-                                    email: user?.email,
-                                    amount: amount,
-                                    customLimit: limit
-                                })
-                            })
-                            const data = await res.json()
-                            if (!res.ok) throw new Error(data.message)
+            const data = await res.json()
 
-                            localStorage.setItem('checkitsa_user', JSON.stringify(data.user))
-                            localStorage.setItem('checkitsa_tier', data.user.tier)
-                            if (limit > 0) localStorage.setItem('checkitsa_custom_limit', limit)
+            if (!res.ok) {
+                throw new Error(data.message || 'Failed to initialize secure checkout')
+            }
 
-                            alert(`Upgrade Successful! You are now on the ${plan === 'custom' ? 'Enterprise' : plan} plan.`)
-                            router.push('/dashboard')
-                        } catch (err) {
-                            alert("Verification Failed: " + err.message)
-                            console.error(err)
-                        } finally {
-                            setLoading(false)
-                        }
-                    }
-                }
-            })
-        } catch (e) {
-            console.error("Yoco Error", e)
-            alert("Payment system error. Please try again.")
+            // Save the checkout ID so the success page can verify it
+            localStorage.setItem('pending_subscription_checkout', data.checkoutId)
+
+            // Redirect natively to Yoco (Apple Pay / Google Pay)
+            window.location.href = data.redirectUrl
+
+        } catch (err) {
+            console.error("Checkout Initialization Error:", err)
+            alert("Error: " + err.message)
             setLoading(false)
         }
     }
@@ -144,17 +89,6 @@ export default function Subscription() {
 
     return (
         <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-            {/* Primary Loader via Next.js Script */}
-            <Script
-                src="https://js.yoco.com/sdk/v1/yoco-sdk-web.js"
-                strategy="lazyOnload"
-                onLoad={() => {
-                    console.log("Yoco SDK Ready via Script")
-                    setSdkReady(true)
-                }}
-                onError={(e) => console.warn("Yoco Script Load Failed", e)}
-            />
-
             <Navbar />
 
             <div className="container" style={{ paddingTop: '8rem', paddingBottom: '4rem' }}>
