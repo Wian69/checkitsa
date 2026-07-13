@@ -1,7 +1,8 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
+import dataBrokers from '@/app/lib/dataBrokers.json';
 
 export default function PrivacyCleanPage() {
   const router = useRouter();
@@ -12,8 +13,7 @@ export default function PrivacyCleanPage() {
   const [scanComplete, setScanComplete] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState('');
   const [isRedirecting, setIsRedirecting] = useState(false);
-
-  const [sdkReady, setSdkReady] = useState(false);
+  const [exposedBrokers, setExposedBrokers] = useState([]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -43,7 +43,19 @@ export default function PrivacyCleanPage() {
         }
 
         setCheckoutUrl(data.redirectUrl);
+        
+        // Generate Dynamic Threat Simulation (Randomly select 15 to 45 brokers)
+        const shuffled = [...dataBrokers].sort(() => 0.5 - Math.random());
+        const numFound = Math.floor(Math.random() * (45 - 15 + 1)) + 15;
+        const selectedBrokers = shuffled.slice(0, numFound).map(b => ({
+            ...b,
+            risk: Math.random() > 0.7 ? 'HIGH RISK' : 'MEDIUM RISK'
+        }));
+        
+        setExposedBrokers(selectedBrokers);
+
         localStorage.setItem('privacy_clean_target', JSON.stringify({ name, email, phoneNumber }));
+        localStorage.setItem('privacy_clean_brokers', JSON.stringify(selectedBrokers));
         localStorage.setItem('pending_privacy_checkout', data.checkoutId);
 
         // Ensure the "scan" takes at least 2.5 seconds for dramatic effect
@@ -234,18 +246,9 @@ export default function PrivacyCleanPage() {
                 {/* Blurred Results Background */}
                 <div style={{ width: '100%', filter: 'blur(6px)', opacity: 0.6, pointerEvents: 'none', userSelect: 'none' }}>
                     <h3 style={{ color: '#ef4444', marginBottom: '1.5rem', borderBottom: '1px solid #374151', paddingBottom: '0.5rem' }}>
-                        3 Critical Matches Found
+                        {exposedBrokers.length} Critical Matches Found
                     </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '0.5rem', borderLeft: '4px solid #ef4444' }}>
-                            <div style={{ fontWeight: 'bold', color: '#fff' }}>Truecaller Global Database</div>
-                            <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Match: Name & Phone Number Exposed</div>
-                        </div>
-                        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '0.5rem', borderLeft: '4px solid #ef4444' }}>
-                            <div style={{ fontWeight: 'bold', color: '#fff' }}>Apollo.io B2B Lead List</div>
-                            <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Match: Email Address & Profile</div>
-                        </div>
-                        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '0.5rem', borderLeft: '4px solid #ef4444' }}>
                             <div style={{ fontWeight: 'bold', color: '#fff' }}>Local SA Marketing DB</div>
                             <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Match: Direct Marketing Profile</div>
                         </div>

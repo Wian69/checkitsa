@@ -1,27 +1,51 @@
+const fs = require('fs');
 const resendApiKey = 're_AqdBt9WW_2xS7jw2uuExuzJARbTuN2juR';
+
+const dataBrokers = JSON.parse(fs.readFileSync('./app/lib/dataBrokers.json', 'utf8'));
 
 const targetName = "Wian";
 const targetEmail = "wiandurandt69@gmail.com";
 const targetPhone = "+27821234567";
 
-const legalSubject = `URGENT: Formal Data Erasure Request (POPIA/GDPR) - ${targetName}`
-const legalContent = `
-    <p>To the Data Protection Officer / Privacy Compliance Team,</p>
-    <p>I am acting as the authorized legal agent for <strong>${targetName}</strong>.</p>
-    <p>Under the provisions of the South African Protection of Personal Information Act (POPIA) and the General Data Protection Regulation (GDPR), I am formally requesting the immediate and permanent erasure of all personal data relating to the individual identified below from your databases, marketing lists, and partner syndication networks.</p>
-    <div style="background-color: #1f2937; border: 1px solid #374151; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <ul style="list-style: none; padding: 0; margin: 0; color: #f8fafc;">
-            <li><strong style="color: #94a3b8;">Full Name:</strong> ${targetName}</li>
-            <li style="margin-top: 8px;"><strong style="color: #94a3b8;">Email Address:</strong> ${targetEmail}</li>
-            <li style="margin-top: 8px;"><strong style="color: #94a3b8;">Phone Number:</strong> ${targetPhone}</li>
+const receiptSubject = `Payment Receipt & Deletion Confirmation 🛡️`
+const receiptContent = `
+    <p style="margin-bottom: 24px;">Hi ${targetName.split(' ')[0]},</p>
+    <p style="margin-bottom: 24px;">Thank you for your payment of <strong>R199.00</strong>. Your Privacy Clean service is now active.</p>
+    
+    <div style="background-color: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #374151; margin-bottom: 24px;">
+        <h3 style="color: #10b981; margin-top: 0;">Target Profile</h3>
+        <ul style="color: #d1d5db; list-style: none; padding: 0;">
+            <li><strong>Name:</strong> ${targetName}</li>
+            <li><strong>Email:</strong> ${targetEmail}</li>
+            <li><strong>Phone:</strong> ${targetPhone}</li>
         </ul>
     </div>
-    <p>Please consider this a formal legal notice. You have 30 days to comply with this erasure request and provide confirmation.</p>
-    <p>If you require identity verification to process this deletion, please reply directly to this email to contact the data subject (${targetEmail}).</p>
-    <p>Sincerely,<br>CheckIt SA Legal Compliance Team</p>
+
+    <div style="background-color: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #ef4444; margin-bottom: 24px;">
+        <h3 style="color: #ef4444; margin-top: 0;">Databases Being Scrubbed</h3>
+        <p style="color: #d1d5db; line-height: 1.6;">We have identified matches and dispatched our automated deletion bots to the following ${dataBrokers.length} data brokers and public registries:</p>
+        <div style="column-count: 2; column-gap: 20px; color: #d1d5db; font-size: 0.85em; line-height: 1.6;">
+            <ul style="padding-left: 20px; margin: 0;">
+                ${dataBrokers.map(broker => `<li><strong>${broker.name}</strong></li>`).join('')}
+            </ul>
+        </div>
+    </div>
+
+    <p style="margin-bottom: 16px; color: #9ca3af;">This process typically takes 24 to 48 hours to propagate across all global servers. Once deleted, these data brokers are legally obligated under POPIA and GDPR to prevent your data from re-entering their active marketing lists.</p>
+    
+    <div style="background-color: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #ef4444; margin-bottom: 24px;">
+        <h3 style="color: #ef4444; margin-top: 0;">Engine Activated: Legal Requests Dispatched</h3>
+        <p style="color: #d1d5db; line-height: 1.6;">We have just sent a formal Data Erasure Request (POPIA/GDPR) to <strong>over 50 global and local data brokers</strong> on your behalf.</p>
+        <p style="color: #d1d5db; line-height: 1.6;"><strong>Important Notes:</strong></p>
+        <ul style="color: #d1d5db; padding-left: 20px; line-height: 1.6;">
+            <li>You have been sent a copy of this legal request (check your inbox for an email titled "DATA ERASURE REQUEST").</li>
+            <li>Brokers have a strict <strong>30-day legal timeframe</strong> to process the deletion across their global servers.</li>
+            <li><strong>ACTION REQUIRED:</strong> Some strict brokers may reply to the legal email asking you to verify your identity. If you receive an email from a broker, simply reply to confirm you want your data deleted.</li>
+        </ul>
+    </div>
 `
 
-const HTML_WRAPPER = (subject, content) => `
+const HTML_WRAPPER = (subject, content, actionBtn) => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -34,21 +58,17 @@ const HTML_WRAPPER = (subject, content) => `
         <tr>
             <td align="center">
                 <table width="600" cellpadding="0" cellspacing="0" style="background-color: #1e293b; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
-                    <!-- Header -->
                     <tr>
                         <td style="background-color: #0f172a; padding: 30px; text-align: center; border-bottom: 1px solid #334155;">
                             <h1 style="color: #f8fafc; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">CheckIt SA</h1>
                         </td>
                     </tr>
-                    
-                    <!-- Content -->
                     <tr>
                         <td style="padding: 40px 30px; color: #cbd5e1; font-size: 16px; line-height: 1.6;">
                             ${content}
+                            ${actionBtn ? `<div style="text-align: center; margin-top: 32px;">${actionBtn}</div>` : ''}
                         </td>
                     </tr>
-                    
-                    <!-- Footer -->
                     <tr>
                         <td style="background-color: #0f172a; padding: 24px; text-align: center; border-top: 1px solid #334155;">
                             <p style="color: #64748b; font-size: 13px; margin: 0;">&copy; ${new Date().getFullYear()} CheckIt SA. All rights reserved.</p>
@@ -62,7 +82,7 @@ const HTML_WRAPPER = (subject, content) => `
 </html>
 `;
 
-const legalHtml = HTML_WRAPPER(legalSubject, legalContent);
+const receiptHtml = HTML_WRAPPER(receiptSubject, receiptContent, `<a href="https://checkitsa.co.za/privacy-clean" style="display: inline-block; padding: 12px 24px; background-color: #10b981; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">Run Another Scan</a>`);
 
 async function send() {
     try {
@@ -72,8 +92,8 @@ async function send() {
             body: JSON.stringify({
                 from: 'CheckIt SA Compliance <onboarding@resend.dev>',
                 to: targetEmail,
-                subject: legalSubject,
-                html: legalHtml
+                subject: receiptSubject,
+                html: receiptHtml
             })
         });
         

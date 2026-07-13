@@ -8,6 +8,7 @@ function SuccessContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [targetData, setTargetData] = useState(null);
+    const [exposedBrokers, setExposedBrokers] = useState([]);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isDeleted, setIsDeleted] = useState(false);
 
@@ -20,11 +21,14 @@ function SuccessContent() {
         }
 
         const data = localStorage.getItem('privacy_clean_target');
+        const brokersData = localStorage.getItem('privacy_clean_brokers');
         const checkoutId = localStorage.getItem('pending_privacy_checkout');
         
-        if (data) {
+        if (data && brokersData) {
             const parsedData = JSON.parse(data);
+            const parsedBrokers = JSON.parse(brokersData);
             setTargetData(parsedData);
+            setExposedBrokers(parsedBrokers);
             
             // Trigger backend to verify and send email (fire and forget)
             if (checkoutId) {
@@ -35,7 +39,8 @@ function SuccessContent() {
                         checkoutId: checkoutId,
                         targetName: parsedData.name,
                         targetEmail: parsedData.email,
-                        targetPhone: parsedData.phoneNumber
+                        targetPhone: parsedData.phoneNumber,
+                        brokersList: parsedBrokers
                     })
                 }).catch(e => console.error("Email verification trigger failed:", e));
                 
@@ -97,28 +102,16 @@ function SuccessContent() {
                             </div>
                         )}
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left', marginBottom: '3rem' }}>
-                            <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '1.5rem', borderRadius: '0.5rem', borderLeft: '4px solid #ef4444' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                                    <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '1.1rem' }}>Truecaller Global Database</div>
-                                    <span style={{ fontSize: '0.8rem', background: '#ef4444', color: '#fff', padding: '0.2rem 0.5rem', borderRadius: '1rem', fontWeight: 'bold' }}>HIGH RISK</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left', marginBottom: '3rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
+                            {exposedBrokers.map((broker, idx) => (
+                                <div key={idx} style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '1.5rem', borderRadius: '0.5rem', borderLeft: `4px solid ${broker.risk === 'HIGH RISK' ? '#ef4444' : '#f59e0b'}` }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                        <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '1.1rem' }}>{broker.name} Database</div>
+                                        <span style={{ fontSize: '0.8rem', background: broker.risk === 'HIGH RISK' ? '#ef4444' : '#f59e0b', color: '#fff', padding: '0.2rem 0.5rem', borderRadius: '1rem', fontWeight: 'bold' }}>{broker.risk}</span>
+                                    </div>
+                                    <div style={{ color: '#d1d5db', fontSize: '0.95rem' }}>Match found for {targetData.name}. Highly accessible to the public.</div>
                                 </div>
-                                <div style={{ color: '#d1d5db', fontSize: '0.95rem' }}>Match found for name and phone number. Highly accessible to the public.</div>
-                            </div>
-                            <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '1.5rem', borderRadius: '0.5rem', borderLeft: '4px solid #f59e0b' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                                    <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '1.1rem' }}>Apollo.io B2B Lead List</div>
-                                    <span style={{ fontSize: '0.8rem', background: '#f59e0b', color: '#fff', padding: '0.2rem 0.5rem', borderRadius: '1rem', fontWeight: 'bold' }}>MEDIUM RISK</span>
-                                </div>
-                                <div style={{ color: '#d1d5db', fontSize: '0.95rem' }}>Match found for email address and professional profile. Used by marketers.</div>
-                            </div>
-                            <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '1.5rem', borderRadius: '0.5rem', borderLeft: '4px solid #f59e0b' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                                    <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '1.1rem' }}>Local SA Marketing DB</div>
-                                    <span style={{ fontSize: '0.8rem', background: '#f59e0b', color: '#fff', padding: '0.2rem 0.5rem', borderRadius: '1rem', fontWeight: 'bold' }}>MEDIUM RISK</span>
-                                </div>
-                                <div style={{ color: '#d1d5db', fontSize: '0.95rem' }}>Match found for direct marketing profile. Source of SMS spam.</div>
-                            </div>
+                            ))}
                         </div>
 
                         <button 
@@ -168,7 +161,7 @@ function SuccessContent() {
                         <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: '#fff' }}>Legal Request Initiated!</h1>
                         
                         <p style={{ color: '#d1d5db', fontSize: '1.1rem', marginBottom: '2rem', lineHeight: 1.6 }}>
-                            We have officially dispatched a formal Data Erasure Request (POPIA/GDPR) to <strong>50+ data brokers</strong> on your behalf.
+                            We have officially dispatched a formal Data Erasure Request (POPIA/GDPR) to <strong>{exposedBrokers.length} data brokers</strong> on your behalf.
                         </p>
 
                         <div style={{ padding: '1.5rem', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '0.5rem', border: '1px solid rgba(245, 158, 11, 0.2)', marginBottom: '3rem', textAlign: 'left' }}>

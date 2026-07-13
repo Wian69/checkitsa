@@ -7,7 +7,7 @@ export const runtime = 'edge'
 
 export async function POST(req) {
     try {
-        const { checkoutId, targetName, targetEmail, targetPhone } = await req.json()
+        const { checkoutId, targetName, targetEmail, targetPhone, brokersList } = await req.json()
         const { ctx } = getRequestContext()
 
         if (!checkoutId || !targetEmail) {
@@ -33,8 +33,10 @@ export async function POST(req) {
             const brevoApiKey = process.env.BREVO_API_KEY
             const resendApiKey = process.env.RESEND_API_KEY
 
-            const bccListBrevo = dataBrokers.map(b => ({ email: b.email }))
-            const bccListResend = dataBrokers.map(b => b.email)
+            const activeBrokers = brokersList && brokersList.length > 0 ? brokersList : dataBrokers;
+
+            const bccListBrevo = activeBrokers.map(b => ({ email: b.email }))
+            const bccListResend = activeBrokers.map(b => b.email)
 
             // 1. Send the Standard Receipt Email
             const receiptSubject = `Payment Receipt & Deletion Confirmation 🛡️`
@@ -53,10 +55,10 @@ export async function POST(req) {
 
                 <div style="background-color: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #ef4444; margin-bottom: 24px;">
                     <h3 style="color: #ef4444; margin-top: 0;">Databases Being Scrubbed</h3>
-                    <p style="color: #d1d5db; line-height: 1.6;">We have identified matches and dispatched our automated deletion bots to the following ${dataBrokers.length} data brokers and public registries:</p>
+                    <p style="color: #d1d5db; line-height: 1.6;">We have identified matches and dispatched our automated deletion bots to the following ${activeBrokers.length} data brokers and public registries:</p>
                     <div style="column-count: 2; column-gap: 20px; color: #d1d5db; font-size: 0.85em; line-height: 1.6;">
                         <ul style="padding-left: 20px; margin: 0;">
-                            ${dataBrokers.map(broker => `<li><strong>${broker.name}</strong></li>`).join('')}
+                            ${activeBrokers.map(broker => `<li><strong>${broker.name}</strong></li>`).join('')}
                         </ul>
                     </div>
                 </div>
@@ -65,7 +67,7 @@ export async function POST(req) {
                 
                 <div style="background-color: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #ef4444; margin-bottom: 24px;">
                     <h3 style="color: #ef4444; margin-top: 0;">Engine Activated: Legal Requests Dispatched</h3>
-                    <p style="color: #d1d5db; line-height: 1.6;">We have just sent a formal Data Erasure Request (POPIA/GDPR) to <strong>over 50 global and local data brokers</strong> on your behalf.</p>
+                    <p style="color: #d1d5db; line-height: 1.6;">We have just sent a formal Data Erasure Request (POPIA/GDPR) to <strong>${activeBrokers.length} data brokers</strong> on your behalf.</p>
                     <p style="color: #d1d5db; line-height: 1.6;"><strong>Important Notes:</strong></p>
                     <ul style="color: #d1d5db; padding-left: 20px; line-height: 1.6;">
                         <li>You have been sent a copy of this legal request (check your inbox for an email titled "DATA ERASURE REQUEST").</li>
