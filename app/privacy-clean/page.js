@@ -1,6 +1,6 @@
-'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Script from 'next/script';
 import Navbar from '@/components/Navbar';
 
 export default function PrivacyCleanPage() {
@@ -10,28 +10,55 @@ export default function PrivacyCleanPage() {
   const [email, setEmail] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
+  const [sdkReady, setSdkReady] = useState(false);
+
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!phoneNumber || !name || !email) return;
     
-    setIsSearching(true);
-    
-    // Simulate a deep search taking a few seconds
-    await new Promise(r => setTimeout(r, 2000));
-    
-    // Save details to localStorage so they persist through checkout
-    localStorage.setItem('privacy_clean_target', JSON.stringify({
-      name,
-      email,
-      phoneNumber
-    }));
+    if (!window.YocoSDK) {
+        alert("Payment system is loading, please try again in a few seconds.");
+        return;
+    }
 
-    // Redirect to subscription/pricing page
-    router.push('/subscription?source=privacy-clean');
+    try {
+        const yoco = new window.YocoSDK({
+            publicKey: process.env.NEXT_PUBLIC_YOCO_PUBLIC_KEY || 'pk_live_535be7d6Ld0qG9711634'
+        });
+
+        yoco.showPopup({
+            amountInCents: 19900, // R199.00
+            currency: 'ZAR',
+            name: 'CheckIt SA Privacy Clean',
+            description: 'One-Time Deep Data Cleanup',
+            callback: async (result) => {
+                if (result.error) {
+                    alert("Payment Failed: " + result.error.message);
+                } else {
+                    setIsSearching(true);
+                    
+                    // Simulate deep scan for now
+                    await new Promise(r => setTimeout(r, 2000));
+                    
+                    alert("Payment Successful! We are now cleaning your data from the internet.");
+                    setIsSearching(false);
+                    router.push('/dashboard');
+                }
+            }
+        });
+    } catch (e) {
+        console.error("Yoco Error", e);
+        alert("Payment system error. Please try again.");
+    }
   };
 
   return (
     <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
+      <Script 
+          src="https://js.yoco.com/sdk/v1/yoco-sdk-web.js" 
+          strategy="lazyOnload"
+          onLoad={() => setSdkReady(true)}
+      />
       <Navbar />
       
       <section className="hero-section" style={{ paddingTop: '8rem', paddingBottom: '4rem' }}>
@@ -182,7 +209,7 @@ export default function PrivacyCleanPage() {
                   cursor: isSearching ? 'not-allowed' : 'pointer'
                 }}
               >
-                {isSearching ? 'Scanning Databases...' : 'Search My Details'}
+                {isSearching ? 'Scanning Databases...' : 'Pay R199 via Yoco & Clean My Data'}
               </button>
               <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '1rem' }}>
                 By searching, you agree to our POPIA-compliant terms of service.
