@@ -9,11 +9,11 @@ const legalContent = `
     <p>To the Data Protection Officer / Privacy Compliance Team,</p>
     <p>I am acting as the authorized legal agent for <strong>${targetName}</strong>.</p>
     <p>Under the provisions of the South African Protection of Personal Information Act (POPIA) and the General Data Protection Regulation (GDPR), I am formally requesting the immediate and permanent erasure of all personal data relating to the individual identified below from your databases, marketing lists, and partner syndication networks.</p>
-    <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <ul style="list-style: none; padding: 0; margin: 0;">
-            <li><strong>Full Name:</strong> ${targetName}</li>
-            <li><strong>Email Address:</strong> ${targetEmail}</li>
-            <li><strong>Phone Number:</strong> ${targetPhone}</li>
+    <div style="background-color: #1f2937; border: 1px solid #374151; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <ul style="list-style: none; padding: 0; margin: 0; color: #f8fafc;">
+            <li><strong style="color: #94a3b8;">Full Name:</strong> ${targetName}</li>
+            <li style="margin-top: 8px;"><strong style="color: #94a3b8;">Email Address:</strong> ${targetEmail}</li>
+            <li style="margin-top: 8px;"><strong style="color: #94a3b8;">Phone Number:</strong> ${targetPhone}</li>
         </ul>
     </div>
     <p>Please consider this a formal legal notice. You have 30 days to comply with this erasure request and provide confirmation.</p>

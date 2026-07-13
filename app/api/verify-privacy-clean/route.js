@@ -52,6 +52,18 @@ export async function POST(req) {
                 </div>
 
                 <div style="background-color: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #ef4444; margin-bottom: 24px;">
+                    <h3 style="color: #ef4444; margin-top: 0;">Databases Being Scrubbed</h3>
+                    <p style="color: #d1d5db; line-height: 1.6;">We have identified matches and dispatched our automated deletion bots to the following ${dataBrokers.length} data brokers and public registries:</p>
+                    <div style="column-count: 2; column-gap: 20px; color: #d1d5db; font-size: 0.85em; line-height: 1.6;">
+                        <ul style="padding-left: 20px; margin: 0;">
+                            ${dataBrokers.map(broker => `<li><strong>${broker.name}</strong></li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 16px; color: #9ca3af;">This process typically takes 24 to 48 hours to propagate across all global servers. Once deleted, these data brokers are legally obligated under POPIA and GDPR to prevent your data from re-entering their active marketing lists.</p>
+                
+                <div style="background-color: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #ef4444; margin-bottom: 24px;">
                     <h3 style="color: #ef4444; margin-top: 0;">Engine Activated: Legal Requests Dispatched</h3>
                     <p style="color: #d1d5db; line-height: 1.6;">We have just sent a formal Data Erasure Request (POPIA/GDPR) to <strong>over 50 global and local data brokers</strong> on your behalf.</p>
                     <p style="color: #d1d5db; line-height: 1.6;"><strong>Important Notes:</strong></p>
@@ -70,11 +82,11 @@ export async function POST(req) {
                 <p>To the Data Protection Officer / Privacy Compliance Team,</p>
                 <p>I am acting as the authorized legal agent for <strong>${targetName}</strong>.</p>
                 <p>Under the provisions of the South African Protection of Personal Information Act (POPIA) and the General Data Protection Regulation (GDPR), I am formally requesting the immediate and permanent erasure of all personal data relating to the individual identified below from your databases, marketing lists, and partner syndication networks.</p>
-                <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <ul style="list-style: none; padding: 0; margin: 0;">
-                        <li><strong>Full Name:</strong> ${targetName}</li>
-                        <li><strong>Email Address:</strong> ${targetEmail}</li>
-                        <li><strong>Phone Number:</strong> ${targetPhone}</li>
+                <div style="background-color: #1f2937; border: 1px solid #374151; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <ul style="list-style: none; padding: 0; margin: 0; color: #f8fafc;">
+                        <li><strong style="color: #94a3b8;">Full Name:</strong> ${targetName}</li>
+                        <li style="margin-top: 8px;"><strong style="color: #94a3b8;">Email Address:</strong> ${targetEmail}</li>
+                        <li style="margin-top: 8px;"><strong style="color: #94a3b8;">Phone Number:</strong> ${targetPhone}</li>
                     </ul>
                 </div>
                 <p>Please consider this a formal legal notice. You have 30 days to comply with this erasure request and provide confirmation.</p>
