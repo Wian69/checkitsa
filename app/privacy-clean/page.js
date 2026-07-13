@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Script from 'next/script';
 import Navbar from '@/components/Navbar';
 
 export default function PrivacyCleanPage() {
@@ -16,50 +15,46 @@ export default function PrivacyCleanPage() {
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!phoneNumber || !name || !email) return;
-    
-    if (!window.YocoSDK) {
-        alert("Payment system is loading, please try again in a few seconds.");
-        return;
-    }
 
-    // 1. Simulate the deep scan first!
+    // Simulate scanning to build anticipation
     setIsSearching(true);
-    await new Promise(r => setTimeout(r, 2500));
-    setIsSearching(false);
-
-    // 2. Pop up the checkout to "unlock" the cleanup
+    await new Promise(r => setTimeout(r, 2000));
+    
+    // Call the new secure backend to get a checkout URL
     try {
-        const yoco = new window.YocoSDK({
-            publicKey: process.env.NEXT_PUBLIC_YOCO_PUBLIC_KEY || 'pk_live_535be7d6Ld0qG9711634'
+        const res = await fetch('/api/create-yoco-checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                amountInCents: 19900,
+                name: name,
+                email: email,
+                phone: phoneNumber,
+                returnUrl: window.location.origin + '/privacy-clean'
+            })
         });
 
-        yoco.showPopup({
-            amountInCents: 19900, // R199.00
-            currency: 'ZAR',
-            name: 'CheckIt SA Privacy Clean',
-            description: 'One-Time Deep Data Cleanup',
-            callback: async (result) => {
-                if (result.error) {
-                    alert("Payment Failed: " + result.error.message);
-                } else {
-                    alert("Payment Successful! We are now scrubbing your data from the internet. This process takes 24-48 hours.");
-                    router.push('/dashboard');
-                }
-            }
-        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.message || 'Payment system error');
+        }
+
+        // Save details to localStorage so we can use them on the success page
+        localStorage.setItem('privacy_clean_target', JSON.stringify({ name, email, phoneNumber }));
+
+        // Redirect securely to Yoco's native Apple Pay/Google Pay checkout
+        window.location.href = data.redirectUrl;
+
     } catch (e) {
-        console.error("Yoco Error", e);
-        alert("Payment system error. Please try again.");
+        console.error("Checkout generation error:", e);
+        alert("Unable to connect to secure payment server. Please try again.");
+        setIsSearching(false);
     }
   };
 
   return (
     <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
-      <Script 
-          src="https://js.yoco.com/sdk/v1/yoco-sdk-web.js" 
-          strategy="lazyOnload"
-          onLoad={() => setSdkReady(true)}
-      />
       <Navbar />
       
       <section className="hero-section" style={{ paddingTop: '8rem', paddingBottom: '4rem' }}>
