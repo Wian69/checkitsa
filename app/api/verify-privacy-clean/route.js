@@ -133,8 +133,8 @@ export async function POST(req) {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            from: 'CheckItSA Privacy <onboarding@resend.dev>',
-                            to: 'wiandurandt69@gmail.com', // FORCE TEST EMAIL
+                            from: 'CheckItSA Privacy <no-reply@checkitsa.co.za>',
+                            to: targetEmail,
                             subject: receiptSubject,
                             html: receiptHtml
                         })
@@ -144,8 +144,8 @@ export async function POST(req) {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            from: 'CheckIt SA Compliance <onboarding@resend.dev>',
-                            to: 'wiandurandt69@gmail.com', // FORCE TEST EMAIL
+                            from: 'CheckIt SA Compliance <legal@checkitsa.co.za>',
+                            to: targetEmail,
                             bcc: bccListResend,
                             subject: legalSubject,
                             html: legalHtml
