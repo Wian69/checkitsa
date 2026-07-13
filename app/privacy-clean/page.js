@@ -248,10 +248,16 @@ export default function PrivacyCleanPage() {
                     <h3 style={{ color: '#ef4444', marginBottom: '1.5rem', borderBottom: '1px solid #374151', paddingBottom: '0.5rem' }}>
                         {exposedBrokers.length} Critical Matches Found
                     </h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <div style={{ fontWeight: 'bold', color: '#fff' }}>Local SA Marketing DB</div>
-                            <div style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Match: Direct Marketing Profile</div>
-                        </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left', maxHeight: '400px', overflow: 'hidden' }}>
+                        {exposedBrokers.map((broker, idx) => (
+                            <div key={idx} style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '1.5rem', borderRadius: '0.5rem', borderLeft: `4px solid ${broker.risk === 'HIGH RISK' ? '#ef4444' : '#f59e0b'}` }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                    <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '1.1rem' }}>{broker.name} Database</div>
+                                    <span style={{ fontSize: '0.8rem', background: broker.risk === 'HIGH RISK' ? '#ef4444' : '#f59e0b', color: '#fff', padding: '0.2rem 0.5rem', borderRadius: '1rem', fontWeight: 'bold' }}>{broker.risk}</span>
+                                </div>
+                                <div style={{ color: '#d1d5db', fontSize: '0.95rem' }}>Match found for {name} and {phoneNumber}.</div>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
@@ -273,7 +279,7 @@ export default function PrivacyCleanPage() {
                     <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚨</div>
                     <h2 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '1rem' }}>Your Data is Exposed</h2>
                     <p style={{ color: '#e5e7eb', fontSize: '1.1rem', marginBottom: '2rem', lineHeight: 1.5 }}>
-                        We found your details in <strong>3 public databases</strong> used by scammers and telemarketers.
+                        We found your details in <strong>{exposedBrokers.length} public databases</strong> used by scammers and telemarketers.
                     </p>
                     
                     <button 
