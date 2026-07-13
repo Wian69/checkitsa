@@ -116,6 +116,13 @@ export default function Home() {
             color="#F87171"
           />
           <Tile
+            title="Privacy Clean"
+            icon="🛡️"
+            desc="Wipe your details from Truecaller and marketing lists instantly."
+            href="/privacy-clean"
+            color="#10b981"
+          />
+          <Tile
             title="Road Sentinel"
             icon="🚦"
             desc="Report reckless drivers. AI extracts plates and notifies authorities."
