@@ -1,164 +1,196 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Navbar from '@/components/Navbar';
 
 export default function PrivacyCleanPage() {
+  const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState('idle'); // idle | cleaning | done | error
-  const [logs, setLogs] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const addLog = (msg) => setLogs(prev => [...prev, msg]);
-
-  const handleCheckout = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
     if (!phoneNumber || !name || !email) return;
     
-    // Open the Yoco Payment Link
-    window.open('https://pay.yoco.com/checkitsa-privacy', '_blank');
+    setIsSearching(true);
     
-    // Simulate successful payment webhook
-    setTimeout(() => {
-      runBots();
-    }, 3000);
-  };
-
-  const runBots = async () => {
-    setStatus('cleaning');
-    setLogs([]);
-    addLog(`Initiating deep clean for ${name}...`);
+    // Simulate a deep search taking a few seconds
+    await new Promise(r => setTimeout(r, 2000));
     
-    // 1. Truecaller Bot
-    addLog('Connecting to Truecaller database...');
-    try {
-      const res = await fetch('/api/privacy-clean', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber })
-      });
-      const data = await res.json();
-      if (data.success) {
-        addLog('✅ Truecaller: Number successfully unlisted.');
-      } else {
-        addLog('❌ Truecaller: Failed to unlist. ' + data.error);
-      }
-    } catch (err) {
-      addLog('❌ Truecaller: Server error.');
-    }
+    // Save details to localStorage so they persist through checkout
+    localStorage.setItem('privacy_clean_target', JSON.stringify({
+      name,
+      email,
+      phoneNumber
+    }));
 
-    // 2. DMASA Bot
-    addLog('Connecting to DMASA National Opt-Out Registry...');
-    await new Promise(r => setTimeout(r, 2000));
-    addLog('✅ DMASA: Successfully registered on Opt-Out list.');
-
-    // 3. POPIA Takedowns
-    addLog('Generating POPIA takedown legal notices...');
-    await new Promise(r => setTimeout(r, 2000));
-    addLog('✅ POPIA: Notices dispatched to 14 SA marketing agencies.');
-
-    // 4. Confirmation Email
-    addLog(`Drafting detailed removal report for ${email}...`);
-    await new Promise(r => setTimeout(r, 1500));
-    addLog('✅ Email Sent: "Your Data Removal Report" successfully delivered.');
-
-    setStatus('done');
+    // Redirect to subscription/pricing page
+    router.push('/subscription?source=privacy-clean');
   };
 
   return (
-    <main className="min-h-screen pt-24 pb-20 px-4">
-      <div className="container mx-auto">
-        <div className="max-w-3xl mx-auto text-center space-y-6 mb-12">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white">
-            SA Privacy <span className="text-[var(--color-primary)]">Deep Clean</span>
+    <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
+      <Navbar />
+      
+      <section className="hero-section" style={{ paddingTop: '8rem', paddingBottom: '4rem' }}>
+        <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+          <h1 style={{
+            fontSize: 'clamp(2.5rem, 8vw, 4rem)',
+            marginBottom: '1rem',
+            lineHeight: 1.1,
+            background: 'linear-gradient(to right, #fff 0%, #10b981 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            fontWeight: 800
+          }}>
+            Data Privacy Scanner
           </h1>
-          <p className="text-xl text-[var(--color-text-muted)]">
-            Remove your personal details from Truecaller, direct marketing lists, and caller ID apps instantly under the POPI Act.
+          <p style={{
+            fontSize: '1.25rem',
+            color: 'var(--color-text-muted)',
+            maxWidth: '700px',
+            margin: '0 auto 2rem',
+            lineHeight: 1.6
+          }}>
+            Find and remove your personal details from Truecaller, direct marketing lists, and caller ID apps instantly under the POPI Act.
           </p>
         </div>
+      </section>
 
-        {status === 'idle' ? (
-          <div className="max-w-md mx-auto glass-panel p-8" style={{ border: '1px solid rgba(255, 255, 255, 0.1)', background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)' }}>
-            <form onSubmit={handleCheckout} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white">Full Name</label>
-                <input 
-                  type="text" 
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  required
-                  className="w-full bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.1)] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[var(--color-primary)] transition-colors"
-                  placeholder="Nelson Mandela"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white">Email Address</label>
-                <input 
-                  type="email" 
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  className="w-full bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.1)] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[var(--color-primary)] transition-colors"
-                  placeholder="nelson@example.co.za"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white">South African Phone Number</label>
-                <input 
-                  type="tel" 
-                  value={phoneNumber}
-                  onChange={e => setPhoneNumber(e.target.value)}
-                  required
-                  className="w-full bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.1)] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[var(--color-primary)] transition-colors"
-                  placeholder="+27 82 123 4567"
-                />
-              </div>
-              <div className="pt-4 border-t border-[rgba(255,255,255,0.1)]">
-                <div className="flex justify-between text-sm mb-4">
-                  <span className="text-[var(--color-text-muted)]">One-Time Deep Clean</span>
-                  <span className="font-bold text-white">R199.00</span>
-                </div>
-                <button 
-                  type="submit"
-                  className="w-full btn btn-primary py-4 justify-center text-lg shadow-lg"
-                >
-                  Pay via Yoco & Clean My Data
-                </button>
-              </div>
-            </form>
+      <section className="container content-section">
+        <div className="glass-panel" style={{
+          maxWidth: '600px',
+          margin: '0 auto',
+          padding: '3rem',
+          borderTop: '4px solid #10b981',
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%)'
+        }}>
+          
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2.5rem', gap: '1rem' }}>
+            <div style={{
+              width: '3.5rem',
+              height: '3.5rem',
+              background: 'rgba(16, 185, 129, 0.1)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.5rem',
+              color: '#10b981'
+            }}>🔍</div>
+            <div>
+              <h2 style={{ fontSize: '1.5rem', color: '#fff', margin: 0 }}>Initiate Deep Scan</h2>
+              <p style={{ color: 'var(--color-text-muted)', margin: 0, fontSize: '0.9rem' }}>Enter the details you want to scrub from the internet.</p>
+            </div>
           </div>
-        ) : (
-          <div className="max-w-2xl mx-auto glass-panel p-8" style={{ border: '1px solid rgba(255, 255, 255, 0.1)', background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)' }}>
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-3 text-white">
-              {status === 'cleaning' ? (
-                <span className="flex h-4 w-4 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-primary)] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-4 w-4 bg-[var(--color-primary)]"></span>
-                </span>
-              ) : (
-                 <span className="text-green-500">✓</span>
-              )}
-              {status === 'cleaning' ? 'Wiping your data from the internet...' : 'Deep Clean Complete!'}
-            </h2>
-            
-            <div className="space-y-4 font-mono text-sm bg-[rgba(0,0,0,0.4)] p-6 rounded-xl border border-[rgba(255,255,255,0.05)] h-64 overflow-y-auto">
-              {logs.map((log, i) => (
-                <div key={i} className={log.includes('✅') ? 'text-green-400' : log.includes('❌') ? 'text-red-400' : 'text-[var(--color-text-muted)]'}>
-                  {log}
-                </div>
-              ))}
+
+          <form onSubmit={handleSearch} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#e5e7eb', fontSize: '0.9rem', fontWeight: 500 }}>
+                Full Name
+              </label>
+              <input 
+                type="text" 
+                value={name}
+                onChange={e => setName(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '0.5rem',
+                  padding: '1rem',
+                  color: '#fff',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  transition: 'border-color 0.2s'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#10b981'}
+                onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+                placeholder="Nelson Mandela"
+              />
             </div>
             
-            {status === 'done' && (
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#e5e7eb', fontSize: '0.9rem', fontWeight: 500 }}>
+                Email Address
+              </label>
+              <input 
+                type="email" 
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '0.5rem',
+                  padding: '1rem',
+                  color: '#fff',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  transition: 'border-color 0.2s'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#10b981'}
+                onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+                placeholder="nelson@example.co.za"
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#e5e7eb', fontSize: '0.9rem', fontWeight: 500 }}>
+                South African Phone Number
+              </label>
+              <input 
+                type="tel" 
+                value={phoneNumber}
+                onChange={e => setPhoneNumber(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '0.5rem',
+                  padding: '1rem',
+                  color: '#fff',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  transition: 'border-color 0.2s'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#10b981'}
+                onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+                placeholder="+27 82 123 4567"
+              />
+            </div>
+
+            <div style={{ marginTop: '1rem' }}>
               <button 
-                onClick={() => setStatus('idle')}
-                className="mt-6 w-full btn btn-outline py-3 justify-center"
+                type="submit"
+                disabled={isSearching}
+                className="btn btn-primary"
+                style={{
+                  width: '100%',
+                  padding: '1.2rem',
+                  fontSize: '1.1rem',
+                  justifyContent: 'center',
+                  background: isSearching ? '#374151' : '#10b981',
+                  color: '#fff',
+                  boxShadow: isSearching ? 'none' : '0 4px 14px 0 rgba(16, 185, 129, 0.39)',
+                  opacity: isSearching ? 0.7 : 1,
+                  cursor: isSearching ? 'not-allowed' : 'pointer'
+                }}
               >
-                Clean Another Number
+                {isSearching ? 'Scanning Databases...' : 'Search My Details'}
               </button>
-            )}
-          </div>
-        )}
-      </div>
+              <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '1rem' }}>
+                By searching, you agree to our POPIA-compliant terms of service.
+              </p>
+            </div>
+          </form>
+        </div>
+      </section>
     </main>
   );
 }
