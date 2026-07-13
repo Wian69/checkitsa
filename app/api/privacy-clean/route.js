@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 // import { chromium } from 'playwright'; // Causes Webpack crash in Next.js. We will use child_process for this later.
 
+export const runtime = 'edge';
+
 export async function POST(req) {
   try {
     const { phoneNumber } = await req.json();
