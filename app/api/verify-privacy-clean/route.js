@@ -130,11 +130,8 @@ export async function POST(req) {
             return true;
         }
 
-        if (ctx && ctx.waitUntil) {
-            ctx.waitUntil(sendEmail())
-        } else {
-            await sendEmail()
-        }
+        // Force await so Cloudflare doesn't terminate the worker before emails send
+        await sendEmail()
 
         return NextResponse.json({ success: true })
 
