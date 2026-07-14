@@ -116,6 +116,17 @@ export async function POST(req) {
                 from: 'CheckIt SA Compliance <legal@checkitsa.co.za>'
             });
 
+            // 3. Log the dispatch for Admin Evidence
+            if (env && env.DB) {
+                try {
+                    await env.DB.prepare(
+                        'INSERT INTO dispatch_logs (target_name, target_email, target_phone, recipient_count) VALUES (?, ?, ?, ?)'
+                    ).bind(targetName, targetEmail, targetPhone || '', activeBrokers.length).run();
+                } catch (dbErr) {
+                    console.error('Failed to save dispatch log to D1:', dbErr);
+                }
+            }
+
             return true;
         }
 

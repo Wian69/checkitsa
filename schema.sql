@@ -72,3 +72,14 @@ CREATE TABLE IF NOT EXISTS leads (
     last_contacted_at DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Evidence Logs for Dispatched Emails
+CREATE TABLE IF NOT EXISTS dispatch_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    target_name TEXT NOT NULL,
+    target_email TEXT NOT NULL,
+    target_phone TEXT,
+    recipient_count INTEGER DEFAULT 0,
+    type TEXT DEFAULT 'ERASURE_REQUEST',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

@@ -74,65 +74,17 @@ function AdvertiseContent() {
     setStatus('submitting')
 
     try {
-      const res = await fetch('/api/advertise/submit', {
+      const res = await fetch('/api/advertise/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, email: user.email })
       })
 
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Failed to submit')
+      if (!res.ok) throw new Error(data.error || 'Failed to initialize checkout')
 
-      // Initiation Yoco Payment
-      startPayment(data.listingId, data.amount)
-    } catch (err) {
-      setStatus('error')
-      setMessage(err.message)
-    }
-  }
-
-  const startPayment = (listingId, amount) => {
-    if (typeof window.YocoSDK === 'undefined') {
-      setStatus('error')
-      setMessage('Yoco SDK not loaded. Please refresh.')
-      return
-    }
-
-    const yoco = new window.YocoSDK({
-      publicKey: process.env.NEXT_PUBLIC_YOCO_PUBLIC_KEY
-    })
-
-    setStatus('paying')
-    yoco.showPopup({
-      amountInCents: amount * 100,
-      currency: 'ZAR',
-      name: formData.businessName,
-      description: 'CheckItSA 30-Day Verified Listing',
-      callback: async (result) => {
-        if (result.error) {
-          setStatus('error')
-          setMessage(result.error.message)
-        } else {
-          // Send token to backend
-          processPayment(listingId, result.id)
-        }
-      }
-    })
-  }
-
-  const processPayment = async (listingId, token) => {
-    try {
-      const res = await fetch('/api/advertise/pay', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ listingId, token })
-      })
-
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Payment confirmation failed')
-
-      setStatus('success')
-      setMessage('Your listing is now live!')
+      // Redirect to Yoco V3 Secure Checkout
+      window.location.href = data.checkoutUrl
     } catch (err) {
       setStatus('error')
       setMessage(err.message)
@@ -142,7 +94,6 @@ function AdvertiseContent() {
   return (
     <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
       <Navbar />
-      <Script src="https://js.yoco.com/sdk/v1/yoco-sdk-web.js" />
 
       <section className="container" style={{ paddingTop: '8rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '4rem' }}>

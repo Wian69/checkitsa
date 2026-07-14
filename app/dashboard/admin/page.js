@@ -166,6 +166,20 @@ export default function AdminDashboard() {
                         </div>
                     </div>
 
+                    {/* Evidence Logs Section */}
+                    <div className="glass-panel" style={{ padding: '2rem' }}>
+                        <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span>🛡️</span> Dispatch Evidence Logs
+                        </h3>
+                        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                            Immutable audit trail of all legal erasure requests dispatched. Use this as proof for users.
+                        </p>
+                        
+                        <div style={{ maxHeight: '500px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                            <DispatchLogs password={password} />
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </main>
@@ -313,6 +327,43 @@ function ReportList({ adminEmail }) {
                             <button onClick={() => handleAction(r.id, 'reject')} className="btn" style={{ padding: '0.4rem 0.8rem', background: '#ef4444', color: 'white', fontSize: '0.8rem', borderRadius: '0.25rem' }}>Reject</button>
                         </div>
                     )}
+                </div>
+            ))}
+        </div>
+    )
+}
+
+function DispatchLogs({ password }) {
+    const [logs, setLogs] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        fetch(`/api/admin/dispatch-logs?password=${encodeURIComponent(password)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.logs) setLogs(data.logs)
+                setLoading(false)
+            })
+            .catch(() => setLoading(false))
+    }, [password])
+
+    if (loading) return <div style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>Loading evidence logs...</div>
+    if (logs.length === 0) return <div style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>No emails have been dispatched yet.</div>
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {logs.map(log => (
+                <div key={log.id} style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid var(--color-border)', padding: '1rem', borderRadius: '0.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                        <strong style={{ color: '#6ee7b7' }}>{log.type}</strong>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                            {new Date(log.created_at).toLocaleString()}
+                        </span>
+                    </div>
+                    <div style={{ fontSize: '0.9rem', color: '#d1d5db' }}>
+                        <div><strong>Target:</strong> {log.target_name} ({log.target_email})</div>
+                        <div style={{ marginTop: '0.25rem' }}><strong>Sent To:</strong> {log.recipient_count} verified data brokers</div>
+                    </div>
                 </div>
             ))}
         </div>
