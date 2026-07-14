@@ -1,0 +1,107 @@
+[
+    {
+        "name": "Takealot",
+        "domain": "takealot.com",
+        "supportEmail": "info@takealot.com",
+        "complaintEmail": "complaints@takealot.com",
+        "logo": "https://logo.clearbit.com/takealot.com"
+    },
+    {
+        "name": "Vodacom",
+        "domain": "vodacom.co.za",
+        "supportEmail": "customercare@vodacom.co.za",
+        "complaintEmail": "complaints@vodacom.co.za",
+        "logo": "https://logo.clearbit.com/vodacom.co.za"
+    },
+    {
+        "name": "MTN",
+        "domain": "mtn.co.za",
+        "supportEmail": "customercare@mtn.co.za",
+        "complaintEmail": "complaints@mtn.co.za",
+        "logo": "https://logo.clearbit.com/mtn.co.za"
+    },
+    {
+        "name": "Checkers",
+        "domain": "checkers.co.za",
+        "supportEmail": "customer.service@checkers.co.za",
+        "complaintEmail": "complaints@shoprite.co.za",
+        "logo": "https://logo.clearbit.com/checkers.co.za"
+    },
+    {
+        "name": "Pick n Pay",
+        "domain": "pnp.co.za",
+        "supportEmail": "customercare@pnp.co.za",
+        "complaintEmail": "complaints@pnp.co.za",
+        "logo": "https://logo.clearbit.com/pnp.co.za"
+    },
+    {
+        "name": "FNB",
+        "domain": "fnb.co.za",
+        "supportEmail": "info@fnb.co.za",
+        "complaintEmail": "care@fnb.co.za",
+        "logo": "https://logo.clearbit.com/fnb.co.za"
+    },
+    {
+        "name": "Standard Bank",
+        "domain": "standardbank.co.za",
+        "supportEmail": "information@standardbank.co.za",
+        "complaintEmail": "complaints@standardbank.co.za",
+        "logo": "https://logo.clearbit.com/standardbank.co.za"
+    },
+    {
+        "name": "Absa",
+        "domain": "absa.co.za",
+        "supportEmail": "absa@absa.co.za",
+        "complaintEmail": "actionline@absa.co.za",
+        "logo": "https://logo.clearbit.com/absa.co.za"
+    },
+    {
+        "name": "Nedbank",
+        "domain": "nedbank.co.za",
+        "supportEmail": "clientfeedback@nedbank.co.za",
+        "complaintEmail": "complaints@nedbank.co.za",
+        "logo": "https://logo.clearbit.com/nedbank.co.za"
+    },
+    {
+        "name": "Discovery Health",
+        "domain": "discovery.co.za",
+        "supportEmail": "healthinfo@discovery.co.za",
+        "complaintEmail": "complaints@discovery.co.za",
+        "logo": "https://logo.clearbit.com/discovery.co.za"
+    },
+    {
+        "name": "Momentum Health",
+        "domain": "momentum.co.za",
+        "supportEmail": "healthinfo@momentum.co.za",
+        "complaintEmail": "healthcomplaints@momentum.co.za",
+        "logo": "https://logo.clearbit.com/momentum.co.za"
+    },
+    {
+        "name": "Telkom",
+        "domain": "telkom.co.za",
+        "supportEmail": "support@telkom.co.za",
+        "complaintEmail": "complaints@telkom.co.za",
+        "logo": "https://logo.clearbit.com/telkom.co.za"
+    },
+    {
+        "name": "Eskom",
+        "domain": "eskom.co.za",
+        "supportEmail": "customerservices@eskom.co.za",
+        "complaintEmail": "complaints@eskom.co.za",
+        "logo": "https://logo.clearbit.com/eskom.co.za"
+    },
+    {
+        "name": "Makro",
+        "domain": "makro.co.za",
+        "supportEmail": "service@makro.co.za",
+        "complaintEmail": "complaints@makro.co.za",
+        "logo": "https://logo.clearbit.com/makro.co.za"
+    },
+    {
+        "name": "Woolworths",
+        "domain": "woolworths.co.za",
+        "supportEmail": "custserv@woolworths.co.za",
+        "complaintEmail": "complaints@woolworths.co.za",
+        "logo": "https://logo.clearbit.com/woolworths.co.za"
+    }
+]

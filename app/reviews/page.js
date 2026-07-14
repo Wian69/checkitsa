@@ -36,9 +36,12 @@ export default function ReviewsPage() {
                     <h1 style={{ fontSize: '3.5rem', fontWeight: 800, marginBottom: '1rem' }}>
                         Public <span className="gradient-text">Business Reviews</span>
                     </h1>
-                    <p style={{ color: 'var(--color-text-muted)', fontSize: '1.2rem', maxWidth: '700px', margin: '0 auto' }}>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: '1.2rem', maxWidth: '700px', margin: '0 auto 2rem' }}>
                         Browse real experiences from the CheckItSA community. Transparent, verified, and safe.
                     </p>
+                    <Link href="/reviews/new" className="btn btn-primary" style={{ padding: '1rem 2.5rem', fontSize: '1.2rem' }}>
+                        ✍️ File a Complaint / Review
+                    </Link>
                 </div>
 
                 {loading ? (

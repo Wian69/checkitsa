@@ -1,6 +1,8 @@
 
 import { NextResponse } from 'next/server'
 import { getRequestContext } from '@cloudflare/next-on-pages'
+import { sendSESEmail } from '@/app/lib/mailer'
+import { EMAIL_TEMPLATE } from '@/app/lib/emailTemplate'
 
 export const runtime = 'edge'
 
@@ -88,8 +90,6 @@ export async function POST(req) {
 
         if (success && (businessEmail || type === 'ccma')) {
             const newReviewId = meta.last_row_id
-            const brevoApiKey = process.env.BREVO_API_KEY
-            const resendApiKey = process.env.RESEND_API_KEY
             const baseUrl = 'https://checkitsa.co.za'
 
             // Determine Recipients
@@ -97,95 +97,67 @@ export async function POST(req) {
             if (businessEmail) recipients.push(businessEmail)
             if (type === 'ccma') recipients.push('complaints@ccma.org.za')
 
-            // If no recipients (e.g. businessEmail empty and type != ccma), skip
+            // If no recipients, skip
             if (recipients.length === 0) return NextResponse.json({ message: 'Review submitted (no notifications sent)' })
 
-            const emailSubject = `⭐ New Business Review: ${businessName}`
-            const emailHtml = `
-                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; color: #1e293b;">
-                    <div style="background-color: #6366f1; padding: 20px; text-align: center;">
-                        <h1 style="color: white; margin: 0; font-size: 24px;">CheckItSA Business Alert</h1>
+            let emailSubject = ''
+            let emailHtmlContent = ''
+
+            if (type === 'complaint') {
+                emailSubject = `🚨 OFFICIAL COMPLAINT FILED: ${businessName}`
+                emailHtmlContent = `
+                    <div style="background-color: #ef4444; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+                        <h1 style="color: white; margin: 0; font-size: 22px;">CheckItSA - Official Complaint</h1>
                     </div>
-                    <div style="padding: 30px; line-height: 1.6;">
-                        <h2 style="color: #0f172a; margin-top: 0;">You've received a new review!</h2>
-                        <p style="font-size: 16px;">Someone has just left feedback for <strong>${businessName}</strong> on CheckItSA.</p>
+                    <div style="padding: 20px; border: 1px solid #ef4444; border-top: none; border-radius: 0 0 8px 8px; background-color: #fff; color: #1f2937;">
+                        <p><strong>Attention: ${businessName} Complaints Department</strong></p>
+                        <p>A severe customer complaint has been filed against your business on the CheckItSA public registry.</p>
                         
-                        <div style="background: #f8fafc; padding: 25px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #6366f1;">
-                            <div style="color: #fbbf24; font-size: 20px; margin-bottom: 12px;">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</div>
-                            <strong style="display: block; font-size: 18px; margin-bottom: 8px; color: #0f172a;">${title}</strong>
-                            <p style="color: #475569; font-style: italic; margin: 0;">"${content}"</p>
+                        <div style="background: #fef2f2; padding: 15px; border-left: 4px solid #ef4444; margin: 20px 0;">
+                            <strong style="font-size: 18px; color: #b91c1c;">${title}</strong>
+                            <p style="margin-top: 10px;">"${content}"</p>
+                            <p style="margin-top: 10px; font-size: 12px; color: #7f1d1d;">Rating: ${rating}/5 Stars</p>
                         </div>
-
-                        <p>Transparent feedback helps build a safer community in South Africa. You can view this review and respond to the customer using the button below:</p>
                         
-                        <div style="text-align: center; margin-top: 30px;">
-                            <a href="${baseUrl}/reviews/respond?id=${newReviewId}" style="display: inline-block; background: #6366f1; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
-                                Respond to Review →
-                            </a>
-                        </div>
-
-                        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 13px; text-align: center;">
-                            <p style="margin-bottom: 4px;"><strong>CheckItSA</strong> - Verified South African Business Intelligence</p>
-                            <p style="margin-top: 0;">This is a transactional notification sent to ${businessEmail}.</p>
-                            <div style="margin-top: 15px;">
-                                <a href="https://checkitsa.co.za" style="color: #6366f1; text-decoration: none; margin: 0 10px;">Website</a>
-                                <a href="mailto:info@checkitsa.co.za" style="color: #6366f1; text-decoration: none; margin: 0 10px;">Support</a>
-                            </div>
-                        </div>
+                        <p><strong>Customer Contact:</strong> ${reviewerName} (${reviewerEmail})</p>
+                        <p>You can officially respond to this complaint to have your response displayed publicly next to it:</p>
+                        <a href="${baseUrl}/reviews/respond?id=${newReviewId}" style="display: inline-block; background: #ef4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">Respond & Resolve Complaint →</a>
                     </div>
-                </div>
-            `
-            const emailText = `New Business Review: ${businessName}\n\nYou've received a ${rating}-star review on CheckItSA.\n\nTitle: ${title}\n"${content}"\n\nRespond to this review here: ${baseUrl}/reviews/respond?id=${newReviewId}\n\nCheckItSA - Verified South African Business Intelligence`
-
-            let sentEmail = false
-
-            // TRY BREVO
-            if (brevoApiKey) {
-                try {
-                    await fetch('https://api.brevo.com/v3/smtp/email', {
-                        method: 'POST',
-                        headers: {
-                            'api-key': brevoApiKey,
-                            'Content-Type': 'application/json',
-                            'accept': 'application/json',
-                            'List-Unsubscribe': `<mailto:unsubscribe@checkitsa.co.za?subject=unsubscribe>`
-                        },
-                        body: JSON.stringify({
-                            sender: { name: 'CheckItSA Reviews', email: 'info@checkitsa.co.za' },
-                            to: recipients.map(email => ({ email })),
-                            replyTo: { email: 'info@checkitsa.co.za' },
-                            subject: type === 'ccma' ? `⚖️ New CCMA Case Report: ${businessName}` : emailSubject,
-                            htmlContent: type === 'ccma' ? emailHtml.replace('You\'ve received a new review!', 'New CCMA Case Reported') : emailHtml,
-                            textContent: emailText.replace('New Business Review:', type === 'ccma' ? 'New CCMA Case Report:' : 'New Business Review:')
-                        })
-                    })
-                    sentEmail = true
-                } catch (e) { console.error('Brevo Error:', e) }
+                `
+            } else if (type === 'ccma') {
+                emailSubject = `⚖️ New CCMA Case Report: ${businessName}`
+                emailHtmlContent = `
+                    <p>A new CCMA case has been reported on CheckItSA for <strong>${businessName}</strong>.</p>
+                    <div style="background: #f8fafc; padding: 15px; border-left: 4px solid #6366f1;">
+                        <strong>${title}</strong>
+                        <p>"${content}"</p>
+                    </div>
+                    <a href="${baseUrl}/reviews/respond?id=${newReviewId}">Respond to Case</a>
+                `
+            } else {
+                emailSubject = `⭐ New Customer Review: ${businessName}`
+                emailHtmlContent = `
+                    <p>Someone has just left public feedback for <strong>${businessName}</strong> on CheckItSA.</p>
+                    <div style="background: #f8fafc; padding: 20px; border-left: 4px solid #6366f1; border-radius: 4px;">
+                        <div style="color: #fbbf24; font-size: 20px; margin-bottom: 10px;">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</div>
+                        <strong style="font-size: 18px;">${title}</strong>
+                        <p>"${content}"</p>
+                    </div>
+                    <p>Customer: ${reviewerName} (${reviewerEmail})</p>
+                    <a href="${baseUrl}/reviews/respond?id=${newReviewId}" style="display: inline-block; background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 15px;">Respond to Customer →</a>
+                `
             }
 
-            // FALLBACK TO RESEND
-            if (!sentEmail && resendApiKey) {
-                try {
-                    await fetch('https://api.resend.com/emails', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${resendApiKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            from: 'CheckItSA Reviews <info@checkitsa.co.za>',
-                            to: recipients,
-                            reply_to: 'info@checkitsa.co.za',
-                            subject: type === 'ccma' ? `⚖️ New CCMA Case Report: ${businessName}` : emailSubject,
-                            html: type === 'ccma' ? emailHtml.replace('You\'ve received a new review!', 'New CCMA Case Reported') : emailHtml,
-                            text: emailText.replace('New Business Review:', type === 'ccma' ? 'New CCMA Case Report:' : 'New Business Review:'),
-                            headers: {
-                                'List-Unsubscribe': `<mailto:unsubscribe@checkitsa.co.za?subject=unsubscribe>`
-                            }
-                        })
-                    })
-                } catch (e) { console.error('Resend Error:', e) }
-            }
+            // Fallback for CCMA which didn't use the standard layout
+            const finalHtml = (type === 'complaint') ? emailHtmlContent : EMAIL_TEMPLATE(emailSubject, emailHtmlContent, `<p>This is an automated notification from CheckItSA.</p>`)
+
+            const env = getRequestContext().env
+            await sendSESEmail(env, {
+                to: recipients,
+                subject: emailSubject,
+                html: finalHtml,
+                from: type === 'complaint' ? 'CheckItSA Legal <legal@checkitsa.co.za>' : 'CheckItSA Reviews <no-reply@checkitsa.co.za>'
+            })
         }
 
         if (!success) throw new Error('DB Insert Failed')
