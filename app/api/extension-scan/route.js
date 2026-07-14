@@ -7,6 +7,7 @@ export async function POST(req) {
     try {
         const body = await req.json()
         const { email, password, url, isAutoScan } = body
+        const db = getRequestContext().env.DB
 
         let user = null;
         let limit = 5;

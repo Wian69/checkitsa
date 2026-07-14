@@ -192,8 +192,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 } catch (error) {
                     loader.style.display = 'none';
-                    scanBtn.style.display = 'flex';
-                    alert("Error connecting to CheckItSA servers.");
+                    scanBtn.style.display = 'block'; // Changed to block to fix layout
+                    alert("Scan Error: " + error.message);
                 }
             });
 
