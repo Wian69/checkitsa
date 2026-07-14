@@ -237,6 +237,20 @@ export default function Dashboard() {
                         </div>
                     )}
 
+                    {/* Browser Extension Card */}
+                    <div className="glass-panel" style={{ padding: '2rem', gridColumn: 'span 1', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                        <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#60a5fa' }}>
+                            <span>🧩</span> Browser Extension
+                        </h3>
+                        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+                            Instantly scan any website for scams while you browse. Includes 5 free deep scans!
+                        </p>
+                        <a href="/checkitsa-extension.zip" download className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                            📥 Download (.zip)
+                        </a>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b', textAlign: 'center', marginTop: '0.75rem' }}>For Chrome, Edge & Brave</div>
+                    </div>
+
                     {/* Usage Card */}
                     <div className="glass-panel" style={{ padding: '2rem', gridColumn: 'span 1' }}>
                         <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
