@@ -35,7 +35,7 @@ export async function POST(req) {
         const listingId = meta.last_row_id
         
         // 2. Initialize Yoco V3 Checkout
-        const YOCO_SECRET_KEY = process.env.YOCO_SECRET_KEY // Using the same secret key from privacy clean
+        const YOCO_SECRET_KEY = process.env.YOCO_SECRET_KEY || 'sk_test_bbc990c36mPx2La97b440098747b'
 
         const yocoRes = await fetch('https://payments.yoco.com/api/checkouts', {
             method: 'POST',
