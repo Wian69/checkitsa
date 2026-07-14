@@ -28,13 +28,23 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             const resData = await response.json();
             if (resData.success && resData.data) {
                 const data = resData.data;
-                // If it's a known dangerous site, inject the huge red banner
+                
+                // Update the Extension Icon Badge dynamically for this specific tab
                 if (data.verdict === 'Dangerous' || data.riskScore > 60) {
+                    chrome.action.setBadgeText({ text: "X", tabId: tabId });
+                    chrome.action.setBadgeBackgroundColor({ color: "#ef4444", tabId: tabId }); // Red
+                    
                     chrome.scripting.executeScript({
                         target: { tabId: tabId },
                         func: injectRedBanner,
                         args: [data.message]
                     });
+                } else if (data.verdict === 'Suspicious' || data.riskScore > 40) {
+                    chrome.action.setBadgeText({ text: "!", tabId: tabId });
+                    chrome.action.setBadgeBackgroundColor({ color: "#f59e0b", tabId: tabId }); // Yellow
+                } else {
+                    chrome.action.setBadgeText({ text: "✓", tabId: tabId });
+                    chrome.action.setBadgeBackgroundColor({ color: "#10b981", tabId: tabId }); // Green
                 }
             }
         } catch (e) {
