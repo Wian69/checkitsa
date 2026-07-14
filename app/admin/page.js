@@ -185,11 +185,15 @@ export default function AdminDashboard() {
 
                                 {l.images && (
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '1rem' }}>
-                                        {JSON.parse(l.images).map((img, idx) => (
-                                            <a key={idx} href={img} target="_blank" rel="noopener noreferrer" style={{ aspectRatio: '1', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid var(--color-border)', display: 'block' }}>
-                                                <img src={img} alt="Business Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                            </a>
-                                        ))}
+                                        {(() => {
+                                            let parsed = [];
+                                            try { parsed = typeof l.images === 'string' ? JSON.parse(l.images) : l.images; } catch(e){}
+                                            return (Array.isArray(parsed) ? parsed : []).map((img, idx) => (
+                                                <a key={idx} href={img} target="_blank" rel="noopener noreferrer" style={{ aspectRatio: '1', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid var(--color-border)', display: 'block' }}>
+                                                    <img src={img} alt="Business Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                </a>
+                                            ));
+                                        })()}
                                     </div>
                                 )}
                             </div>
