@@ -45,12 +45,10 @@ export default function PrivacyCleanPage() {
 
         setCheckoutUrl(data.redirectUrl);
         
-        // Generate Dynamic Threat Simulation (Randomly select 15 to 45 brokers)
-        const shuffled = [...dataBrokers].sort(() => 0.5 - Math.random());
-        const numFound = Math.floor(Math.random() * (45 - 15 + 1)) + 15;
-        const selectedBrokers = shuffled.slice(0, numFound).map(b => ({
+        // Use the complete, real list of 50 data brokers that we are actually contacting
+        const selectedBrokers = dataBrokers.map((b, index) => ({
             ...b,
-            risk: Math.random() > 0.7 ? 'HIGH RISK' : 'MEDIUM RISK'
+            risk: index < 15 ? 'HIGH RISK' : 'MEDIUM RISK'
         }));
         
         setExposedBrokers(selectedBrokers);
