@@ -23,8 +23,9 @@ export default function AdminDashboard() {
     useEffect(() => {
         const u = localStorage.getItem('checkitsa_user')
         if (u) {
-            const parsedUser = JSON.parse(u)
-            if (parsedUser.email !== ADMIN_EMAIL) {
+            let parsedUser = null;
+            try { parsedUser = JSON.parse(u); } catch (e) {}
+            if (!parsedUser || parsedUser.email !== ADMIN_EMAIL) {
                 router.push('/')
                 return
             }
