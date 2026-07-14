@@ -30,7 +30,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                 const data = resData.data;
                 
                 // Cache the result so the popup can instantly display it
-                chrome.storage.local.set({ [`autoScanResult_${tabId}`]: data });
+                chrome.storage.local.set({ 
+                    [`autoScanResult_${tabId}`]: data,
+                    scansUsed: resData.scansUsed 
+                });
                 
                 // Update the Extension Icon Badge dynamically for this specific tab
                 if (data.verdict === 'Dangerous' || data.riskScore > 60) {
