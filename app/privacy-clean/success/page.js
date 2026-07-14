@@ -106,7 +106,9 @@ function SuccessContent() {
                             {exposedBrokers.map((broker, idx) => (
                                 <div key={idx} style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '1.5rem', borderRadius: '0.5rem', borderLeft: `4px solid ${broker.risk === 'HIGH RISK' ? '#ef4444' : '#f59e0b'}` }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                                        <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '1.1rem' }}>{broker.name} Database</div>
+                                        <a href={`https://${broker.url}`} target="_blank" rel="noopener noreferrer" style={{ fontWeight: 'bold', color: '#10b981', fontSize: '1.1rem', textDecoration: 'underline' }}>
+                                            {broker.name} Database 🔗
+                                        </a>
                                         <span style={{ fontSize: '0.8rem', background: broker.risk === 'HIGH RISK' ? '#ef4444' : '#f59e0b', color: '#fff', padding: '0.2rem 0.5rem', borderRadius: '1rem', fontWeight: 'bold' }}>{broker.risk}</span>
                                     </div>
                                     <div style={{ color: '#d1d5db', fontSize: '0.95rem' }}>Match found for {targetData.name}. Highly accessible to the public.</div>

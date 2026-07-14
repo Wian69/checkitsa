@@ -60,11 +60,14 @@ export async function POST(req) {
         const uniqueDomains = [...new Set(domains)]
         
         // Map them to objects so the frontend can display them nicely
-        let matches = uniqueDomains.map((domain, index) => ({
-            name: domain.charAt(0).toUpperCase() + domain.slice(1).split('.')[0],
-            url: domain,
-            risk: index < 3 ? 'HIGH RISK' : 'MEDIUM RISK'
-        }))
+        let matches = uniqueDomains.map((domain, index) => {
+            const baseName = domain.replace(/^www\./i, '').split('.')[0];
+            return {
+                name: baseName.charAt(0).toUpperCase() + baseName.slice(1),
+                url: domain,
+                risk: index < 3 ? 'HIGH RISK' : 'MEDIUM RISK'
+            };
+        });
 
         // HYBRID FALLBACK ALGORITHM
         // If the public internet scan finds 0 results, it means their data is locked inside PRIVATE data brokers (which search engines cannot see).
