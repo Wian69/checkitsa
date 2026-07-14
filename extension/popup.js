@@ -82,86 +82,102 @@ document.addEventListener('DOMContentLoaded', async () => {
             const cleanDomain = url.hostname.replace(/^www\./, '');
             currentUrlEl.textContent = cleanDomain;
 
-            // Handle Scan Button Click
-            scanBtn.addEventListener('click', async () => {
-                // UI Loading State
-                scanBtn.style.display = 'none';
-                loader.style.display = 'block';
-                resultBox.style.display = 'none';
+        function displayResult(data) {
+            scanBtn.style.display = 'none';
+            loader.style.display = 'none';
+            resultBox.style.display = 'block';
 
-                try {
-                    // Get stored password if logged in
-                    const storage = await chrome.storage.local.get(['userEmail', 'userAuth', 'userTier']);
-                    
-                    // Call the new Authenticated CheckItSA API
-                    const response = await fetch('https://checkitsa.co.za/api/extension-scan', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            url: cleanDomain,
-                            email: storage.userEmail || null,
-                            password: storage.userAuth || null,
-                            isAutoScan: false
-                        })
+            // Process Results
+            resultBox.className = 'result-box'; // reset classes
+
+            if (data.safe) {
+                resultBox.classList.add('safe');
+                resultIcon.textContent = '✅';
+                resultTitle.textContent = 'Website is Safe';
+                resultTitle.style.color = '#10b981';
+                resultDesc.textContent = `Risk Score: ${data.riskScore}/100. ${data.message || 'Verified by CheckItSA.'}`;
+            } else if (data.verdict === 'Dangerous' || data.riskScore > 60) {
+                resultBox.classList.add('danger');
+                resultIcon.textContent = '🚨';
+                resultTitle.textContent = 'DANGER: Unsafe Website!';
+                resultTitle.style.color = '#ef4444';
+                resultDesc.textContent = `WARNING: Risk Score ${data.riskScore}/100. ${data.message || 'Do not enter personal info!'}`;
+            } else {
+                resultBox.classList.add('neutral');
+                resultIcon.textContent = '⚠️';
+                resultTitle.textContent = 'Suspicious Website';
+                resultTitle.style.color = '#f59e0b';
+                resultDesc.textContent = `Risk Score: ${data.riskScore}/100. ${data.message || 'Proceed with caution.'}`;
+            }
+        }
+
+        // Check for cached Auto-Scan result
+        chrome.storage.local.get([`autoScanResult_${currentTab.id}`], (res) => {
+            const cachedData = res[`autoScanResult_${currentTab.id}`];
+            if (cachedData && isPremium) {
+                displayResult(cachedData);
+            }
+        });
+
+        // Handle Scan Button Click
+        scanBtn.addEventListener('click', async () => {
+            // UI Loading State
+            scanBtn.style.display = 'none';
+            loader.style.display = 'block';
+            resultBox.style.display = 'none';
+
+            try {
+                // Get stored password if logged in
+                const storage = await chrome.storage.local.get(['userEmail', 'userAuth', 'userTier']);
+                
+                // Call the new Authenticated CheckItSA API
+                const response = await fetch('https://checkitsa.co.za/api/extension-scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        url: cleanDomain,
+                        email: storage.userEmail || null,
+                        password: storage.userAuth || null,
+                        isAutoScan: false
+                    })
+                });
+                
+                if (response.status === 403) {
+                    showView('lockScreen');
+                    return;
+                }
+
+                if (response.status === 401) {
+                    alert("Authentication failed. Please sign in again.");
+                    showView('loginScreen');
+                    return;
+                }
+
+                const resData = await response.json();
+                if (!resData.success) {
+                    throw new Error(resData.message || "Failed to scan");
+                }
+
+                // Update quota from server
+                scansUsed = resData.scansUsed;
+                chrome.storage.local.set({ scansUsed });
+                updateScanCounter();
+
+                const data = resData.data; // The actual scanner payload
+                
+                // Delay for dramatic effect
+                await new Promise(r => setTimeout(r, 1000));
+
+                displayResult(data);
+
+                // Inject Red Banner into the page manually (since it wasn't auto-scanned)
+                if (data.verdict === 'Dangerous' || data.riskScore > 60) {
+                    chrome.scripting.executeScript({
+                        target: { tabId: currentTab.id },
+                        func: injectRedBanner,
+                        args: [data.message]
                     });
-                    
-                    if (response.status === 403) {
-                        showView('lockScreen');
-                        return;
-                    }
-
-                    if (response.status === 401) {
-                        alert("Authentication failed. Please sign in again.");
-                        showView('loginScreen');
-                        return;
-                    }
-
-                    const resData = await response.json();
-                    if (!resData.success) {
-                        throw new Error(resData.message || "Failed to scan");
-                    }
-
-                    // Update quota from server
-                    scansUsed = resData.scansUsed;
-                    chrome.storage.local.set({ scansUsed });
-                    updateScanCounter();
-
-                    const data = resData.data; // The actual scanner payload
-                    
-                    // Delay for dramatic effect
-                    await new Promise(r => setTimeout(r, 1000));
-
-                    loader.style.display = 'none';
-                    resultBox.style.display = 'block';
-
-                    // Process Results
-                    resultBox.className = 'result-box'; // reset classes
-
-                    if (data.safe) {
-                        resultBox.classList.add('safe');
-                        resultIcon.textContent = '✅';
-                        resultTitle.textContent = 'Website is Safe';
-                        resultTitle.style.color = '#10b981';
-                        resultDesc.textContent = `Risk Score: ${data.riskScore}/100. ${data.message || 'Verified by CheckItSA.'}`;
-                    } else if (data.verdict === 'Dangerous' || data.riskScore > 60) {
-                        resultBox.classList.add('danger');
-                        resultIcon.textContent = '🚨';
-                        resultTitle.textContent = 'DANGER: Unsafe Website!';
-                        resultTitle.style.color = '#ef4444';
-                        resultDesc.textContent = `WARNING: Risk Score ${data.riskScore}/100. ${data.message || 'Do not enter personal info!'}`;
-
-                        // Inject Red Banner into the page
-                        chrome.scripting.executeScript({
-                            target: { tabId: currentTab.id },
-                            func: injectRedBanner
-                        });
-                    } else {
-                        resultBox.classList.add('neutral');
-                        resultIcon.textContent = '⚠️';
-                        resultTitle.textContent = 'Suspicious Website';
-                        resultTitle.style.color = '#f59e0b';
-                        resultDesc.textContent = `Risk Score: ${data.riskScore}/100. ${data.message || 'Proceed with caution.'}`;
-                    }
+                }
 
                     // Check if they just hit the limit
                     if (scansUsed >= MAX_SCANS) {

@@ -29,6 +29,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             if (resData.success && resData.data) {
                 const data = resData.data;
                 
+                // Cache the result so the popup can instantly display it
+                chrome.storage.local.set({ [`autoScanResult_${tabId}`]: data });
+                
                 // Update the Extension Icon Badge dynamically for this specific tab
                 if (data.verdict === 'Dangerous' || data.riskScore > 60) {
                     chrome.action.setBadgeText({ text: "X", tabId: tabId });
@@ -51,6 +54,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             console.error("Auto-scan error", e);
         }
     }
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+    chrome.storage.local.remove(`autoScanResult_${tabId}`);
 });
 
 // Function to inject warning banner into the actual website
