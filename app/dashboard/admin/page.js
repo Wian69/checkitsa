@@ -162,7 +162,7 @@ export default function AdminDashboard() {
                         </h3>
                         
                         <div style={{ maxHeight: '500px', overflowY: 'auto', paddingRight: '0.5rem' }}>
-                            <ReportList adminEmail={foundUser?.email || 'wiandurandt69@gmail.com'} />
+                            <ReportList adminEmail={'wiandurandt69@gmail.com'} />
                         </div>
                     </div>
 
