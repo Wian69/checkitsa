@@ -97,29 +97,32 @@ export async function POST(req) {
             `
             const legalHtml = EMAIL_TEMPLATE(`Data Erasure Notice`, legalContent)
 
-            const env = ctx ? ctx.env : getRequestContext().env;
+            const globalEnv = process.env; // Explicitly use process.env to ensure SMTP2GO_API_KEY is found
+            const cfEnv = ctx ? ctx.env : getRequestContext().env; // Used for D1 Bindings
 
             // 1. Send Receipt
-            await sendSESEmail(env, {
+            const receiptResult = await sendSESEmail(globalEnv, {
                 to: targetEmail,
                 subject: receiptSubject,
                 html: receiptHtml,
                 from: 'CheckItSA Privacy <no-reply@checkitsa.co.za>'
             });
+            if (!receiptResult.success) console.error("Receipt Email Failed:", receiptResult.error);
 
             // 2. Send Legal Blast
-            await sendSESEmail(env, {
+            const legalResult = await sendSESEmail(globalEnv, {
                 to: targetEmail,
                 bcc: bccListResend,
                 subject: legalSubject,
                 html: legalHtml,
                 from: 'CheckIt SA Compliance <legal@checkitsa.co.za>'
             });
+            if (!legalResult.success) console.error("Legal Blast Email Failed:", legalResult.error);
 
             // 3. Log the dispatch for Admin Evidence
-            if (env && env.DB) {
+            if (cfEnv && cfEnv.DB) {
                 try {
-                    await env.DB.prepare(
+                    await cfEnv.DB.prepare(
                         'INSERT INTO dispatch_logs (target_name, target_email, target_phone, recipient_count) VALUES (?, ?, ?, ?)'
                     ).bind(targetName, targetEmail, targetPhone || '', activeBrokers.length).run();
                 } catch (dbErr) {
