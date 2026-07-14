@@ -5,24 +5,20 @@ export const runtime = 'edge'
 
 export async function POST(req) {
     try {
-        const { email, adminEmail, secret } = await req.json()
+        const { email, adminEmail, password } = await req.json()
         const env = getRequestContext()?.env || {}
-
-        // Robust secret detection
-        const adminSecret = env.ADMIN_SECRET || env.admin_secret || process.env.ADMIN_SECRET || 'wiandurandt69@gmail.com'
-
-        // Trim and normalize 
-        const providedSecret = (secret || '').trim()
-        const authorizedEmail = 'wiandurandt69@gmail.com'
-        
-        const isValidSecret = providedSecret === adminSecret || providedSecret === 'Wiandurandt@12'
-
-        if (!providedSecret || !isValidSecret || (adminEmail || '').toLowerCase() !== authorizedEmail) {
-            console.error(`[Admin Auth Fail] Email: ${adminEmail}, Provided: ${providedSecret}, Match: ${isValidSecret}`)
-            return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-        }
-
         const db = env.DB
+        
+        const authorizedEmail = 'wiandurandt69@gmail.com'
+        const providedPassword = (password || '').trim()
+
+        // 1. Verify against actual DB password
+        const adminAccount = await db.prepare("SELECT password FROM users WHERE email = ?").bind(authorizedEmail).first()
+        
+        if (!providedPassword || !adminAccount || adminAccount.password !== providedPassword || (adminEmail || '').toLowerCase() !== authorizedEmail) {
+            console.error(`[Admin Auth Fail] Email: ${adminEmail}`)
+            return NextResponse.json({ message: 'Unauthorized: Invalid Admin Password' }, { status: 401 })
+        }
         
         // Fetch ALL users if no specific email is provided
         if (!email) {

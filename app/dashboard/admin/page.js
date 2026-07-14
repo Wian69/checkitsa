@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 export default function AdminDashboard() {
-    const [secret, setSecret] = useState('')
+    const [password, setPassword] = useState('')
     const [isLoggedIn, setIsLoggedIn] = useState(false)
     const [users, setUsers] = useState([])
     const [emailSearch, setEmailSearch] = useState('')
@@ -15,8 +15,9 @@ export default function AdminDashboard() {
     useEffect(() => {
         const u = localStorage.getItem('checkitsa_user')
         if (u) {
-            const userData = JSON.parse(u)
-            if (userData.email === 'wiandurandt69@gmail.com') {
+            let userData = null;
+            try { userData = JSON.parse(u); } catch (e) {}
+            if (userData && userData.email === 'wiandurandt69@gmail.com') {
                 setIsAuthorized(true)
             }
         }
@@ -29,17 +30,17 @@ export default function AdminDashboard() {
         setVerifying(true)
         setStatusMsg({ type: '', text: '' })
         try {
-            // Fetch ALL users to test secret
+            // Fetch ALL users to test password
             const res = await fetch('/api/admin/users', {
                 method: 'POST',
-                body: JSON.stringify({ email: '', adminEmail: 'wiandurandt69@gmail.com', secret })
+                body: JSON.stringify({ email: '', adminEmail: 'wiandurandt69@gmail.com', password })
             })
             const data = await res.json()
             if (data.success) {
                 setUsers(data.users || [])
                 setIsLoggedIn(true)
             } else {
-                setStatusMsg({ type: 'error', text: data.message || 'Invalid Secret Key' })
+                setStatusMsg({ type: 'error', text: data.message || 'Invalid Password' })
             }
         } catch (e) {
             setStatusMsg({ type: 'error', text: 'Connection failed' })
@@ -54,7 +55,7 @@ export default function AdminDashboard() {
         try {
             const res = await fetch('/api/admin/set-tier', {
                 method: 'POST',
-                body: JSON.stringify({ email: email, tier: newTier, adminEmail: 'wiandurandt69@gmail.com', secret })
+                body: JSON.stringify({ email: email, tier: newTier, adminEmail: 'wiandurandt69@gmail.com', password })
             })
             const data = await res.json()
             if (data.success) {
@@ -100,9 +101,9 @@ export default function AdminDashboard() {
                         )}
                         <input
                             type="password"
-                            placeholder="Enter Admin Secret"
-                            value={secret}
-                            onChange={(e) => setSecret(e.target.value)}
+                            placeholder="Enter Admin Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             required
                             style={{ width: '100%', padding: '1rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white', marginBottom: '1.5rem' }}
                         />
