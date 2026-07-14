@@ -29,8 +29,6 @@ export async function POST(req) {
             return NextResponse.json({ message: 'Invalid tier. Must be free, pro, elite, or custom' }, { status: 400 })
         }
 
-        const db = env.DB
-
         // Update main users table (Critical: Reset searches on tier change/renewal)
         // Also sets subscription_end to 30 days from now
         const userUpdate = await db.prepare(`
