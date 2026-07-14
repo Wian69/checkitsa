@@ -48,11 +48,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     let scansUsed = 0;
 
     // Initialize State
-    chrome.storage.local.get(['scansUsed', 'userEmail', 'userTier'], async (result) => {
+    chrome.storage.local.get(['scansUsed', 'userEmail', 'userTier', 'userAuth'], async (result) => {
         scansUsed = result.scansUsed || 0;
         
         // Setup Auth State
-        if (result.userEmail) {
+        if (result.userEmail && result.userAuth) {
             setupLoggedInUI(result.userEmail, result.userTier);
         } else {
             MAX_SCANS = 5;
@@ -84,24 +84,49 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Handle Scan Button Click
             scanBtn.addEventListener('click', async () => {
-                scansUsed++;
-                chrome.storage.local.set({ scansUsed });
-                updateScanCounter();
-
                 // UI Loading State
                 scanBtn.style.display = 'none';
                 loader.style.display = 'block';
                 resultBox.style.display = 'none';
 
                 try {
-                    // Call the CheckItSA API
-                    const response = await fetch('https://checkitsa.co.za/api/scan', {
+                    // Get stored password if logged in
+                    const storage = await chrome.storage.local.get(['userEmail', 'userAuth', 'userTier']);
+                    
+                    // Call the new Authenticated CheckItSA API
+                    const response = await fetch('https://checkitsa.co.za/api/extension-scan', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ url: cleanDomain })
+                        body: JSON.stringify({ 
+                            url: cleanDomain,
+                            email: storage.userEmail || null,
+                            password: storage.userAuth || null,
+                            isAutoScan: false
+                        })
                     });
                     
-                    const data = await response.json();
+                    if (response.status === 403) {
+                        showView('lockScreen');
+                        return;
+                    }
+
+                    if (response.status === 401) {
+                        alert("Authentication failed. Please sign in again.");
+                        showView('loginScreen');
+                        return;
+                    }
+
+                    const resData = await response.json();
+                    if (!resData.success) {
+                        throw new Error(resData.message || "Failed to scan");
+                    }
+
+                    // Update quota from server
+                    scansUsed = resData.scansUsed;
+                    chrome.storage.local.set({ scansUsed });
+                    updateScanCounter();
+
+                    const data = resData.data; // The actual scanner payload
                     
                     // Delay for dramatic effect
                     await new Promise(r => setTimeout(r, 1000));
@@ -112,18 +137,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     // Process Results
                     resultBox.className = 'result-box'; // reset classes
 
-                    if (data.isSafe) {
+                    if (data.safe) {
                         resultBox.classList.add('safe');
                         resultIcon.textContent = '✅';
                         resultTitle.textContent = 'Website is Safe';
                         resultTitle.style.color = '#10b981';
-                        resultDesc.textContent = `No scams reported for ${cleanDomain}. Verified by CheckItSA.`;
-                    } else if (data.isDangerous) {
+                        resultDesc.textContent = `Risk Score: ${data.riskScore}/100. ${data.message || 'Verified by CheckItSA.'}`;
+                    } else if (data.verdict === 'Dangerous' || data.riskScore > 60) {
                         resultBox.classList.add('danger');
                         resultIcon.textContent = '🚨';
                         resultTitle.textContent = 'DANGER: Known Scam!';
                         resultTitle.style.color = '#ef4444';
-                        resultDesc.textContent = `WARNING: ${cleanDomain} has been flagged in our national fraud database. Do not enter personal info!`;
+                        resultDesc.textContent = `WARNING: Risk Score ${data.riskScore}/100. ${data.message || 'Do not enter personal info!'}`;
 
                         // Inject Red Banner into the page
                         chrome.scripting.executeScript({
@@ -133,9 +158,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     } else {
                         resultBox.classList.add('neutral');
                         resultIcon.textContent = '⚠️';
-                        resultTitle.textContent = 'Unverified Website';
+                        resultTitle.textContent = 'Suspicious Website';
                         resultTitle.style.color = '#f59e0b';
-                        resultDesc.textContent = `We don't have enough data on ${cleanDomain}. Proceed with caution.`;
+                        resultDesc.textContent = `Risk Score: ${data.riskScore}/100. ${data.message || 'Proceed with caution.'}`;
                     }
 
                     // Check if they just hit the limit
@@ -204,7 +229,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 chrome.storage.local.set({ 
                     userEmail: data.user.email,
-                    userTier: tier
+                    userTier: tier,
+                    userAuth: password
                 });
                 
                 setupLoggedInUI(data.user.email, tier);
@@ -231,7 +257,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     logoutBtn.addEventListener('click', () => {
-        chrome.storage.local.remove(['userEmail', 'userTier']);
+        chrome.storage.local.remove(['userEmail', 'userTier', 'userAuth']);
         isPremium = false;
         loginForm.style.display = 'block';
         loggedInState.style.display = 'none';
