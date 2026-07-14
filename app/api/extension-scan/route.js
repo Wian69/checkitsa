@@ -22,27 +22,24 @@ export async function POST(req) {
             return NextResponse.json({ success: false, message: 'Invalid credentials' }, { status: 401 })
         }
 
-        // 2. Enforce Limits (Auto-scans are free for Premium. Manual scans deduct for everyone)
-        if (isAutoScan) {
-            if (user.tier === 'free') {
-                return NextResponse.json({ success: false, message: 'Auto-scan is a Premium feature' }, { status: 403 })
-            }
-            // Auto-scan for Premium: No deduction.
-        } else {
-            // Manual Scan: Enforce exact tier limits and deduct
-            const limit = user.tier === 'elite' || user.tier === 'custom' ? 1000 : (user.tier === 'pro' ? 100 : 5)
-            if (user.searches >= limit) {
-                return NextResponse.json({ 
-                    success: false, 
-                    message: `Limit exceeded. Your plan includes ${limit} manual deep scans.`,
-                    limitReached: true,
-                    tier: user.tier 
-                }, { status: 403 })
-            }
-            // Deduct Quota
-            await db.prepare('UPDATE users SET searches = searches + 1 WHERE email = ?').bind(email).run()
-            user.searches += 1
+        // 2. Enforce Limits (Auto-scans are only for Premium, but ALL scans deduct from the quota)
+        if (isAutoScan && user.tier === 'free') {
+            return NextResponse.json({ success: false, message: 'Auto-scan is a Premium feature' }, { status: 403 })
         }
+        
+        // Enforce exact tier limits and deduct for EVERY scan (manual or auto)
+        const limit = user.tier === 'elite' || user.tier === 'custom' ? 1000 : (user.tier === 'pro' ? 100 : 5)
+        if (user.searches >= limit) {
+            return NextResponse.json({ 
+                success: false, 
+                message: `Limit exceeded. Your plan includes ${limit} deep scans.`,
+                limitReached: true,
+                tier: user.tier 
+            }, { status: 403 })
+        }
+        // Deduct Quota
+        await db.prepare('UPDATE users SET searches = searches + 1 WHERE email = ?').bind(email).run()
+        user.searches += 1
 
         // 4. Perform the exact same scan as the main website
         const scanUrl = new URL('/api/scan', req.url).href
