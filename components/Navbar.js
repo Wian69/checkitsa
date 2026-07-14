@@ -88,9 +88,9 @@ export default function Navbar() {
                                         Admin
                                     </Link>
                                 )}
-                                <span style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
-                                    Hi, <span style={{ color: '#fff', fontWeight: 600 }}>{user.fullName.split(' ')[0]}</span>
-                                </span>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginBottom: '0.2rem' }}>
+                                    Hi, <span style={{ color: '#fff', fontWeight: 600 }}>{(user.fullName || 'User').split(' ')[0]}</span>
+                                </div>
                                 <button onClick={handleLogout} className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.8125rem', borderRadius: '0.5rem' }}>
                                     Logout
                                 </button>
@@ -140,8 +140,8 @@ export default function Navbar() {
 
                 {user ? (
                     <>
-                        <div style={{ fontSize: '1.1rem', color: 'var(--color-text-muted)' }}>
-                            Signed in as <span style={{ color: '#fff' }}>{user.fullName}</span>
+                        <div style={{ padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
+                            Signed in as <span style={{ color: '#fff' }}>{user.fullName || 'User'}</span>
                         </div>
                         <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', margin: '1rem 0' }}>
                             Go to Dashboard
