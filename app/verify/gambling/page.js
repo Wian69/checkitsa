@@ -30,7 +30,7 @@ function GamblingContent() {
     const legalSites = [
         { domain: 'lottostar.co.za', name: 'LottoStar', license: 'Mpumalanga Economic Regulator', licenseNumber: '9-2-1-09467', affiliateUrl: 'https://lottostar.co.za/?ref=checkitsa' },
         { domain: 'betway.co.za', name: 'Betway', license: 'Western Cape Gambling Board', licenseNumber: '10181496-012', affiliateUrl: 'https://betway.co.za/?ref=checkitsa' },
-        { domain: 'hollywoodbets.net', name: 'Hollywoodbets', license: 'Western Cape Gambling Board', licenseNumber: '10110547-015', affiliateUrl: 'https://hollywoodbetsaffs.click/o/hP6iNE?lpage=wkMWJB&site_id=100761' },
+        { domain: 'hollywoodbets.net', name: 'Hollywoodbets', license: 'Western Cape Gambling Board', licenseNumber: '10110547-015' },
         { domain: 'supabets.co.za', name: 'Supabets', license: 'Mpumalanga Gambling Board', licenseNumber: '9-2-1-00055', affiliateUrl: 'https://supabets.co.za/?ref=checkitsa' },
         { domain: 'sunbet.co.za', name: 'SunBet', license: 'Western Cape Gambling Board', licenseNumber: '10138713-016', affiliateUrl: 'https://sunbet.co.za/?ref=checkitsa' },
         { domain: 'bet.co.za', name: 'Bet.co.za', license: 'Western Cape Gambling Board', licenseNumber: '10145732-016', affiliateUrl: 'https://bet.co.za/?ref=checkitsa' },
@@ -75,25 +75,7 @@ function GamblingContent() {
 
                 <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>
 
-                    {/* Official Partnership Badge */}
-                    <div style={{
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        border: '1px solid var(--color-primary)',
-                        borderRadius: '0.5rem',
-                        padding: '1rem',
-                        marginBottom: '1.5rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '1rem'
-                    }}>
-                        <div style={{ fontSize: '1.5rem' }}>🤝</div>
-                        <div>
-                            <p style={{ fontWeight: 'bold', color: 'white', marginBottom: '0.2rem' }}>Official Partnership</p>
-                            <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', lineHeight: '1.4' }}>
-                                We are a proud affiliated member of <strong>Hollywoodbets</strong>. As South Africa's most trusted betting platform, they set the standard for safety and compliance.
-                            </p>
-                        </div>
-                    </div>
+
 
                     <input
                         type="text"
@@ -112,10 +94,7 @@ function GamblingContent() {
                     />
                 </div>
 
-                {/* Top Ad */}
-                <div className="container" style={{ marginBottom: '2rem' }}>
-                    <AdBanner format="leaderboard" />
-                </div>
+
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
                     {filteredSites.map((site) => (
@@ -138,10 +117,7 @@ function GamblingContent() {
                     ))}
                 </div>
 
-                {/* Bottom Ad */}
-                <div className="container" style={{ marginTop: '3rem' }}>
-                    <AdBanner format="rectangle" />
-                </div>
+
             </div>
         </main>
     )

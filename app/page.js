@@ -176,65 +176,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Affiliate Program Banner */}
-      <section className="container content-section" style={{ position: 'relative' }}>
-        <div className="glass-panel" style={{
-          padding: '4rem 2rem',
-          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 78, 59, 0.2) 100%)',
-          border: '1px solid rgba(16, 185, 129, 0.3)',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          {/* Decorative Background Elements */}
-          <div style={{ position: 'absolute', top: -100, right: -100, width: 300, height: 300, background: 'radial-gradient(circle, rgba(16,185,129,0.2) 0%, transparent 70%)', borderRadius: '50%', filter: 'blur(40px)' }}></div>
-          <div style={{ position: 'absolute', bottom: -50, left: -50, width: 200, height: 200, background: 'radial-gradient(circle, rgba(52, 211, 153,0.1) 0%, transparent 70%)', borderRadius: '50%', filter: 'blur(40px)' }}></div>
 
-          <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-            <div style={{
-              display: 'inline-block', padding: '0.5rem 1rem', borderRadius: '2rem',
-              background: 'rgba(16, 185, 129, 0.2)', color: '#6ee7b7',
-              fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '1.5rem',
-              border: '1px solid rgba(16, 185, 129, 0.3)'
-            }}>
-              💸 Turn Trust into Income
-            </div>
-
-            <h2 style={{ fontSize: '2.5rem', marginBottom: '1.5rem', color: '#fff' }}>
-              Join the CheckItSA Affiliate Program
-            </h2>
-
-            <p style={{ color: '#d1d5db', fontSize: '1.1rem', marginBottom: '3rem', lineHeight: 1.6 }}>
-              Help us build a safer South Africa and earn real cash. Get your unique referral link and earn <strong style={{ color: '#34d399' }}>5% recurring commission</strong> on every paid subscription you refer.
-            </p>
-
-            {/* How it CheckItSA Works Steps */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem', marginBottom: '3rem', textAlign: 'left' }}>
-              <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🚀</div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'white', marginBottom: '0.5rem' }}>1. Join Free</h3>
-                <p style={{ fontSize: '0.9rem', color: '#9ca3af' }}>Create your free account instantly. No approval wait times.</p>
-              </div>
-              <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔗</div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'white', marginBottom: '0.5rem' }}>2. Share Link</h3>
-                <p style={{ fontSize: '0.9rem', color: '#9ca3af' }}>Share your unique link on WhatsApp, social media, or your website.</p>
-              </div>
-              <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>💰</div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'white', marginBottom: '0.5rem' }}>3. Get Paid</h3>
-                <p style={{ fontSize: '0.9rem', color: '#9ca3af' }}>Earn commissions directly to your wallet. Withdraw to any SA bank.</p>
-              </div>
-            </div>
-
-            <Link href={user ? "/dashboard" : "/signup?ref=affiliate_banner"} className="btn btn-primary" style={{ padding: '1rem 3rem', fontSize: '1.1rem', background: '#10b981', boxShadow: '0 4px 14px 0 rgba(16, 185, 129, 0.39)' }}>
-              {user ? "View Affiliate Dashboard" : "Start Earning Now"}
-            </Link>
-            <p style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#6b7280' }}>
-              * Terms and conditions apply. Payouts processed within 48h.
-            </p>
-          </div>
-        </div>
-      </section>
 
       {/* Report CTA Section */}
       <section className="container content-section" style={{ textAlign: 'center' }}>
@@ -249,10 +191,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer Ad */}
-      <div className="container" style={{ marginBottom: '2rem' }}>
-        <AdBanner format="leaderboard" />
-      </div>
+
 
       {/* Community Reports Section */}
       <section className="container content-section">
