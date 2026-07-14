@@ -39,7 +39,7 @@ export default function AdminDashboard() {
                 setUsers(data.users || [])
                 setIsLoggedIn(true)
             } else {
-                setStatusMsg({ type: 'error', text: 'Invalid Secret Key' })
+                setStatusMsg({ type: 'error', text: data.message || 'Invalid Secret Key' })
             }
         } catch (e) {
             setStatusMsg({ type: 'error', text: 'Connection failed' })

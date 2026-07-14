@@ -30,7 +30,6 @@ export async function POST(req) {
                 SELECT u.email, u.full_name, m.tier, m.count as usage, m.limit_override
                 FROM users u
                 LEFT JOIN user_meta m ON u.email = m.email
-                ORDER BY u.id DESC
             `).all()
             return NextResponse.json({ success: true, users: res.results || [] })
         }
