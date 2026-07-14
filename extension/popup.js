@@ -248,23 +248,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const data = await res.json();
             
-            if (data.success && data.user) {
+            if (data.message === 'Login successful' && data.user) {
                 const tier = data.user.tier || 'free';
                 
                 chrome.storage.local.set({ 
                     userEmail: data.user.email,
                     userTier: tier,
-                    userAuth: password
+                    userAuth: password,
+                    scansUsed: data.user.searches || 0
                 });
                 
+                scansUsed = data.user.searches || 0;
                 setupLoggedInUI(data.user.email, tier);
-                
+                updateScanCounter(); // Crucial fix for UI not updating on login
+
                 // If they are premium and were locked out, restore them immediately
                 if (tier === 'pro' || tier === 'elite' || tier === 'custom') {
                     showView('mainScreen');
                 } else {
                     // Still Free tier
-                    alert("Account linked! Note: You are on the Free tier. Upgrade at checkitsa.co.za/pricing for unlimited scans.");
+                    alert("Account linked! Note: You are on the Free tier. Upgrade at checkitsa.co.za/subscription for unlimited scans.");
                     showView(scansUsed >= MAX_SCANS ? 'lockScreen' : 'mainScreen');
                 }
             } else {

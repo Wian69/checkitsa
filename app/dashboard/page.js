@@ -246,10 +246,39 @@ export default function Dashboard() {
                             Instantly scan any website for scams while you browse. 
                             {stats.tier === 'free' ? ' Includes 5 free deep scans!' : (stats.tier === 'pro' ? ' Includes 1,000 premium scans/mo!' : ' Includes 5,000 premium scans/mo!')}
                         </p>
-                        <a href="/checkitsa-extension.zip" download className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                            📥 Install Extension (.zip)
-                        </a>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b', textAlign: 'center', marginTop: '0.75rem' }}>For Chrome, Edge & Brave</div>
+                        <button 
+                            onClick={async () => {
+                                if (!user) {
+                                    alert('Please log in to download your custom extension installer.');
+                                    return;
+                                }
+                                try {
+                                    const res = await fetch('/api/extension/download', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ email: user.email, id: user.id })
+                                    });
+                                    if (!res.ok) throw new Error('Failed to generate installer');
+                                    
+                                    const blob = await res.blob();
+                                    const url = window.URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.style.display = 'none';
+                                    a.href = url;
+                                    a.download = 'checkitsa-extension-autoconnect.zip';
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    window.URL.revokeObjectURL(url);
+                                } catch (err) {
+                                    alert('Error downloading extension. Please contact support.');
+                                }
+                            }}
+                            className="btn btn-primary" 
+                            style={{ width: '100%', justifyContent: 'center' }}
+                        >
+                            📥 Download Auto-Connect Extension
+                        </button>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b', textAlign: 'center', marginTop: '0.75rem' }}>Your account details are securely bundled inside. No login required!</div>
 
                         {/* Installation Guide */}
                         <div style={{ marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem' }}>
@@ -287,44 +316,6 @@ export default function Dashboard() {
                             <div style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(16, 185, 129, 0.1)', padding: '0.75rem', borderRadius: '0.5rem' }}>
                                 <span>💡</span> <strong>Tip:</strong> Pin the CheckItSA extension to your toolbar to easily scan websites!
                             </div>
-                        </div>
-
-                        {/* Set Extension Password */}
-                        <div style={{ marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem' }}>
-                            <h4 style={{ fontSize: '1rem', marginBottom: '0.5rem', color: '#fff' }}>🔑 Extension Login Password</h4>
-                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                                If you registered using Google Sign-In, you need to set a password here so you can log into the extension.
-                            </p>
-                            <form onSubmit={async (e) => {
-                                e.preventDefault();
-                                const newPassword = e.target.elements.newPassword.value;
-                                if (!newPassword) return;
-                                
-                                try {
-                                    const res = await fetch('/api/user/password', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ email: user.email, newPassword })
-                                    });
-                                    if (res.ok) {
-                                        alert("Password set successfully! You can now log into the extension.");
-                                        e.target.reset();
-                                    } else {
-                                        alert("Failed to update password.");
-                                    }
-                                } catch (err) {
-                                    alert("Error updating password.");
-                                }
-                            }} style={{ display: 'flex', gap: '0.5rem' }}>
-                                <input 
-                                    type="password" 
-                                    name="newPassword"
-                                    placeholder="Set Extension Password" 
-                                    required 
-                                    style={{ flex: 1, padding: '0.75rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white' }}
-                                />
-                                <button type="submit" className="btn btn-primary" style={{ padding: '0.75rem 1.5rem' }}>Save</button>
-                            </form>
                         </div>
                     </div>
 
