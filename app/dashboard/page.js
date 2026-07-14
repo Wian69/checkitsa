@@ -250,6 +250,44 @@ export default function Dashboard() {
                             📥 Install Extension (.zip)
                         </a>
                         <div style={{ fontSize: '0.75rem', color: '#64748b', textAlign: 'center', marginTop: '0.75rem' }}>For Chrome, Edge & Brave</div>
+
+                        {/* Installation Guide */}
+                        <div style={{ marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem' }}>
+                            <h4 style={{ fontSize: '1rem', marginBottom: '1rem', color: '#fff' }}>How to Install (3 Easy Steps):</h4>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                {/* Step 1 */}
+                                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '0.5rem' }}>
+                                    <div style={{ background: '#3b82f6', color: 'white', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0, fontSize: '0.9rem' }}>1</div>
+                                    <div>
+                                        <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.2rem' }}>Extract the ZIP File</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Right-click the downloaded <code style={{background:'rgba(255,255,255,0.1)', padding:'2px 4px', borderRadius:'4px', color:'#fff'}}>checkitsa-extension.zip</code> and select <strong>Extract All</strong>.</div>
+                                    </div>
+                                </div>
+                                
+                                {/* Step 2 */}
+                                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '0.5rem' }}>
+                                    <div style={{ background: '#3b82f6', color: 'white', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0, fontSize: '0.9rem' }}>2</div>
+                                    <div>
+                                        <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.2rem' }}>Open Extensions Page</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Type <code style={{background:'rgba(255,255,255,0.1)', padding:'2px 4px', borderRadius:'4px', userSelect: 'all', color:'#fff'}}>chrome://extensions/</code> in your browser and turn on <strong>Developer mode</strong> (top right).</div>
+                                    </div>
+                                </div>
+
+                                {/* Step 3 */}
+                                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '0.5rem' }}>
+                                    <div style={{ background: '#3b82f6', color: 'white', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0, fontSize: '0.9rem' }}>3</div>
+                                    <div>
+                                        <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.2rem' }}>Load Unpacked</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Click the <strong>Load unpacked</strong> button (top left) and select the folder you extracted!</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(16, 185, 129, 0.1)', padding: '0.75rem', borderRadius: '0.5rem' }}>
+                                <span>💡</span> <strong>Tip:</strong> Pin the CheckItSA extension to your toolbar to easily scan websites!
+                            </div>
+                        </div>
                     </div>
 
                     {/* Usage Card */}
