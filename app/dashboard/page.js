@@ -173,8 +173,8 @@ export default function Dashboard() {
         }
     }
 
-    const remainingPercentage = stats.limit > 5000 ? 100 : (stats.limit > 0 ? Math.max((stats.remaining / stats.limit) * 100, 0) : 0);
-    const isCrisis = stats.limit <= 5000 && remainingPercentage <= 20;
+    const remainingPercentage = stats.limit > 0 ? Math.max((stats.remaining / stats.limit) * 100, 0) : 0;
+    const isCrisis = remainingPercentage <= 20;
 
     return (
         <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
@@ -365,7 +365,7 @@ export default function Dashboard() {
                                     top: 0, left: 0, width: '100%', height: '100%',
                                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
                                 }}>
-                                    <span style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{stats.limit > 5000 ? '∞' : stats.remaining}</span>
+                                    <span style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{stats.remaining}</span>
                                     <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Scans Left</span>
                                 </div>
                             </div>
