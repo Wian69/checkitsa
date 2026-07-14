@@ -54,9 +54,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Setup Auth State
         if (result.userEmail) {
             setupLoggedInUI(result.userEmail, result.userTier);
+        } else {
+            MAX_SCANS = 5;
         }
 
-        if (!isPremium && scansUsed >= MAX_SCANS) {
+        if (scansUsed >= MAX_SCANS) {
             showView('lockScreen');
             return;
         }
@@ -82,11 +84,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Handle Scan Button Click
             scanBtn.addEventListener('click', async () => {
-                if (!isPremium) {
-                    scansUsed++;
-                    chrome.storage.local.set({ scansUsed });
-                    updateScanCounter();
-                }
+                scansUsed++;
+                chrome.storage.local.set({ scansUsed });
+                updateScanCounter();
 
                 // UI Loading State
                 scanBtn.style.display = 'none';
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
 
                     // Check if they just hit the limit
-                    if (!isPremium && scansUsed >= MAX_SCANS) {
+                    if (scansUsed >= MAX_SCANS) {
                         setTimeout(() => {
                             showView('lockScreen');
                         }, 5000); // Let them read the result for 5 seconds before locking
@@ -166,13 +166,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         isPremium = (tier === 'pro' || tier === 'elite' || tier === 'custom');
         
-        if (isPremium) {
-            scansLeftEl.parentNode.innerHTML = '👑 <span style="color: #fbbf24; font-weight: bold;">Unlimited Premium Scans</span>';
+        if (tier === 'elite' || tier === 'custom') {
+            MAX_SCANS = 1000;
+        } else if (tier === 'pro') {
+            MAX_SCANS = 100;
+        } else {
+            MAX_SCANS = 5;
         }
     }
 
     function updateScanCounter() {
-        if (!isPremium && scansLeftEl) {
+        if (scansLeftEl) {
             scansLeftEl.textContent = MAX_SCANS - scansUsed;
         }
     }

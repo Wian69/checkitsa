@@ -244,7 +244,7 @@ export default function Dashboard() {
                         </h3>
                         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', lineHeight: 1.6 }}>
                             Instantly scan any website for scams while you browse. 
-                            {stats.tier === 'free' ? ' Includes 5 free deep scans!' : ' Includes unlimited premium scans!'}
+                            {stats.tier === 'free' ? ' Includes 5 free deep scans!' : (stats.tier === 'pro' ? ' Includes 100 premium scans/mo!' : ' Includes 1,000 premium scans/mo!')}
                         </p>
                         <a href="/checkitsa-extension.zip" download className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
                             📥 Install Extension (.zip)
