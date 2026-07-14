@@ -14,13 +14,13 @@ export async function GET(req) {
 
         // 1. Get User Meta (Usage/Tier)
         let meta = await db.prepare("SELECT * FROM user_meta WHERE email = ?").bind(email).first()
+        const user = await db.prepare("SELECT tier, searches, custom_limit FROM users WHERE email = ?").bind(email).first()
 
         // If no meta exists, create it (e.g. for existing users logging in for first time since sync update)
         if (!meta) {
-            const user = await db.prepare("SELECT tier FROM users WHERE email = ?").bind(email).first()
             const initialTier = user ? user.tier : 'free'
             await db.prepare("INSERT INTO user_meta (email, tier) VALUES (?, ?)").bind(email, initialTier).run()
-            meta = { email, usage_count: 0, tier: initialTier, custom_limit: 0, last_reset: new Date().toISOString() }
+            meta = { email, usage_count: user ? user.searches : 0, tier: initialTier, custom_limit: user ? user.custom_limit : 0, last_reset: new Date().toISOString() }
         }
 
         // 2. Get Search History
@@ -28,9 +28,9 @@ export async function GET(req) {
 
         return NextResponse.json({
             meta: {
-                count: meta.usage_count,
-                tier: meta.tier,
-                limit: meta.custom_limit || 0, // Frontend handles tier defaults if 0
+                count: user ? user.searches : meta.usage_count,
+                tier: user ? (user.tier || 'free') : meta.tier,
+                limit: user ? (user.custom_limit || 0) : (meta.custom_limit || 0), // Frontend handles tier defaults if 0
                 lastReset: meta.last_reset
             },
             history: history || []
