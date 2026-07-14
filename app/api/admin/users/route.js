@@ -22,18 +22,25 @@ export async function POST(req) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
         }
 
+        const db = env.DB
+        
+        // Fetch ALL users if no specific email is provided
         if (!email) {
-            return NextResponse.json({ message: 'Email required' }, { status: 400 })
+            const res = await db.prepare(`
+                SELECT u.email, u.full_name, m.tier, m.count as usage, m.limit_override
+                FROM users u
+                LEFT JOIN user_meta m ON u.email = m.email
+                ORDER BY u.id DESC
+            `).all()
+            return NextResponse.json({ success: true, users: res.results || [] })
         }
 
-        const db = env.DB
-
-        // Fetch user basic info and meta (Usage/Tier)
+        // Fetch single user basic info and meta (Usage/Tier)
         let user = await db.prepare(`
             SELECT u.email, u.full_name, m.tier, m.count as usage, m.limit_override
             FROM users u
             LEFT JOIN user_meta m ON u.email = m.email
-            WHERE u.email = ?
+            WHERE lower(u.email) = lower(?)
         `).bind(email).first()
 
         if (!user && email.toLowerCase() === authorizedEmail) {
