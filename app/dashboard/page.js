@@ -22,8 +22,15 @@ export default function Dashboard() {
     useEffect(() => {
         // Load user first
         const u = localStorage.getItem('checkitsa_user')
-        if (u) {
-            const userData = JSON.parse(u)
+        if (u && u !== 'undefined') {
+            let userData = null;
+            try {
+                userData = JSON.parse(u);
+            } catch (e) {
+                localStorage.removeItem('checkitsa_user');
+                return;
+            }
+            if (!userData) return;
             setUser(userData)
 
             // Fetch reviews
@@ -179,7 +186,7 @@ export default function Dashboard() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
                     <div>
                         <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>
-                            {user ? `Welcome back, ${user.fullName.split(' ')[0]}` : 'My Dashboard'}
+                            {user ? `Welcome back, ${(user.fullName || 'User').split(' ')[0]}` : 'My Dashboard'}
                         </h1>
                         <p style={{ color: 'var(--color-text-muted)' }}>Manage your security profile and history.</p>
                     </div>
@@ -1103,7 +1110,7 @@ function ProductManagerModal({ user, listing, onClose }) {
                                                 {(() => {
                                                     let img = p.image_url;
                                                     try {
-                                                        const parsed = JSON.parse(p.image_url);
+                                                        const parsed = typeof p.image_url === 'string' ? JSON.parse(p.image_url) : p.image_url;
                                                         if (Array.isArray(parsed)) img = parsed[0];
                                                     } catch (e) { }
                                                     return img ? <img src={img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null;
@@ -1275,9 +1282,14 @@ function PayoutModal({ user, onClose, setUser }) {
                 setSuccess(true)
                 // Update local state immediately
                 setUser(prev => ({ ...prev, wallet_balance: 0 }))
-                const local = JSON.parse(localStorage.getItem('checkitsa_user'))
-                local.wallet_balance = 0
-                localStorage.setItem('checkitsa_user', JSON.stringify(local))
+                const local = localStorage.getItem('checkitsa_user')
+                if (local && local !== 'undefined') {
+                    try {
+                        const parsedLocal = JSON.parse(local)
+                        parsedLocal.wallet_balance = 0
+                        localStorage.setItem('checkitsa_user', JSON.stringify(parsedLocal))
+                    } catch (e) {}
+                }
             } else {
                 setError(data.message || "Failed to process payout.")
             }
