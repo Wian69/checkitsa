@@ -32,7 +32,14 @@ export async function dispatchAuthority(env, db, reportId) {
         }
 
         authorities.push('crimestop@saps.gov.za', 'fraud@safps.org.za')
-        const authoritiesList = [...new Set(authorities)]
+        let authoritiesList = [...new Set(authorities)]
+
+        // 🚨 SAFETY INTERCEPTOR FOR TESTING 🚨
+        // If the report was submitted by the admin, only send the authority email to the admin to prevent spamming real authorities.
+        if (report.reporter_email && report.reporter_email.toLowerCase() === 'wiandurandt69@gmail.com') {
+            console.log('[TEST MODE] Intercepting authority dispatch for admin email.');
+            authoritiesList = ['wiandurandt69@gmail.com'];
+        }
 
         let attachments = []
         try {
