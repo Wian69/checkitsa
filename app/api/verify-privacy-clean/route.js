@@ -31,7 +31,7 @@ export async function POST(req) {
         // At this point payment is verified. Send the receipt email.
         const sendEmail = async () => {
             const brevoApiKey = process.env.BREVO_API_KEY
-            const resendApiKey = process.env.RESEND_API_KEY || 're_AqdBt9WW_2xS7jw2uuExuzJARbTuN2juR'
+            const resendApiKey = process.env.RESEND_API_KEY
 
             const activeBrokers = brokersList && brokersList.length > 0 ? brokersList : dataBrokers;
 
