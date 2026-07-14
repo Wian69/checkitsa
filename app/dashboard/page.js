@@ -173,8 +173,8 @@ export default function Dashboard() {
         }
     }
 
-    const searchPercentage = stats.limit > 0 ? Math.min((stats.count / stats.limit) * 100, 100) : (stats.count > 0 ? 100 : 0)
-    const isCrisis = searchPercentage >= 80
+    const remainingPercentage = stats.limit > 5000 ? 100 : (stats.limit > 0 ? Math.max((stats.remaining / stats.limit) * 100, 0) : 0);
+    const isCrisis = stats.limit <= 5000 && remainingPercentage <= 20;
 
     return (
         <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
@@ -354,7 +354,7 @@ export default function Dashboard() {
                                         stroke={isCrisis ? 'var(--color-danger)' : 'var(--color-primary)'}
                                         strokeWidth="12"
                                         strokeDasharray="440" // 2 * PI * 70 ≈ 440
-                                        strokeDashoffset={440 - (440 * searchPercentage) / 100}
+                                        strokeDashoffset={440 - (440 * remainingPercentage) / 100}
                                         strokeLinecap="round"
                                         style={{ transition: 'stroke-dashoffset 1s ease-in-out' }}
                                     />
@@ -365,8 +365,8 @@ export default function Dashboard() {
                                     top: 0, left: 0, width: '100%', height: '100%',
                                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
                                 }}>
-                                    <span style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{stats.count}</span>
-                                    <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>/ {stats.limit > 5000 ? '∞' : stats.limit}</span>
+                                    <span style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{stats.limit > 5000 ? '∞' : stats.remaining}</span>
+                                    <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Scans Left</span>
                                 </div>
                             </div>
                         </div>
