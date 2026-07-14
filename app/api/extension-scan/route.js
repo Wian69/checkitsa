@@ -27,7 +27,7 @@ export async function POST(req) {
             }
             
             // Enforce exact tier limits and deduct for EVERY scan (manual or auto)
-            limit = user.tier === 'elite' || user.tier === 'custom' ? 5000 : (user.tier === 'pro' ? 1000 : 5)
+            limit = user.tier === 'custom' ? (user.custom_limit || 5000) : (user.tier === 'elite' ? 5000 : (user.tier === 'pro' ? 1000 : 5))
             if (user.searches >= limit) {
                 return NextResponse.json({ 
                     success: false, 

@@ -18,7 +18,7 @@ export const trackSearch = () => {
     const customLimit = parseInt(localStorage.getItem('checkitsa_custom_limit') || '0')
 
     let limit = TIERS[tier] ? TIERS[tier].limit : 5
-    if (customLimit > 0) limit = customLimit
+    if (tier === 'custom' && customLimit > 0) limit = customLimit
 
     return {
         canSearch: count < limit,
