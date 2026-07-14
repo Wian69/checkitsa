@@ -211,8 +211,8 @@ export async function POST(req) {
                                 'List-Unsubscribe': `<mailto:unsubscribe@checkitsa.co.za?subject=unsubscribe>`
                             },
                             body: JSON.stringify({
-                                from: 'CheckItSA Reports <onboarding@resend.dev>',
-                                bcc: Array.isArray(to) ? to : [to], // BCC for mass
+                                from: 'CheckItSA Reports <no-reply@checkitsa.co.za>',
+                                to: Array.isArray(to) ? to : [to],
                                 reply_to: 'no-reply@checkitsa.co.za',
                                 subject, html,
                                 attachments: attachments.map(a => ({ filename: a.name, content: a.content, content_id: a.cid })) // Resend uses content_id
