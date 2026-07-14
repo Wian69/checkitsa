@@ -41,7 +41,7 @@ export async function GET(req) {
         });
 
         if (!result.success) {
-            return NextResponse.json({ error: 'MailChannels API Failed', details: result.error }, { status: 500 });
+            return NextResponse.json({ error: 'SMTP2GO API Failed', details: result.error }, { status: 500 });
         }
 
         return NextResponse.json({
