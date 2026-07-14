@@ -13,8 +13,10 @@ export async function sendSESEmail(env, { to, bcc, subject, html, from, attachme
         return { success: false, error: "Missing API Key" };
     }
 
-    const senderEmail = from ? from.match(/<(.+)>/)?.[1] || from : 'info@checkitsa.co.za';
-    const senderName = from ? from.split('<')[0].trim() : 'CheckIt SA';
+    // Force the sender email to info@checkitsa.co.za to ensure SMTP2GO doesn't reject unverified aliases
+    const customName = from ? from.split('<')[0].trim() : 'CheckIt SA';
+    const senderEmail = 'info@checkitsa.co.za';
+    const senderName = customName;
 
     const toAddresses = Array.isArray(to) ? to : (to ? [to] : []);
     const bccAddresses = Array.isArray(bcc) ? bcc : (bcc ? [bcc] : []);
