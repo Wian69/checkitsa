@@ -151,8 +151,8 @@ export async function POST(req) {
             // Fallback for CCMA which didn't use the standard layout
             const finalHtml = (type === 'complaint') ? emailHtmlContent : EMAIL_TEMPLATE(emailSubject, emailHtmlContent, `<p>This is an automated notification from CheckItSA.</p>`)
 
-            const env = getRequestContext().env
-            await sendSESEmail(env, {
+            const globalEnv = process.env
+            await sendSESEmail(globalEnv, {
                 to: recipients,
                 subject: emailSubject,
                 html: finalHtml,

@@ -176,10 +176,10 @@ export async function POST(req) {
 
         // C. SEND LOGIC
         if (reportId) {
-            const env = getRequestContext().env;
+            const globalEnv = process.env;
 
             // 1. Send Admin Email (Action Required)
-            await sendSESEmail(env, {
+            await sendSESEmail(globalEnv, {
                 to: adminEmail,
                 subject: emailSubject + " [ADMIN ACTION REQUIRED]",
                 html: adminHtml,
@@ -209,7 +209,7 @@ export async function POST(req) {
             )
 
             if (email && email.includes('@')) {
-                await sendSESEmail(env, {
+                await sendSESEmail(globalEnv, {
                     to: email,
                     subject: `Report Received: ${scammer_details}`,
                     html: userReceiptHtml,

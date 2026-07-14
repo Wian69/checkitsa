@@ -99,7 +99,8 @@ export async function POST(req) {
                     const emailHtml = EMAIL_TEMPLATE('Commission Earned! 💰', emailContent, `<a href="https://checkitsa.co.za/dashboard" style="display: inline-block; padding: 12px 24px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">View Dashboard</a>`)
 
                     const sendAffiliateEmail = async () => {
-                        await sendSESEmail(env, {
+                        const globalEnv = process.env;
+                        await sendSESEmail(globalEnv, {
                             to: referrer.email,
                             subject: emailSubject,
                             html: emailHtml,
@@ -107,11 +108,7 @@ export async function POST(req) {
                         })
                     }
 
-                    if (ctx && ctx.waitUntil) {
-                        ctx.waitUntil(sendAffiliateEmail())
-                    } else {
-                        await sendAffiliateEmail()
-                    }
+                    await sendAffiliateEmail()
                 }
             }
         } catch (affError) {
