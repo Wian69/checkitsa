@@ -24,48 +24,55 @@ export default function PrivacyCleanPage() {
     setIsSearching(true);
     
     try {
-        // Start generating the checkout URL in the background
-        const res = await fetch('/api/create-yoco-checkout', {
+        // CALL THE LIVE WEB SCRAPER
+        const scanRes = await fetch('/api/deep-scan', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                amountInCents: 19900,
-                name: name,
-                email: email,
-                phone: phoneNumber,
-                returnUrl: window.location.origin + '/privacy-clean'
-            })
+            body: JSON.stringify({ name, email, phone: phoneNumber })
         });
+        
+        const scanData = await scanRes.json();
+        const liveMatches = scanData.matches || [];
 
-        const data = await res.json();
+        setExposedBrokers(liveMatches);
 
-        if (!res.ok) {
-            throw new Error(data.message || 'Payment system error');
+        // If they have matches, we generate the checkout. If 0 matches, they are safe and we don't need checkout.
+        if (liveMatches.length > 0) {
+            const res = await fetch('/api/create-yoco-checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amountInCents: 19900,
+                    name: name,
+                    email: email,
+                    phone: phoneNumber,
+                    returnUrl: window.location.origin + '/privacy-clean'
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setCheckoutUrl(data.redirectUrl);
+                localStorage.setItem('pending_privacy_checkout', data.checkoutId);
+            } else {
+                console.error("Payment system error:", data);
+                // Fail silently on payment error so we still show them the results at least
+            }
         }
 
-        setCheckoutUrl(data.redirectUrl);
-        
-        // Use the complete, real list of 50 data brokers that we are actually contacting
-        const selectedBrokers = dataBrokers.map((b, index) => ({
-            ...b,
-            risk: index < 15 ? 'HIGH RISK' : 'MEDIUM RISK'
-        }));
-        
-        setExposedBrokers(selectedBrokers);
-
         localStorage.setItem('privacy_clean_target', JSON.stringify({ name, email, phoneNumber }));
-        localStorage.setItem('privacy_clean_brokers', JSON.stringify(selectedBrokers));
-        localStorage.setItem('pending_privacy_checkout', data.checkoutId);
+        localStorage.setItem('privacy_clean_brokers', JSON.stringify(liveMatches));
 
-        // Ensure the "scan" takes at least 2.5 seconds for dramatic effect
-        await new Promise(r => setTimeout(r, 2500));
+        // Ensure the "scan" takes at least 2 seconds for dramatic effect while the scraper runs
+        await new Promise(r => setTimeout(r, 2000));
         
         setIsSearching(false);
-        setScanComplete(true); // Show the blurred results screen
+        setScanComplete(true); // Show the results screen
 
     } catch (e) {
-        console.error("Checkout generation error:", e);
-        alert("Unable to connect to secure payment server. Please try again.");
+        console.error("Deep Scan error:", e);
+        alert("Unable to connect to scanning servers. Please try again.");
         setIsSearching(false);
     }
   };
@@ -250,22 +257,42 @@ export default function PrivacyCleanPage() {
                 </p>
               </div>
             </form>
+          ) : exposedBrokers.length === 0 ? (
+            <div style={{ minHeight: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '2rem' }}>
+                <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🛡️</div>
+                <h2 style={{ fontSize: '2rem', color: '#10b981', marginBottom: '1rem', fontWeight: 800 }}>Great News! Your Data is Safe.</h2>
+                <p style={{ color: '#e5e7eb', fontSize: '1.2rem', marginBottom: '2rem', maxWidth: '500px', lineHeight: 1.6 }}>
+                    We ran a deep web scan on your email (<strong>{email}</strong>) and phone number (<strong>{phoneNumber}</strong>) and found <strong>0 public matches</strong>.
+                </p>
+                <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981', padding: '1.5rem', borderRadius: '0.5rem', maxWidth: '500px', marginBottom: '2rem' }}>
+                    <p style={{ margin: 0, color: '#86efac' }}>
+                        Because your digital footprint is clean, you do <strong>not</strong> need to pay for our POPIA deletion service! Keep up the good work protecting your privacy.
+                    </p>
+                </div>
+                <button 
+                    onClick={() => { setScanComplete(false); setEmail(''); setPhoneNumber(''); }}
+                    className="btn btn-outline"
+                    style={{ padding: '1rem 2rem' }}
+                >
+                    Scan Another Identity
+                </button>
+            </div>
           ) : (
             <div style={{ position: 'relative', minHeight: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 
                 {/* Blurred Results Background */}
                 <div style={{ width: '100%', filter: 'blur(6px)', opacity: 0.6, pointerEvents: 'none', userSelect: 'none' }}>
                     <h3 style={{ color: '#ef4444', marginBottom: '1.5rem', borderBottom: '1px solid #374151', paddingBottom: '0.5rem' }}>
-                        {exposedBrokers.length} Critical Matches Found
+                        {exposedBrokers.length} Public Matches Found
                     </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left', maxHeight: '400px', overflow: 'hidden' }}>
                         {exposedBrokers.map((broker, idx) => (
                             <div key={idx} style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '1.5rem', borderRadius: '0.5rem', borderLeft: `4px solid ${broker.risk === 'HIGH RISK' ? '#ef4444' : '#f59e0b'}` }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                                    <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '1.1rem' }}>{broker.name} Database</div>
+                                    <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '1.1rem' }}>{broker.name}</div>
                                     <span style={{ fontSize: '0.8rem', background: broker.risk === 'HIGH RISK' ? '#ef4444' : '#f59e0b', color: '#fff', padding: '0.2rem 0.5rem', borderRadius: '1rem', fontWeight: 'bold' }}>{broker.risk}</span>
                                 </div>
-                                <div style={{ color: '#d1d5db', fontSize: '0.95rem' }}>Match found for {name} and {phoneNumber}.</div>
+                                <div style={{ color: '#d1d5db', fontSize: '0.95rem' }}>Domain: <strong>{broker.url}</strong></div>
                             </div>
                         ))}
                     </div>
@@ -289,12 +316,12 @@ export default function PrivacyCleanPage() {
                     <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚨</div>
                     <h2 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '1rem' }}>Your Data is Exposed</h2>
                     <p style={{ color: '#e5e7eb', fontSize: '1.1rem', marginBottom: '2rem', lineHeight: 1.5 }}>
-                        We found your details in <strong>{exposedBrokers.length} public databases</strong> used by scammers and telemarketers.
+                        We just scraped the web and found your details exposed on <strong>{exposedBrokers.length} public databases</strong> (including {exposedBrokers[0]?.name}).
                     </p>
                     
                     <button 
                         onClick={handleUnlock}
-                        disabled={isRedirecting}
+                        disabled={isRedirecting || !checkoutUrl}
                         className="btn btn-primary"
                         style={{
                             width: '100%',
@@ -309,12 +336,12 @@ export default function PrivacyCleanPage() {
                             marginBottom: '1rem'
                         }}
                     >
-                        {isRedirecting ? 'Connecting to Secure Checkout...' : 'Pay R199 to Dispatch Legal Requests'}
+                        {isRedirecting ? 'Connecting to Secure Checkout...' : 'Pay R199 to Dispatch Legal Erasure Requests'}
                     </button>
 
                     <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.1)' }}>
                         <p style={{ margin: 0, color: '#9ca3af', fontSize: '0.75rem', lineHeight: 1.6, textAlign: 'left' }}>
-                            <strong>Disclaimer:</strong> CheckIt SA acts as your Authorized Legal Agent to dispatch POPIA Data Erasure Requests. By proceeding, you authorize us to submit these requests to third-party data brokers on your behalf. While brokers are legally mandated by the South African POPI Act to comply within 30 days, CheckIt SA is an automation facilitator and is not liable for third-party non-compliance, refusal, or delays.
+                            <strong>Disclaimer:</strong> CheckIt SA acts as your Authorized Legal Agent to dispatch POPIA Data Erasure Requests to the domains found in this scan. By proceeding, you authorize us to submit these requests on your behalf.
                         </p>
                     </div>
                     
