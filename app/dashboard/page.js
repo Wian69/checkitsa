@@ -288,6 +288,44 @@ export default function Dashboard() {
                                 <span>💡</span> <strong>Tip:</strong> Pin the CheckItSA extension to your toolbar to easily scan websites!
                             </div>
                         </div>
+
+                        {/* Set Extension Password */}
+                        <div style={{ marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem' }}>
+                            <h4 style={{ fontSize: '1rem', marginBottom: '0.5rem', color: '#fff' }}>🔑 Extension Login Password</h4>
+                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                                If you registered using Google Sign-In, you need to set a password here so you can log into the extension.
+                            </p>
+                            <form onSubmit={async (e) => {
+                                e.preventDefault();
+                                const newPassword = e.target.elements.newPassword.value;
+                                if (!newPassword) return;
+                                
+                                try {
+                                    const res = await fetch('/api/user/password', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ email: user.email, newPassword })
+                                    });
+                                    if (res.ok) {
+                                        alert("Password set successfully! You can now log into the extension.");
+                                        e.target.reset();
+                                    } else {
+                                        alert("Failed to update password.");
+                                    }
+                                } catch (err) {
+                                    alert("Error updating password.");
+                                }
+                            }} style={{ display: 'flex', gap: '0.5rem' }}>
+                                <input 
+                                    type="password" 
+                                    name="newPassword"
+                                    placeholder="Set Extension Password" 
+                                    required 
+                                    style={{ flex: 1, padding: '0.75rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white' }}
+                                />
+                                <button type="submit" className="btn btn-primary" style={{ padding: '0.75rem 1.5rem' }}>Save</button>
+                            </form>
+                        </div>
                     </div>
 
                     {/* Usage Card */}
