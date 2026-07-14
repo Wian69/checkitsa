@@ -27,20 +27,18 @@ export async function POST(req) {
         // Fetch ALL users if no specific email is provided
         if (!email) {
             const res = await db.prepare(`
-                SELECT u.email, u.fullName as full_name, m.tier, m.count as usage, m.limit_override
-                FROM users u
-                LEFT JOIN user_meta m ON u.email = m.email
-                ORDER BY u.createdAt DESC
+                SELECT email, fullName as full_name, tier, searches as usage
+                FROM users
+                ORDER BY createdAt DESC
             `).all()
             return NextResponse.json({ success: true, users: res.results || [] })
         }
 
         // Fetch single user basic info and meta (Usage/Tier)
         let user = await db.prepare(`
-            SELECT u.email, u.fullName as full_name, m.tier, m.count as usage, m.limit_override
-            FROM users u
-            LEFT JOIN user_meta m ON u.email = m.email
-            WHERE lower(u.email) = lower(?)
+            SELECT email, fullName as full_name, tier, searches as usage
+            FROM users
+            WHERE lower(email) = lower(?)
         `).bind(email).first()
 
         if (!user && email.toLowerCase() === authorizedEmail) {
