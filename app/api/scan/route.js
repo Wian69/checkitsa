@@ -276,20 +276,54 @@ export async function POST(request) {
             }
         }
 
-        // Reputation Check (Re-using Google Results to save calls)
+        // Reputation Check (Re-using Google Results and Summary)
         let reputationFlags = []
+        let hasExplicit = false
+        let hasIllegal = false
+
+        const checkText = (txt) => {
+            if (txt.includes('scam') || txt.includes('fraud') || txt.includes('phishing')) {
+                score += 25
+                return 'Scam/Fraud'
+            }
+            // Explicit/Adult check
+            if (txt.includes('porn') || txt.includes('xxx') || txt.includes('adult content') || txt.includes('nsfw') || txt.includes('onlyfans')) {
+                score += 35
+                hasExplicit = true
+                return 'Adult/Explicit Content'
+            }
+            // Illegal/Piracy check
+            if (txt.includes('illegal') || txt.includes('pirated') || txt.includes('torrent ') || txt.includes('dark web')) {
+                score += 35
+                hasIllegal = true
+                return 'Illegal/Pirated Content'
+            }
+            return null
+        }
+
+        // Check the website summary and domain first
+        const summaryTxt = (domain + ' ' + siteSummary).toLowerCase()
+        const summaryFlag = checkText(summaryTxt)
+        if (summaryFlag) reputationFlags.push(`Flagged: ${summaryFlag}`)
+
+        // Check Google search results
         googleResults.forEach(item => {
             const txt = (item.title + item.snippet).toLowerCase()
-            if (txt.includes('scam') || txt.includes('fraud') || txt.includes('phishing')) {
-                reputationFlags.push(`Negative report: ${item.title}`)
-                score += 25
+            const flag = checkText(txt)
+            if (flag && !reputationFlags.some(f => f.includes(flag))) {
+                reputationFlags.push(`Flagged: ${flag} found in search results`)
             }
         })
 
         score = Math.min(score, 100)
 
+        let finalMessage = score > 60 ? '⛔ High Risk Detected.' : (score > 40 ? '⚠️ Proceed with Caution.' : '✅ Analysis Complete.')
+        if (hasExplicit) finalMessage = '🔞 Adult/Explicit Content Detected. Not safe for work.'
+        if (hasIllegal) finalMessage = '🚫 Illegal/Pirated Content Detected.'
+        if (score > 60 && !hasExplicit && !hasIllegal) finalMessage = '⛔ High Risk Scam Detected.'
+
         return NextResponse.json({
-            safe: score < 30,
+            safe: score < 30 && !hasExplicit && !hasIllegal,
             riskScore: score,
             verdict: score > 60 ? 'Dangerous' : (score > 40 ? 'Suspicious' : 'Safe'),
             details: {
@@ -303,7 +337,7 @@ export async function POST(request) {
                 reputation_flags: reputationFlags,
                 is_shortened: isShortened
             },
-            message: score > 60 ? '⛔ High Risk Detected.' : (score > 40 ? '⚠️ Proceed with Caution.' : '✅ Analysis Complete.')
+            message: finalMessage
         })
     } catch (fatalError) {
         console.error('Fatal Scan Error:', fatalError)

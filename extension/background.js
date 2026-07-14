@@ -32,7 +32,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                 if (data.verdict === 'Dangerous' || data.riskScore > 60) {
                     chrome.scripting.executeScript({
                         target: { tabId: tabId },
-                        func: injectRedBanner
+                        func: injectRedBanner,
+                        args: [data.message]
                     });
                 }
             }
@@ -43,7 +44,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 });
 
 // Function to inject warning banner into the actual website
-function injectRedBanner() {
+function injectRedBanner(customMessage) {
     if (document.getElementById('checkitsa-warning-banner')) return;
     
     const banner = document.createElement('div');
@@ -53,7 +54,7 @@ function injectRedBanner() {
             <span style="font-size: 24px;">🚨</span>
             <div>
                 <strong>CheckItSA SECURITY ALERT</strong>
-                <div style="font-size: 14px; margin-top: 4px; font-weight: normal;">This website has been flagged as a known scam by the Premium Auto-Scan Engine. Do not enter any financial information.</div>
+                <div style="font-size: 14px; margin-top: 4px; font-weight: normal;">${customMessage || 'This website has been flagged as a known scam by the Premium Auto-Scan Engine. Do not enter any financial information.'}</div>
             </div>
             <button id="checkitsa-close-banner" style="background: rgba(0,0,0,0.3); border: none; color: white; padding: 5px 10px; border-radius: 4px; margin-left: 20px; cursor: pointer;">Close</button>
         </div>

@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     } else if (data.verdict === 'Dangerous' || data.riskScore > 60) {
                         resultBox.classList.add('danger');
                         resultIcon.textContent = '🚨';
-                        resultTitle.textContent = 'DANGER: Known Scam!';
+                        resultTitle.textContent = 'DANGER: Unsafe Website!';
                         resultTitle.style.color = '#ef4444';
                         resultDesc.textContent = `WARNING: Risk Score ${data.riskScore}/100. ${data.message || 'Do not enter personal info!'}`;
 
