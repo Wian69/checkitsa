@@ -20,8 +20,9 @@ export async function POST(req) {
         }
 
         // 2. Fetch the base ZIP from the public folder via absolute URL
+        // Prevent Cloudflare from aggressively caching old versions of the extension!
         const baseUrl = new URL('/', req.url).origin
-        const zipResponse = await fetch(`${baseUrl}/checkitsa-extension.zip`)
+        const zipResponse = await fetch(`${baseUrl}/checkitsa-extension.zip?v=${Date.now()}`)
         
         if (!zipResponse.ok) {
             throw new Error(`Failed to fetch base zip: ${zipResponse.statusText}`)
