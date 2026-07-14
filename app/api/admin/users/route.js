@@ -29,12 +29,16 @@ export async function POST(req) {
         const db = env.DB
 
         // Fetch user basic info and meta (Usage/Tier)
-        const user = await db.prepare(`
+        let user = await db.prepare(`
             SELECT u.email, u.full_name, m.tier, m.count as usage, m.limit_override
             FROM users u
             LEFT JOIN user_meta m ON u.email = m.email
             WHERE u.email = ?
         `).bind(email).first()
+
+        if (!user && email.toLowerCase() === authorizedEmail) {
+            user = { email: authorizedEmail, full_name: 'Admin', tier: 'elite', usage: 0 }
+        }
 
         if (!user) {
             return NextResponse.json({ message: 'User not found' }, { status: 404 })
