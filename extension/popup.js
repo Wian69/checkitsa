@@ -158,8 +158,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     throw new Error(resData.message || "Failed to scan");
                 }
 
-                // Update quota from server
-                scansUsed = resData.scansUsed;
+                // Update quota
+                if (resData.isAuth) {
+                    scansUsed = resData.scansUsed; // Sync from DB
+                } else {
+                    scansUsed += 1; // Increment locally for unauthenticated free users
+                }
                 chrome.storage.local.set({ scansUsed });
                 updateScanCounter();
 
@@ -219,6 +223,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     function updateScanCounter() {
         if (scansLeftEl) {
             scansLeftEl.textContent = MAX_SCANS - scansUsed;
+            const scansText = document.getElementById('scansText');
+            if (scansText) {
+                scansText.textContent = isPremium ? "premium scans remaining" : "free scans remaining";
+            }
         }
     }
 

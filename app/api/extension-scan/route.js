@@ -8,38 +8,42 @@ export async function POST(req) {
         const body = await req.json()
         const { email, password, url, isAutoScan } = body
 
-        if (!email || !password || !url) {
-            return NextResponse.json({ success: false, message: 'Missing credentials or URL' }, { status: 400 })
-        }
+        let user = null;
+        let limit = 5;
+        let scansUsed = 0;
 
-        const env = getRequestContext().env
-        const db = env.DB
+        // 1. Authenticate User (if credentials provided)
+        if (email && password) {
+            user = await db.prepare('SELECT * FROM users WHERE email = ?').bind(email).first()
+            
+            if (!user || user.password !== password) {
+                return NextResponse.json({ success: false, message: 'Invalid credentials' }, { status: 401 })
+            }
 
-        // 1. Authenticate User
-        const user = await db.prepare('SELECT * FROM users WHERE email = ?').bind(email).first()
-        
-        if (!user || user.password !== password) {
-            return NextResponse.json({ success: false, message: 'Invalid credentials' }, { status: 401 })
+            // 2. Enforce Limits (Auto-scans are only for Premium, but ALL scans deduct from the quota)
+            if (isAutoScan && user.tier === 'free') {
+                return NextResponse.json({ success: false, message: 'Auto-scan is a Premium feature' }, { status: 403 })
+            }
+            
+            // Enforce exact tier limits and deduct for EVERY scan (manual or auto)
+            limit = user.tier === 'elite' || user.tier === 'custom' ? 5000 : (user.tier === 'pro' ? 1000 : 5)
+            if (user.searches >= limit) {
+                return NextResponse.json({ 
+                    success: false, 
+                    message: `Limit exceeded. Your plan includes ${limit} deep scans.`,
+                    limitReached: true,
+                    tier: user.tier 
+                }, { status: 403 })
+            }
+            // Deduct Quota
+            await db.prepare('UPDATE users SET searches = searches + 1 WHERE email = ?').bind(email).run()
+            scansUsed = user.searches + 1;
+        } else {
+            // Unauthenticated (Free user trying a manual scan before logging in)
+            if (isAutoScan) {
+                return NextResponse.json({ success: false, message: 'Auto-scan requires Premium.' }, { status: 403 })
+            }
         }
-
-        // 2. Enforce Limits (Auto-scans are only for Premium, but ALL scans deduct from the quota)
-        if (isAutoScan && user.tier === 'free') {
-            return NextResponse.json({ success: false, message: 'Auto-scan is a Premium feature' }, { status: 403 })
-        }
-        
-        // Enforce exact tier limits and deduct for EVERY scan (manual or auto)
-        const limit = user.tier === 'elite' || user.tier === 'custom' ? 5000 : (user.tier === 'pro' ? 1000 : 5)
-        if (user.searches >= limit) {
-            return NextResponse.json({ 
-                success: false, 
-                message: `Limit exceeded. Your plan includes ${limit} deep scans.`,
-                limitReached: true,
-                tier: user.tier 
-            }, { status: 403 })
-        }
-        // Deduct Quota
-        await db.prepare('UPDATE users SET searches = searches + 1 WHERE email = ?').bind(email).run()
-        user.searches += 1
 
         // 4. Perform the exact same scan as the main website
         const scanUrl = new URL('/api/scan', req.url).href
@@ -58,8 +62,9 @@ export async function POST(req) {
         return NextResponse.json({
             success: true,
             data: scanData,
-            scansUsed: user.searches,
-            limit: user.tier === 'elite' || user.tier === 'custom' ? 5000 : (user.tier === 'pro' ? 1000 : 5)
+            scansUsed: scansUsed,
+            limit: limit,
+            isAuth: !!user
         })
 
     } catch (e) {
