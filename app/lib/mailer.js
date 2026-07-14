@@ -1,64 +1,62 @@
 /**
- * Send an email via MailChannels (Cloudflare Native).
+ * Send an email via SMTP2GO HTTP API.
  * Note: Function is still named sendSESEmail to prevent breaking changes across the app.
  *
  * @param {Object} env - The Cloudflare env object.
  * @param {Object} options - Email options.
  */
 export async function sendSESEmail(env, { to, bcc, subject, html, from, attachments = [] }) {
-    // MailChannels uses the Cloudflare Worker IP for auth, no API key needed!
+    const apiKey = env.SMTP2GO_API_KEY || process.env.SMTP2GO_API_KEY;
+
+    if (!apiKey) {
+        console.error("[SMTP2GO] Missing SMTP2GO_API_KEY in environment variables.");
+        return { success: false, error: "Missing API Key" };
+    }
+
     const senderEmail = from ? from.match(/<(.+)>/)?.[1] || from : 'info@checkitsa.co.za';
     const senderName = from ? from.split('<')[0].trim() : 'CheckIt SA';
 
     const toAddresses = Array.isArray(to) ? to : (to ? [to] : []);
     const bccAddresses = Array.isArray(bcc) ? bcc : (bcc ? [bcc] : []);
 
-    const personalization = {
-        to: toAddresses.length > 0 ? toAddresses.map(email => ({ email })) : [{ email: senderEmail }]
-    };
-
-    if (bccAddresses.length > 0) {
-        personalization.bcc = bccAddresses.map(email => ({ email }));
-    }
-
     const payload = {
-        personalizations: [personalization],
-        from: {
-            email: senderEmail,
-            name: senderName
-        },
-        reply_to: {
-            email: 'info@checkitsa.co.za',
-            name: 'CheckIt SA Support'
-        },
+        api_key: apiKey,
+        sender: `${senderName} <${senderEmail}>`,
+        to: toAddresses.length > 0 ? toAddresses : [senderEmail],
         subject: subject,
-        content: [
+        html_body: html,
+        custom_headers: [
             {
-                type: 'text/html',
-                value: html
+                header: "Reply-To",
+                value: "info@checkitsa.co.za"
             }
         ]
     };
 
+    if (bccAddresses.length > 0) {
+        payload.bcc = bccAddresses;
+    }
+
     try {
-        const res = await fetch('https://api.mailchannels.net/tx/v1/send', {
+        const res = await fetch('https://api.smtp2go.com/v3/email/send', {
             method: 'POST',
             headers: {
-                'content-type': 'application/json',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify(payload)
         });
 
         if (res.status === 200 || res.status === 202) {
-            console.log(`[MailChannels] Email sent successfully to ${toAddresses.join(', ') || 'BCC'}`);
+            console.log(`[SMTP2GO] Email sent successfully to ${toAddresses.join(', ') || 'BCC'}`);
             return { success: true };
         } else {
             const errorText = await res.text();
-            console.error(`[MailChannels] API Error:`, res.status, errorText);
+            console.error(`[SMTP2GO] API Error:`, res.status, errorText);
             return { success: false, error: `Status ${res.status}: ${errorText}` };
         }
     } catch (error) {
-        console.error(`[MailChannels] Network Error:`, error);
+        console.error(`[SMTP2GO] Network Error:`, error);
         return { success: false, error: error.message };
     }
 }
