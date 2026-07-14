@@ -33,15 +33,15 @@ export async function GET(req) {
 
         // 4. Send via MailChannels (using global mailer)
         const env = process.env; // Will be properly attached in Cloudflare Worker ctx
-        const success = await sendSESEmail(env, {
+        const result = await sendSESEmail(env, {
             to: recipientEmail,
             subject: subject,
             html: htmlContent,
             from: 'info@checkitsa.co.za'
         });
 
-        if (!success) {
-            return NextResponse.json({ error: 'MailChannels API Failed to send email' }, { status: 500 });
+        if (!result.success) {
+            return NextResponse.json({ error: 'MailChannels API Failed', details: result.error }, { status: 500 });
         }
 
         return NextResponse.json({

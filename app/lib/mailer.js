@@ -51,14 +51,14 @@ export async function sendSESEmail(env, { to, bcc, subject, html, from, attachme
 
         if (res.status === 200 || res.status === 202) {
             console.log(`[MailChannels] Email sent successfully to ${toAddresses.join(', ') || 'BCC'}`);
-            return true;
+            return { success: true };
         } else {
             const errorText = await res.text();
             console.error(`[MailChannels] API Error:`, res.status, errorText);
-            return false;
+            return { success: false, error: `Status ${res.status}: ${errorText}` };
         }
     } catch (error) {
         console.error(`[MailChannels] Network Error:`, error);
-        return false;
+        return { success: false, error: error.message };
     }
 }
