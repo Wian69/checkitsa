@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getRequestContext } from '@cloudflare/next-on-pages';
+import { dispatchAuthority } from '@/app/lib/dispatchAuthority';
 
 export const runtime = 'edge';
 
@@ -48,6 +49,10 @@ export async function PATCH(req) {
         await db.prepare("UPDATE scam_reports SET status = ? WHERE id = ?")
             .bind(status, id)
             .run();
+
+        if (status === 'verified') {
+            await dispatchAuthority(getRequestContext().env, db, id);
+        }
 
         return NextResponse.json({ success: true, status });
 

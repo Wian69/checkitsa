@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getRequestContext } from '@cloudflare/next-on-pages'
 import { EMAIL_TEMPLATE } from '@/app/lib/emailTemplate'
+import { sendSESEmail } from '@/app/lib/mailer'
 
 export const runtime = 'edge'
 
@@ -175,56 +176,15 @@ export async function POST(req) {
 
         // C. SEND LOGIC
         if (reportId) {
-            // Function to send email
-            const sendEmail = async (to, subject, html) => {
-                let sent = false;
-                // Brevo
-                if (brevoApiKey) {
-                    try {
-                        const toList = Array.isArray(to) ? to.map(e => ({ email: e, name: e.split('@')[0] })) : [{ email: to, name: 'Recipient' }]
-                        await fetch('https://api.brevo.com/v3/smtp/email', {
-                            method: 'POST',
-                            headers: {
-                                'api-key': brevoApiKey,
-                                'Content-Type': 'application/json',
-                                'accept': 'application/json',
-                                'List-Unsubscribe': `<mailto:unsubscribe@checkitsa.co.za?subject=unsubscribe>`
-                            },
-                            body: JSON.stringify({
-                                sender: { name: 'CheckItSA Reports', email: 'no-reply@checkitsa.co.za' },
-                                to: toList, subject, htmlContent: html,
-                                attachment: attachments.length > 0 ? attachments : undefined
-                            })
-                        })
-                        sent = true
-                        console.log(`[Email] Sent to ${JSON.stringify(to)}`)
-                    } catch (e) { console.error('Brevo Error:', e) }
-                }
-                // Resend Fallback
-                if (!sent && resendApiKey) {
-                    try {
-                        await fetch('https://api.resend.com/emails', {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${resendApiKey}`,
-                                'Content-Type': 'application/json',
-                                'List-Unsubscribe': `<mailto:unsubscribe@checkitsa.co.za?subject=unsubscribe>`
-                            },
-                            body: JSON.stringify({
-                                from: 'CheckItSA Reports <no-reply@checkitsa.co.za>',
-                                to: Array.isArray(to) ? to : [to],
-                                reply_to: 'no-reply@checkitsa.co.za',
-                                subject, html,
-                                attachments: attachments.map(a => ({ filename: a.name, content: a.content, content_id: a.cid })) // Resend uses content_id
-                            })
-                        })
-                        console.log(`[Email] Sent via Resend`)
-                    } catch (e) { console.error('Resend Error:', e) }
-                }
-            }
+            const env = getRequestContext().env;
 
             // 1. Send Admin Email (Action Required)
-            await sendEmail(adminEmail, emailSubject + " [ADMIN ACTION REQUIRED]", adminHtml)
+            await sendSESEmail(env, {
+                to: adminEmail,
+                subject: emailSubject + " [ADMIN ACTION REQUIRED]",
+                html: adminHtml,
+                attachments
+            });
 
             // 2. Send User Confirmation (Receipt)
             const userReceiptHtml = EMAIL_TEMPLATE(
@@ -249,7 +209,12 @@ export async function POST(req) {
             )
 
             if (email && email.includes('@')) {
-                await sendEmail(email, `Report Received: ${scammer_details}`, userReceiptHtml)
+                await sendSESEmail(env, {
+                    to: email,
+                    subject: `Report Received: ${scammer_details}`,
+                    html: userReceiptHtml,
+                    attachments
+                });
             }
 
             // 2. [REMOVED] Authorities are NOT emailed here anymore. See /api/admin/moderate

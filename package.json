@@ -10,6 +10,7 @@
     "pages:build": "npx @cloudflare/next-on-pages@latest"
   },
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.1086.0",
     "@google/generative-ai": "^0.24.1",
     "cheerio": "^1.1.2",
     "fast-xml-parser": "^5.3.3",

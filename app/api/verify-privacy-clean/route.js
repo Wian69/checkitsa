@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getRequestContext } from '@cloudflare/next-on-pages'
 import { EMAIL_TEMPLATE } from '@/app/lib/emailTemplate'
 import dataBrokers from '@/app/lib/dataBrokers.json'
-
+import { sendSESEmail } from '@/app/lib/mailer'
 export const runtime = 'edge'
 
 export async function POST(req) {
@@ -97,62 +97,26 @@ export async function POST(req) {
             `
             const legalHtml = EMAIL_TEMPLATE(`Data Erasure Notice`, legalContent)
 
-            if (brevoApiKey) {
-                try {
-                    // Send Receipt
-                    await fetch('https://api.brevo.com/v3/smtp/email', {
-                        method: 'POST',
-                        headers: { 'api-key': brevoApiKey, 'Content-Type': 'application/json', 'accept': 'application/json' },
-                        body: JSON.stringify({
-                            sender: { name: 'CheckItSA Privacy', email: 'no-reply@checkitsa.co.za' },
-                            to: [{ email: targetEmail, name: targetName }],
-                            subject: receiptSubject,
-                            htmlContent: receiptHtml
-                        })
-                    })
-                    // Send Legal Blast
-                    await fetch('https://api.brevo.com/v3/smtp/email', {
-                        method: 'POST',
-                        headers: { 'api-key': brevoApiKey, 'Content-Type': 'application/json', 'accept': 'application/json' },
-                        body: JSON.stringify({
-                            sender: { name: 'CheckIt SA Compliance', email: 'legal@checkitsa.co.za' },
-                            to: [{ email: targetEmail, name: targetName }],
-                            bcc: bccListBrevo,
-                            subject: legalSubject,
-                            htmlContent: legalHtml
-                        })
-                    })
-                    return true
-                } catch (e) { console.error("Brevo Email Error:", e) }
-            }
+            const env = ctx ? ctx.env : getRequestContext().env;
 
-            if (resendApiKey) {
-                try {
-                    // Send Receipt
-                    await fetch('https://api.resend.com/emails', {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            from: 'CheckItSA Privacy <no-reply@checkitsa.co.za>',
-                            to: targetEmail,
-                            subject: receiptSubject,
-                            html: receiptHtml
-                        })
-                    })
-                    // Send Legal Blast
-                    await fetch('https://api.resend.com/emails', {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            from: 'CheckIt SA Compliance <legal@checkitsa.co.za>',
-                            to: targetEmail,
-                            bcc: bccListResend,
-                            subject: legalSubject,
-                            html: legalHtml
-                        })
-                    })
-                } catch (e) { console.error("Resend Email Error:", e) }
-            }
+            // 1. Send Receipt
+            await sendSESEmail(env, {
+                to: targetEmail,
+                subject: receiptSubject,
+                html: receiptHtml,
+                from: 'CheckItSA Privacy <no-reply@checkitsa.co.za>'
+            });
+
+            // 2. Send Legal Blast
+            await sendSESEmail(env, {
+                to: targetEmail,
+                bcc: bccListResend,
+                subject: legalSubject,
+                html: legalHtml,
+                from: 'CheckIt SA Compliance <legal@checkitsa.co.za>'
+            });
+
+            return true;
         }
 
         if (ctx && ctx.waitUntil) {

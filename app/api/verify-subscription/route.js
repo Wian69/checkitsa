@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getRequestContext } from '@cloudflare/next-on-pages'
 import { EMAIL_TEMPLATE } from '@/app/lib/emailTemplate'
+import { sendSESEmail } from '@/app/lib/mailer'
 
 export const runtime = 'edge'
 
@@ -81,45 +82,6 @@ export async function POST(req) {
 
                     console.log(`[Affiliate] Credited R${commissionRand} to referrer ${referrer.id} for user ${email}`)
 
-                    // --- Email Notification Logic ---
-                    const sendEmail = async (toEmail, toName, subj, htmlBody) => {
-                        const brevoApiKey = process.env.BREVO_API_KEY
-                        const resendApiKey = process.env.RESEND_API_KEY
-
-                        if (brevoApiKey) {
-                            try {
-                                const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-                                    method: 'POST',
-                                    headers: { 'api-key': brevoApiKey, 'Content-Type': 'application/json', 'accept': 'application/json' },
-                                    body: JSON.stringify({
-                                        sender: { name: 'CheckItSA Rewards', email: 'no-reply@checkitsa.co.za' },
-                                        to: [{ email: toEmail, name: toName }],
-                                        subject: subj,
-                                        htmlContent: htmlBody
-                                    })
-                                })
-                                if (res.ok) return true
-                            } catch (e) { console.error("Brevo Email Error:", e) }
-                        }
-
-                        if (resendApiKey) {
-                            try {
-                                const res = await fetch('https://api.resend.com/emails', {
-                                    method: 'POST',
-                                    headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        from: 'CheckItSA Rewards <onboarding@resend.dev>',
-                                        to: toEmail,
-                                        subject: subj,
-                                        html: htmlBody
-                                    })
-                                })
-                                if (res.ok) return true
-                            } catch (e) { console.error("Resend Email Error:", e) }
-                        }
-                        return false
-                    }
-
                     const emailSubject = `Commission Earned! 💰`
                     const emailContent = `
                         <p style="margin-bottom: 24px;">Hi ${referrer.fullName ? referrer.fullName.split(' ')[0] : 'Partner'},</p>
@@ -136,10 +98,19 @@ export async function POST(req) {
 
                     const emailHtml = EMAIL_TEMPLATE('Commission Earned! 💰', emailContent, `<a href="https://checkitsa.co.za/dashboard" style="display: inline-block; padding: 12px 24px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">View Dashboard</a>`)
 
+                    const sendAffiliateEmail = async () => {
+                        await sendSESEmail(env, {
+                            to: referrer.email,
+                            subject: emailSubject,
+                            html: emailHtml,
+                            from: 'CheckItSA Rewards <no-reply@checkitsa.co.za>'
+                        })
+                    }
+
                     if (ctx && ctx.waitUntil) {
-                        ctx.waitUntil(sendEmail(referrer.email, referrer.fullName, emailSubject, emailHtml))
+                        ctx.waitUntil(sendAffiliateEmail())
                     } else {
-                        await sendEmail(referrer.email, referrer.fullName, emailSubject, emailHtml)
+                        await sendAffiliateEmail()
                     }
                 }
             }
