@@ -37,10 +37,10 @@ export default function Subscription() {
         let limit = 0
 
         if (plan === 'pro') {
-            amount = 7900
+            amount = 12900
             planName = 'CheckItSA Pro'
         } else if (plan === 'elite') {
-            amount = 11900
+            amount = 19900
             planName = 'CheckItSA Elite'
         } else if (plan === 'custom') {
             amount = customPrice * 100
@@ -160,10 +160,10 @@ export default function Subscription() {
                         <div style={{ textAlign: 'center' }}>
                             <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--color-primary-light)', fontWeight: 600 }}>Pro</h3>
                             <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '2rem', letterSpacing: '-1px' }}>
-                                R79 <span style={{ fontSize: '1rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>/ month</span>
+                                R129 <span style={{ fontSize: '1rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>/ month</span>
                             </div>
                             <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2.5rem', lineHeight: '2', fontSize: '1rem', textAlign: 'left' }}>
-                                <li>⚡ <strong>100 Searches / mo</strong></li>
+                                <li>⚡ <strong>1,000 Searches / mo</strong></li>
                                 <li>🛡️ <strong>Security Intel Access</strong></li>
                                 <li>✅ Advanced Scanning</li>
                                 <li>✅ Priority support</li>
@@ -207,12 +207,12 @@ export default function Subscription() {
 
                             <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'white', fontWeight: 600 }}>Elite</h3>
                             <div style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem', letterSpacing: '-1px' }}>
-                                R119 <span style={{ fontSize: '1rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>/ month</span>
+                                R199 <span style={{ fontSize: '1rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>/ month</span>
                             </div>
                             <div style={{ fontSize: '0.9rem', color: '#86efac', marginBottom: '2.5rem', fontWeight: 600 }}>🚀 Massive Capability</div>
 
                             <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2.5rem', lineHeight: '2', fontSize: '1rem', textAlign: 'left' }}>
-                                <li>🚀 <strong>1,000 Searches / mo</strong></li>
+                                <li>🚀 <strong>5,000 Searches / mo</strong></li>
                                 <li>🌍 <strong>Full Global Intel</strong></li>
                                 <li>⚡ <strong>Fastest Execution</strong></li>
                             </ul>

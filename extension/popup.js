@@ -192,9 +192,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         isPremium = (tier === 'pro' || tier === 'elite' || tier === 'custom');
         
         if (tier === 'elite' || tier === 'custom') {
-            MAX_SCANS = 1000;
+            MAX_SCANS = 5000;
         } else if (tier === 'pro') {
-            MAX_SCANS = 100;
+            MAX_SCANS = 1000;
         } else {
             MAX_SCANS = 5;
         }
