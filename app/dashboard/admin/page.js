@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 export default function AdminDashboard() {
     const [secret, setSecret] = useState('')
-    const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [isLoggedIn, setIsLoggedIn] = useState(true)
     const [emailSearch, setEmailSearch] = useState('')
     const [foundUser, setFoundUser] = useState(null)
     const [loading, setLoading] = useState(false)
