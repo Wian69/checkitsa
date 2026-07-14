@@ -1,6 +1,6 @@
-
 import { NextResponse } from 'next/server';
 import { getInviteHtml, getMarketingHtml } from '@/utils/email-template';
+import { sendSESEmail } from '@/app/lib/mailer';
 
 export const runtime = 'edge';
 
@@ -14,13 +14,6 @@ export async function GET(req) {
 
         if (senderEmail !== 'wiandurandt69@gmail.com') {
             return NextResponse.json({ error: 'Unauthorized: Admin access only.' }, { status: 403 });
-        }
-
-        // 1. Get Access to Secrets (Cloudflare or Local)
-        const BREVO_API_KEY = process.env.BREVO_API_KEY;
-
-        if (!BREVO_API_KEY) {
-            return NextResponse.json({ error: 'BREVO_API_KEY not configured in environment.' }, { status: 500 });
         }
 
         // 2. Define Recipient(s)
@@ -38,43 +31,22 @@ export async function GET(req) {
             htmlContent = getMarketingHtml(recipientName);
         }
 
-        // 4. Send via Brevo API
-        const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-            method: 'POST',
-            headers: {
-                'accept': 'application/json',
-                'api-key': BREVO_API_KEY,
-                'content-type': 'application/json'
-            },
-            body: JSON.stringify({
-                sender: {
-                    name: "CheckItSA Verification",
-                    email: "info@checkitsa.co.za"
-                },
-                to: [
-                    {
-                        email: recipientEmail,
-                        name: recipientName
-                    }
-                ],
-                subject: subject,
-                htmlContent: htmlContent
-            })
+        // 4. Send via MailChannels (using global mailer)
+        const env = process.env; // Will be properly attached in Cloudflare Worker ctx
+        const success = await sendSESEmail(env, {
+            to: recipientEmail,
+            subject: subject,
+            html: htmlContent,
+            from: 'info@checkitsa.co.za'
         });
 
-        if (!res.ok) {
-            const errBody = await res.text();
-            console.error('[Invite] Brevo Failed:', res.status, errBody);
-            return NextResponse.json({ error: 'Brevo API Failed', details: errBody }, { status: res.status });
+        if (!success) {
+            return NextResponse.json({ error: 'MailChannels API Failed to send email' }, { status: 500 });
         }
-
-        const data = await res.json();
-        console.log(`[Invite] Success! Message ID: ${data.messageId}`);
 
         return NextResponse.json({
             success: true,
-            message: `Invitation sent to ${recipientEmail}`,
-            messageId: data.messageId
+            message: `Invitation sent to ${recipientEmail}`
         });
 
     } catch (error) {
