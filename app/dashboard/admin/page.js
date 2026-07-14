@@ -233,28 +233,72 @@ export default function AdminDashboard() {
                         )}
                     </div>
 
-                    {/* Stats or Platform Control (Placeholder) */}
+                    {/* Reports Moderation Section */}
                     <div className="glass-panel" style={{ padding: '2rem' }}>
                         <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <span>📈</span> Quick Stats
+                            <span>🚨</span> Pending Reports Moderation
                         </h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '0.5rem', textAlign: 'center' }}>
-                                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Platform Status</div>
-                                <div style={{ fontWeight: 'bold', color: 'var(--color-success)', marginTop: '0.5rem' }}>ONLINE</div>
-                            </div>
-                            <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '0.5rem', textAlign: 'center' }}>
-                                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>D1 Connection</div>
-                                <div style={{ fontWeight: 'bold', color: 'var(--color-success)', marginTop: '0.5rem' }}>ACTIVE</div>
-                            </div>
+                        
+                        <div style={{ maxHeight: '500px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                            <ReportList adminEmail={foundUser?.email || 'wiandurandt69@gmail.com'} />
                         </div>
-                        <p style={{ marginTop: '2rem', fontSize: '0.85rem', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
-                            More administrative controls (scam reports, API keys) will be added here in future updates.
-                        </p>
                     </div>
 
                 </div>
             </div>
         </main>
+    )
+}
+
+function ReportList({ adminEmail }) {
+    const [reports, setReports] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        fetch(`/api/admin/reports?email=${adminEmail}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.reports) setReports(data.reports)
+                setLoading(false)
+            })
+            .catch(() => setLoading(false))
+    }, [adminEmail])
+
+    const handleAction = async (id, action) => {
+        try {
+            const res = await fetch('/api/admin/reports', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, action, email: adminEmail })
+            })
+            if (res.ok) {
+                setReports(reports.map(r => r.id === id ? { ...r, status: action === 'verify' ? 'verified' : 'rejected' } : r))
+            }
+        } catch (e) {
+            alert('Action failed')
+        }
+    }
+
+    if (loading) return <div>Loading reports...</div>
+    if (reports.length === 0) return <div style={{ color: 'var(--color-text-muted)' }}>No reports found.</div>
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {reports.map(r => (
+                <div key={r.id} style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '0.5rem', borderLeft: r.status === 'pending' ? '4px solid #f59e0b' : r.status === 'verified' ? '4px solid #10b981' : '4px solid #ef4444' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                        <strong>{r.scam_type} - {r.scammer_details}</strong>
+                        <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: r.status === 'pending' ? '#f59e0b' : r.status === 'verified' ? '#10b981' : '#ef4444' }}>{r.status}</span>
+                    </div>
+                    <p style={{ fontSize: '0.9rem', color: '#d1d5db', marginBottom: '1rem' }}>{r.description}</p>
+                    {r.status === 'pending' && (
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button onClick={() => handleAction(r.id, 'verify')} className="btn" style={{ padding: '0.4rem 0.8rem', background: '#10b981', color: 'white', fontSize: '0.8rem', borderRadius: '0.25rem' }}>Approve</button>
+                            <button onClick={() => handleAction(r.id, 'reject')} className="btn" style={{ padding: '0.4rem 0.8rem', background: '#ef4444', color: 'white', fontSize: '0.8rem', borderRadius: '0.25rem' }}>Reject</button>
+                        </div>
+                    )}
+                </div>
+            ))}
+        </div>
     )
 }
