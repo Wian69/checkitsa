@@ -246,7 +246,7 @@ export default function Dashboard() {
                             Instantly scan any website for scams while you browse. Includes 5 free deep scans!
                         </p>
                         <a href="/checkitsa-extension.zip" download className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                            📥 Download (.zip)
+                            📥 Install Extension (.zip)
                         </a>
                         <div style={{ fontSize: '0.75rem', color: '#64748b', textAlign: 'center', marginTop: '0.75rem' }}>For Chrome, Edge & Brave</div>
                     </div>

@@ -130,19 +130,34 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Lock Screen */
-        #lockScreen {
+        #lockScreen, #loginScreen {
             display: none;
         }
 
         #mainScreen {
             display: block;
         }
+
+        /* Form Inputs */
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <img src="icons/icon48.png" alt="Logo" style="border-radius: 4px;">
-        <h1>CheckItSA Security</h1>
+    <div class="header" style="justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="icons/icon48.png" alt="Logo" style="border-radius: 4px;">
+            <h1>CheckItSA Security</h1>
+        </div>
+        <div id="authBtn" style="cursor: pointer; font-size: 18px; opacity: 0.8;" title="Link Account">👤</div>
     </div>
 
     <!-- MAIN SCAN SCREEN -->
@@ -173,13 +188,43 @@
         <div style="font-size: 40px; margin-bottom: 10px;">🔒</div>
         <h2 style="font-size: 18px; margin-bottom: 10px; color: #fbbf24;">Free Limit Reached</h2>
         <p style="font-size: 13px; color: #cbd5e1; line-height: 1.5; margin-bottom: 25px;">
-            You have used all 5 of your free real-time website scans. Upgrade to Premium for unlimited browsing protection and dark web scanning.
+            You have used all 5 of your free real-time website scans. Upgrade to Premium for unlimited browsing protection.
         </p>
+        <button id="showLoginFromLock" class="btn btn-outline" style="margin-bottom: 10px; background: rgba(255,255,255,0.05); color: white;">
+            I already have Premium
+        </button>
         <a href="https://checkitsa.co.za/pricing" target="_blank" style="text-decoration: none;">
             <button class="btn btn-premium">
                 Unlock Unlimited Scans
             </button>
         </a>
+    </div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="container">
+        <h2 style="font-size: 18px; margin-bottom: 5px;">Link Your Account</h2>
+        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 20px;">Sign in to unlock your Premium features.</p>
+        
+        <form id="loginForm">
+            <input type="email" id="loginEmail" placeholder="Email Address" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            
+            <div id="loginError" style="color: #ef4444; font-size: 12px; margin-bottom: 10px; display: none;"></div>
+            
+            <button type="submit" id="loginBtn" class="btn btn-primary">
+                Sign In
+            </button>
+        </form>
+
+        <div id="loggedInState" style="display: none; padding-top: 20px;">
+            <div style="font-size: 40px; margin-bottom: 10px;">👑</div>
+            <h3 style="margin-bottom: 5px;" id="userEmailDisplay">user@email.com</h3>
+            <div id="userTierDisplay" style="color: #fbbf24; font-weight: bold; font-size: 14px; margin-bottom: 20px; text-transform: uppercase;">PRO TIER ACTIVE</div>
+            
+            <button id="logoutBtn" class="btn" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);">
+                Sign Out
+            </button>
+        </div>
     </div>
 
     <script src="popup.js"></script>

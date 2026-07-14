@@ -9,20 +9,59 @@ document.addEventListener('DOMContentLoaded', async () => {
     const scansLeftEl = document.getElementById('scansLeft');
     const mainScreen = document.getElementById('mainScreen');
     const lockScreen = document.getElementById('lockScreen');
+    const loginScreen = document.getElementById('loginScreen');
+    const authBtn = document.getElementById('authBtn');
+    const showLoginFromLock = document.getElementById('showLoginFromLock');
 
-    const MAX_SCANS = 5;
+    // Login Elements
+    const loginForm = document.getElementById('loginForm');
+    const loginEmail = document.getElementById('loginEmail');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginError = document.getElementById('loginError');
+    const loginBtn = document.getElementById('loginBtn');
+    const loggedInState = document.getElementById('loggedInState');
+    const userEmailDisplay = document.getElementById('userEmailDisplay');
+    const userTierDisplay = document.getElementById('userTierDisplay');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    let MAX_SCANS = 5;
+    let isPremium = false;
+
+    // View Routing
+    const showView = (viewId) => {
+        mainScreen.style.display = 'none';
+        lockScreen.style.display = 'none';
+        loginScreen.style.display = 'none';
+        document.getElementById(viewId).style.display = 'block';
+    }
+
+    authBtn.addEventListener('click', () => {
+        if (loginScreen.style.display === 'block') {
+            showView(isPremium || scansUsed < MAX_SCANS ? 'mainScreen' : 'lockScreen');
+        } else {
+            showView('loginScreen');
+        }
+    });
+
+    showLoginFromLock.addEventListener('click', () => showView('loginScreen'));
+
+    let scansUsed = 0;
 
     // Initialize State
-    chrome.storage.local.get(['scansUsed'], async (result) => {
-        let scansUsed = result.scansUsed || 0;
+    chrome.storage.local.get(['scansUsed', 'userEmail', 'userTier'], async (result) => {
+        scansUsed = result.scansUsed || 0;
         
-        if (scansUsed >= MAX_SCANS) {
-            mainScreen.style.display = 'none';
-            lockScreen.style.display = 'block';
+        // Setup Auth State
+        if (result.userEmail) {
+            setupLoggedInUI(result.userEmail, result.userTier);
+        }
+
+        if (!isPremium && scansUsed >= MAX_SCANS) {
+            showView('lockScreen');
             return;
         }
 
-        scansLeftEl.textContent = MAX_SCANS - scansUsed;
+        updateScanCounter();
 
         // Get current tab URL
         try {
@@ -43,10 +82,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Handle Scan Button Click
             scanBtn.addEventListener('click', async () => {
-                // Deduct credit
-                scansUsed++;
-                chrome.storage.local.set({ scansUsed });
-                scansLeftEl.textContent = MAX_SCANS - scansUsed;
+                if (!isPremium) {
+                    scansUsed++;
+                    chrome.storage.local.set({ scansUsed });
+                    updateScanCounter();
+                }
 
                 // UI Loading State
                 scanBtn.style.display = 'none';
@@ -99,10 +139,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
 
                     // Check if they just hit the limit
-                    if (scansUsed >= MAX_SCANS) {
+                    if (!isPremium && scansUsed >= MAX_SCANS) {
                         setTimeout(() => {
-                            mainScreen.style.display = 'none';
-                            lockScreen.style.display = 'block';
+                            showView('lockScreen');
                         }, 5000); // Let them read the result for 5 seconds before locking
                     }
 
@@ -115,6 +154,94 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (error) {
             currentUrlEl.textContent = "Error detecting URL";
+        }
+    });
+
+    // --- Authentication Logic ---
+    function setupLoggedInUI(email, tier) {
+        userEmailDisplay.textContent = email;
+        userTierDisplay.textContent = `${tier} TIER ACTIVE`;
+        loginForm.style.display = 'none';
+        loggedInState.style.display = 'block';
+        
+        isPremium = (tier === 'pro' || tier === 'elite' || tier === 'custom');
+        
+        if (isPremium) {
+            scansLeftEl.parentNode.innerHTML = '👑 <span style="color: #fbbf24; font-weight: bold;">Unlimited Premium Scans</span>';
+        }
+    }
+
+    function updateScanCounter() {
+        if (!isPremium && scansLeftEl) {
+            scansLeftEl.textContent = MAX_SCANS - scansUsed;
+        }
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = loginEmail.value.trim();
+        const password = loginPassword.value;
+        
+        loginBtn.textContent = 'Verifying...';
+        loginBtn.disabled = true;
+        loginError.style.display = 'none';
+
+        try {
+            const res = await fetch('https://checkitsa.co.za/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+            
+            if (data.success && data.user) {
+                const tier = data.user.tier || 'free';
+                
+                chrome.storage.local.set({ 
+                    userEmail: data.user.email,
+                    userTier: tier
+                });
+                
+                setupLoggedInUI(data.user.email, tier);
+                
+                // If they are premium and were locked out, restore them immediately
+                if (tier === 'pro' || tier === 'elite' || tier === 'custom') {
+                    showView('mainScreen');
+                } else {
+                    // Still Free tier
+                    alert("Account linked! Note: You are on the Free tier. Upgrade at checkitsa.co.za/pricing for unlimited scans.");
+                    showView(scansUsed >= MAX_SCANS ? 'lockScreen' : 'mainScreen');
+                }
+            } else {
+                loginError.textContent = data.message || 'Invalid credentials.';
+                loginError.style.display = 'block';
+            }
+        } catch (err) {
+            loginError.textContent = 'Connection error. Check your internet.';
+            loginError.style.display = 'block';
+        } finally {
+            loginBtn.textContent = 'Sign In';
+            loginBtn.disabled = false;
+        }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+        chrome.storage.local.remove(['userEmail', 'userTier']);
+        isPremium = false;
+        loginForm.style.display = 'block';
+        loggedInState.style.display = 'none';
+        loginEmail.value = '';
+        loginPassword.value = '';
+        
+        // Restore free tier UI
+        scansLeftEl.parentNode.innerHTML = '<span id="scansLeft"></span> free scans remaining';
+        updateScanCounter();
+        
+        if (scansUsed >= MAX_SCANS) {
+            showView('lockScreen');
+        } else {
+            showView('mainScreen');
         }
     });
 });
