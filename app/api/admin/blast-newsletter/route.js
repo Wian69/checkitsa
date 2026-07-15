@@ -112,8 +112,8 @@ export async function POST(req) {
         const payload = {
             api_key: apiKey,
             sender: 'info@checkitsa.co.za',
-            to: ['info@checkitsa.co.za'], // Primary dummy recipient
-            bcc: recipients,
+            to: isTest ? [testEmail] : ['info@checkitsa.co.za'],
+            bcc: isTest ? undefined : recipients,
             subject: '🚨 NEW: Find Out Who is Selling Your Personal Data',
             html_body: htmlEmail
         };
