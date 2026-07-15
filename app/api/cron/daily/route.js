@@ -68,45 +68,37 @@ export async function GET(req) {
             `<a href="https://checkitsa.co.za/dashboard" style="display: inline-block; padding: 12px 24px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">Open Dashboard</a>`
         )
 
-        // 4. Send Batch Emails (Chunking if needed, but for now linear)
-        const brevoApiKey = process.env.BREVO_API_KEY
-        const resendApiKey = process.env.RESEND_API_KEY
+        // 4. Send Batch Emails using SMTP2GO
+        const cfEnv = getRequestContext().env;
+        const smtp2goApiKey = cfEnv?.SMTP2GO_API_KEY || (typeof process !== 'undefined' ? process.env.SMTP2GO_API_KEY : null);
 
-        // We will send individually to personalize or BCC batch?
-        // BCC Batch is better for quotas, but individual is better for "Good Morning [Name]".
-        // Let's do Bcc batch for efficiency safely.
+        if (!smtp2goApiKey) {
+            throw new Error("SMTP2GO API Key is missing");
+        }
 
         const recipients = users.map(u => u.email)
 
         if (recipients.length > 0) {
-            // Brevo
-            if (brevoApiKey) {
-                // Send as BCC to protect privacy in batch
-                await fetch('https://api.brevo.com/v3/smtp/email', {
-                    method: 'POST',
-                    headers: { 'api-key': brevoApiKey, 'Content-Type': 'application/json', 'accept': 'application/json' },
-                    body: JSON.stringify({
-                        sender: { name: 'CheckItSA Security', email: 'no-reply@checkitsa.co.za' },
-                        to: [{ email: 'no-reply@checkitsa.co.za', name: 'CheckItSA Member' }], // Placebo TO
-                        bcc: recipients.map(e => ({ email: e })),
-                        subject: `🛡️ Security Briefing: ${dateStr}`,
-                        htmlContent: htmlContent
-                    })
-                })
-            }
-            // Resend
-            else if (resendApiKey) {
-                await fetch('https://api.resend.com/emails', {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        from: 'CheckItSA <info@checkitsa.co.za>',
-                        to: 'info@checkitsa.co.za',
-                        bcc: recipients,
-                        subject: `🛡️ Security Briefing: ${dateStr}`,
-                        html: htmlContent
-                    })
-                })
+            // Send as BCC to protect privacy in batch
+            const payload = {
+                api_key: smtp2goApiKey,
+                sender: 'info@checkitsa.co.za',
+                to: ['info@checkitsa.co.za'], // Primary recipient
+                bcc: recipients,
+                subject: `🛡️ Security Briefing: ${dateStr}`,
+                html_body: htmlContent
+            };
+
+            const sendRes = await fetch('https://api.smtp2go.com/v3/email/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!sendRes.ok && sendRes.status !== 200 && sendRes.status !== 202) {
+                const err = await sendRes.text();
+                console.error("SMTP2GO Cron Error:", err);
+                throw new Error("Failed to send daily briefing via SMTP2GO");
             }
         }
 
