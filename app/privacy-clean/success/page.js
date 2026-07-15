@@ -11,6 +11,7 @@ function SuccessContent() {
     const [exposedBrokers, setExposedBrokers] = useState([]);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isDeleted, setIsDeleted] = useState(false);
+    const [dispatchError, setDispatchError] = useState(null);
 
     useEffect(() => {
         // Verify payment status from Yoco redirect URL
@@ -30,8 +31,9 @@ function SuccessContent() {
             setTargetData(parsedData);
             setExposedBrokers(parsedBrokers);
             
-            // Trigger backend to verify and send email (fire and forget)
+            // Trigger backend to verify and send email (Wait for it)
             if (checkoutId) {
+                setIsDeleting(true); // Show a loading state while emailing
                 fetch('/api/verify-privacy-clean', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -42,7 +44,18 @@ function SuccessContent() {
                         targetPhone: parsedData.phoneNumber,
                         brokersList: parsedBrokers
                     })
-                }).catch(e => console.error("Email verification trigger failed:", e));
+                }).then(async (res) => {
+                    if (!res.ok) {
+                        const errText = await res.text();
+                        console.error("Email API Failed:", errText);
+                        setDispatchError("SERVER ERROR: " + errText);
+                    }
+                }).catch(e => {
+                    console.error("Email verification trigger failed:", e);
+                    setDispatchError("NETWORK ERROR: " + e.message);
+                }).finally(() => {
+                    setIsDeleting(false);
+                });
                 
                 // Clear to prevent duplicate sends on refresh
                 localStorage.removeItem('pending_privacy_checkout');
@@ -69,6 +82,13 @@ function SuccessContent() {
                 background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)'
             }}>
                 
+                {dispatchError && (
+                    <div style={{ background: '#ef4444', color: 'white', padding: '20px', borderRadius: '8px', marginBottom: '20px', textAlign: 'left', border: '2px solid #b91c1c', fontWeight: 'bold' }}>
+                        ⚠️ CRITICAL EMAIL FAILURE:<br/><br/>
+                        {dispatchError}
+                    </div>
+                )}
+
                 {!isDeleted ? (
                     <>
                         <div style={{
