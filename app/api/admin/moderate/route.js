@@ -65,7 +65,8 @@ export async function GET(req) {
                                 'Authorization': `Bearer ${fbToken}`
                             },
                             body: JSON.stringify({
-                                message: message
+                                message: message,
+                                link: 'https://checkitsa.co.za/'
                             })
                         });
 
