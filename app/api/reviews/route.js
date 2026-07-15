@@ -54,8 +54,8 @@ export async function GET(req) {
         await ensureSchema(db)
 
         if (searchParams.get('distinct')) {
-            const { results } = await db.prepare("SELECT DISTINCT business_name FROM business_reviews ORDER BY business_name ASC").all()
-            return NextResponse.json({ businesses: results.map(r => r.business_name) })
+            const { results } = await db.prepare("SELECT business_name as name, business_email as email FROM business_reviews WHERE business_email IS NOT NULL AND business_email != '' GROUP BY business_name ORDER BY business_name ASC").all()
+            return NextResponse.json({ businesses: results })
         }
 
         let query = "SELECT * FROM business_reviews"

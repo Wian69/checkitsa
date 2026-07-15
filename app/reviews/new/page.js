@@ -23,16 +23,44 @@ export default function SubmitReviewPage() {
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
     const [error, setError] = useState(null)
+    const [communityBusinesses, setCommunityBusinesses] = useState([])
+
+    // Fetch community businesses from DB on mount
+    useEffect(() => {
+        fetch('/api/reviews?distinct=true')
+            .then(res => res.json())
+            .then(data => {
+                if (data.businesses) {
+                    const mapped = data.businesses.map(b => ({
+                        name: b.name,
+                        supportEmail: b.email,
+                        complaintEmail: b.email,
+                        logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(b.name)}&background=random`,
+                        isCommunity: true
+                    }))
+                    setCommunityBusinesses(mapped)
+                }
+            })
+            .catch(console.error)
+    }, [])
 
     // Handle Search Autocomplete
     useEffect(() => {
         if (!selectedBusiness && searchQuery.length > 1 && !isUnlisted) {
-            const matches = saBusinesses.filter(b => b.name.toLowerCase().includes(searchQuery.toLowerCase()))
-            setSuggestions(matches)
+            const combinedList = [...saBusinesses, ...communityBusinesses]
+            const uniqueMap = new Map()
+            combinedList.forEach(b => {
+                if (!uniqueMap.has(b.name.toLowerCase())) {
+                    uniqueMap.set(b.name.toLowerCase(), b)
+                }
+            })
+            const allUnique = Array.from(uniqueMap.values())
+            const matches = allUnique.filter(b => b.name.toLowerCase().includes(searchQuery.toLowerCase()))
+            setSuggestions(matches.slice(0, 10)) // limit suggestions to prevent massive lists
         } else {
             setSuggestions([])
         }
-    }, [searchQuery, selectedBusiness, isUnlisted])
+    }, [searchQuery, selectedBusiness, isUnlisted, communityBusinesses])
 
     const handleSelectBusiness = (b) => {
         setSelectedBusiness(b)
@@ -183,7 +211,10 @@ export default function SubmitReviewPage() {
                                                     padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)'
                                                 }} className="hover-bg">
                                                     <img src={b.logo} alt={b.name} style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'white' }} />
-                                                    <strong>{b.name}</strong>
+                                                    <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <strong>{b.name}</strong>
+                                                        {b.isCommunity && <span style={{ fontSize: '0.7rem', color: 'var(--color-primary)', background: 'rgba(16, 185, 129, 0.1)', padding: '0.2rem 0.5rem', borderRadius: '1rem' }}>Community Directory</span>}
+                                                    </div>
                                                 </div>
                                             ))}
                                             <div onClick={handleSelectUnlisted} style={{ padding: '1rem', cursor: 'pointer', color: 'var(--color-primary)', textAlign: 'center' }} className="hover-bg">

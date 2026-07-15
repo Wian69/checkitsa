@@ -42,7 +42,7 @@ export default function BusinessReviews() {
             setReviews(dataReviews.reviews || [])
 
             // Merge verified DB businesses with popular static list (unique)
-            const dbBusinesses = dataList.businesses || []
+            const dbBusinesses = (dataList.businesses || []).map(b => b.name)
             const combined = Array.from(new Set([...POPULAR_COMPANIES, ...dbBusinesses])).sort()
             setBusinessList(combined)
 
