@@ -51,7 +51,7 @@ export default function Home() {
               South Africa's most advanced automated verification platform. Protect yourself against phishing, fraud, and digital threats with real-time intelligence.
             </p>
 
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               {!user && (
                 <Link href="/signup" className="btn btn-primary" style={{ padding: '1rem 2.5rem' }}>Get Started Free</Link>
               )}
@@ -169,7 +169,7 @@ export default function Home() {
               Data brokers are selling your personal information. Use our automated AI bots to force them to delete your number, email, and identity from their lists immediately.
             </p>
 
-            <Link href="/privacy-clean" className="btn btn-primary" style={{ padding: '1rem 3rem', fontSize: '1.1rem', background: '#10b981', boxShadow: '0 4px 14px 0 rgba(16, 185, 129, 0.39)', borderRadius: '2rem' }}>
+            <Link href="/privacy-clean" className="btn btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.1rem', background: '#10b981', boxShadow: '0 4px 14px 0 rgba(16, 185, 129, 0.39)', borderRadius: '2rem', textAlign: 'center' }}>
               Clean My Data Now →
             </Link>
           </div>
@@ -185,7 +185,7 @@ export default function Home() {
           <p style={{ color: 'var(--color-text-muted)', fontSize: '1.2rem', marginBottom: '2rem', maxWidth: '600px', margin: '0 auto 2rem' }}>
             Help protect the community. Report scam numbers, profiles, and websites anonymously.
           </p>
-          <Link href="/report" className="btn btn-primary" style={{ padding: '1rem 3rem', fontSize: '1.2rem', borderRadius: '2rem' }}>
+          <Link href="/report" className="btn btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.2rem', borderRadius: '2rem', textAlign: 'center' }}>
             🚨 Report an Incident
           </Link>
         </div>
@@ -222,7 +222,7 @@ export default function Home() {
 
       {/* Global Intel Section */}
       <section className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h2 style={{ fontSize: '2rem' }}>Global Security Intel</h2>
             <p style={{ color: 'var(--color-text-muted)' }}>The latest cybersecurity news from around the world.</p>
