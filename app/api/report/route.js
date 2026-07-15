@@ -237,7 +237,6 @@ export async function POST(req) {
             }
 
             // 2. [REMOVED] Authorities are NOT emailed here anymore. See /api/admin/moderate
-        }
 
         if (!success) throw new Error('D1 Insert Failed')
 
