@@ -119,22 +119,7 @@ export default function FeaturedListings() {
                                 minHeight: '300px',
                                 transition: 'all 0.3s ease'
                             }}>
-                                {/* Verified Badge */}
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '1.5rem',
-                                    right: '1.5rem',
-                                    background: 'rgba(16, 185, 129, 0.1)',
-                                    color: '#10b981',
-                                    padding: '0.4rem 1rem',
-                                    borderRadius: '2rem',
-                                    fontSize: '0.75rem',
-                                    fontWeight: 'bold',
-                                    border: '1px solid rgba(16, 185, 129, 0.2)',
-                                    textTransform: 'uppercase'
-                                }}>
-                                    ✓ Verified Partner
-                                </div>
+
 
                                 <div style={{ flex: '2', minWidth: '280px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
@@ -151,13 +136,26 @@ export default function FeaturedListings() {
                                         }}>{item.business_name.charAt(0)}</div>
                                         <div>
                                             <h3 style={{ fontSize: '1.8rem', marginBottom: '0.2rem' }}>{item.business_name}</h3>
-                                            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                                            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', marginTop: '0.5rem' }}>
                                                 <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 'bold', textTransform: 'uppercase' }}>{item.category}</span>
                                                 {item.registration_number && (
-                                                    <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.05)', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>
+                                                    <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.05)', padding: '0.2rem 0.6rem', borderRadius: '6px', whiteSpace: 'nowrap' }}>
                                                         CIPC: {item.registration_number}
                                                     </span>
                                                 )}
+                                                <span style={{
+                                                    background: 'rgba(16, 185, 129, 0.1)',
+                                                    color: '#10b981',
+                                                    padding: '0.2rem 0.6rem',
+                                                    borderRadius: '2rem',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 'bold',
+                                                    border: '1px solid rgba(16, 185, 129, 0.2)',
+                                                    textTransform: 'uppercase',
+                                                    whiteSpace: 'nowrap'
+                                                }}>
+                                                    ✓ Verified Partner
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
