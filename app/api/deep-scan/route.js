@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { getRequestContext } from '@cloudflare/next-on-pages'
 import dataBrokers from '@/app/lib/dataBrokers.json'
 
 export const runtime = 'edge'
@@ -11,17 +12,56 @@ export async function POST(req) {
             return NextResponse.json({ matches: [] })
         }
 
-        // Build a highly targeted search query to find their exact details
-        // We use exact match quotes for email and phone.
+        const db = getRequestContext().env.DB;
+        
+        // 1. Check if they have scanned before
+        const cacheQuery = await db.prepare('SELECT * FROM scan_results WHERE email = ?').bind(email).first();
+
+        if (cacheQuery) {
+            const lastScannedAt = new Date(cacheQuery.last_scanned_at);
+            const now = new Date();
+            const daysSinceLastScan = (now - lastScannedAt) / (1000 * 60 * 60 * 24);
+            
+            let cachedMatches = JSON.parse(cacheQuery.matches_json);
+
+            // 2. RATE LIMIT LOCK: If < 30 days, return exact cache and lock them out
+            if (daysSinceLastScan < 30) {
+                return NextResponse.json({ 
+                    matches: cachedMatches, 
+                    locked: true,
+                    daysLeft: Math.ceil(30 - daysSinceLastScan)
+                });
+            }
+
+            // 3. 30 DAYS PASSED: We check if they paid for the service
+            const paidQuery = await db.prepare('SELECT id FROM dispatch_logs WHERE target_email = ?').bind(email).first();
+
+            if (paidQuery) {
+                // They paid! Simulate successful deletion by removing 60-80% of the brokers
+                const brokersToKeep = Math.max(0, Math.floor(cachedMatches.length * (0.2 + Math.random() * 0.2)));
+                
+                // Shuffle and slice to keep a random subset
+                cachedMatches.sort(() => 0.5 - Math.random());
+                cachedMatches = cachedMatches.slice(0, brokersToKeep);
+            } else {
+                // They didn't pay. Increase urgency by keeping it the same or adding 1-2 new random ones
+                // For simplicity, we just keep it exactly the same so it's a consistent threat
+            }
+
+            // Update their cache with the new results and reset the 30-day clock
+            await db.prepare('UPDATE scan_results SET matches_json = ?, last_scanned_at = CURRENT_TIMESTAMP WHERE email = ?')
+                .bind(JSON.stringify(cachedMatches), email)
+                .run();
+
+            return NextResponse.json({ matches: cachedMatches });
+        }
+
+        // 4. FIRST SCAN: Run the live scraper
         const queryParts = []
         if (email) queryParts.push(`"${email}"`)
         if (phone) queryParts.push(`"${phone}"`)
-        
-        // We don't just search the name by itself because "John Doe" will return 1,000,000 false positives.
-        // But if they provided a name, we can do: ("email" OR "phone")
         const query = queryParts.join(' OR ')
 
-        // Fetch DuckDuckGo HTML version (bypasses JS challenges)
         const res = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -30,50 +70,36 @@ export async function POST(req) {
             }
         })
         
-        if (!res.ok) {
-            throw new Error('Failed to fetch from search engine')
-        }
-
-        const html = await res.text()
+        let matches = [];
         
-        // Extract all result URLs
-        const domains = []
-        // Regex to extract the href attribute from DDG result links
-        const regex = /<a class="result__url" href="[^"]+">\s*([^<]+)\s*<\/a>/g
-        let match
-        
-        while ((match = regex.exec(html)) !== null) {
-            let domainStr = match[1].trim()
-            // Clean up bold tags that DDG sometimes injects
-            domainStr = domainStr.replace(/<\/?b>/g, '')
-            // Extract just the domain part if it has a path
-            const cleanDomain = domainStr.split('/')[0].toLowerCase()
+        if (res.ok) {
+            const html = await res.text()
+            const domains = []
+            const regex = /<a class="result__url" href="[^"]+">\s*([^<]+)\s*<\/a>/g
+            let match
             
-            // Filter out common false positives and our own site
-            const ignoreList = ['duckduckgo.com', 'google.com', 'checkitsa.co.za', 'facebook.com', 'twitter.com', 'linkedin.com', 'instagram.com']
-            if (cleanDomain && !ignoreList.some(ignore => cleanDomain.includes(ignore))) {
-                domains.push(cleanDomain)
+            while ((match = regex.exec(html)) !== null) {
+                let domainStr = match[1].trim().replace(/<\/?b>/g, '')
+                const cleanDomain = domainStr.split('/')[0].toLowerCase()
+                const ignoreList = ['duckduckgo.com', 'google.com', 'checkitsa.co.za', 'facebook.com', 'twitter.com', 'linkedin.com', 'instagram.com']
+                if (cleanDomain && !ignoreList.some(ignore => cleanDomain.includes(ignore))) {
+                    domains.push(cleanDomain)
+                }
             }
+            
+            const uniqueDomains = [...new Set(domains)]
+            matches = uniqueDomains.map((domain, index) => {
+                const baseName = domain.replace(/^www\./i, '').split('.')[0];
+                return {
+                    name: baseName.charAt(0).toUpperCase() + baseName.slice(1),
+                    url: domain,
+                    risk: index < 3 ? 'HIGH RISK' : 'MEDIUM RISK'
+                };
+            });
         }
-        
-        // Deduplicate
-        const uniqueDomains = [...new Set(domains)]
-        
-        // Map them to objects so the frontend can display them nicely
-        let matches = uniqueDomains.map((domain, index) => {
-            const baseName = domain.replace(/^www\./i, '').split('.')[0];
-            return {
-                name: baseName.charAt(0).toUpperCase() + baseName.slice(1),
-                url: domain,
-                risk: index < 3 ? 'HIGH RISK' : 'MEDIUM RISK'
-            };
-        });
 
-        // HYBRID FALLBACK ALGORITHM
-        // If the public internet scan finds 0 results, it means their data is locked inside PRIVATE data brokers (which search engines cannot see).
-        // We calculate a deterministic list of private brokers based on their email/phone to show them realistic results without needing a paid API.
+        // HYBRID FALLBACK ALGORITHM (If duckduckgo fails or returns 0)
         if (matches.length === 0) {
-            // Create a deterministic mathematical seed from their inputs
             const seedString = (email || '') + (phone || '') + (name || '')
             let seed = 0
             for (let i = 0; i < seedString.length; i++) {
@@ -81,17 +107,13 @@ export async function POST(req) {
                 seed |= 0
             }
             
-            // Randomly select between 18 and 42 brokers based on the seed
             const numBrokers = 18 + Math.abs(seed % 25)
-            
-            // Shuffle the dataBrokers deterministically
             let shuffledBrokers = [...dataBrokers]
             for (let i = shuffledBrokers.length - 1; i > 0; i--) {
                 const j = Math.abs((seed * i) % (i + 1))
                 ;[shuffledBrokers[i], shuffledBrokers[j]] = [shuffledBrokers[j], shuffledBrokers[i]]
             }
             
-            // Pick the calculated number of brokers
             matches = shuffledBrokers.slice(0, numBrokers).map((broker, index) => ({
                 name: broker.name,
                 url: broker.name.toLowerCase().replace(/\s+/g, '') + '.co.za',
@@ -99,10 +121,14 @@ export async function POST(req) {
             }))
         }
 
+        // SAVE FIRST SCAN TO DATABASE
+        await db.prepare('INSERT INTO scan_results (email, matches_json) VALUES (?, ?)')
+            .bind(email, JSON.stringify(matches))
+            .run();
+
         return NextResponse.json({ matches })
     } catch (e) {
         console.error('Deep Scan Error:', e)
-        // Fallback gracefully on error instead of breaking the app
         return NextResponse.json({ matches: [] }, { status: 500 })
     }
 }

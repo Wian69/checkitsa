@@ -83,3 +83,11 @@ CREATE TABLE IF NOT EXISTS dispatch_logs (
     type TEXT DEFAULT 'ERASURE_REQUEST',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Cached Scan Results for Rate Limiting and Deletion Simulation
+CREATE TABLE IF NOT EXISTS scan_results (
+    email TEXT PRIMARY KEY,
+    matches_json TEXT NOT NULL,
+    last_scanned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    initial_scan_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

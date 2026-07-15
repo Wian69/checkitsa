@@ -15,6 +15,8 @@ export default function PrivacyCleanPage() {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [exposedBrokers, setExposedBrokers] = useState([]);
   const [hasAuthorized, setHasAuthorized] = useState(false);
+  const [scanLocked, setScanLocked] = useState(false);
+  const [daysLeft, setDaysLeft] = useState(0);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -32,6 +34,14 @@ export default function PrivacyCleanPage() {
         });
         
         const scanData = await scanRes.json();
+
+        if (scanData.locked) {
+            setScanLocked(true);
+            setDaysLeft(scanData.daysLeft);
+            setIsSearching(false);
+            return;
+        }
+
         const liveMatches = scanData.matches || [];
 
         setExposedBrokers(liveMatches);
@@ -138,7 +148,18 @@ export default function PrivacyCleanPage() {
             </div>
           </div>
 
-          {!scanComplete ? (
+          {scanLocked ? (
+            <div style={{ textAlign: 'center', padding: '3rem 1rem', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '1rem', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔒</div>
+                <h2 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '1rem' }}>Identity Locked</h2>
+                <p style={{ color: '#d1d5db', fontSize: '1.1rem', marginBottom: '2rem', lineHeight: 1.6 }}>
+                    To prevent abuse of our automated legal dispatch systems and allow data brokers the mandatory 30-day legal window to process erasure requests, you can only scan this identity once every 30 days.
+                </p>
+                <div style={{ background: '#ef4444', color: '#fff', padding: '1rem 2rem', borderRadius: '2rem', display: 'inline-block', fontWeight: 'bold', fontSize: '1.2rem' }}>
+                    {daysLeft} Days Remaining
+                </div>
+            </div>
+          ) : !scanComplete ? (
             <form onSubmit={handleSearch} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', color: '#e5e7eb', fontSize: '0.9rem', fontWeight: 500 }}>
