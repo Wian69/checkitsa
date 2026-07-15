@@ -46,7 +46,7 @@ export async function POST(req) {
             body: JSON.stringify({
                 amount: 9900, // R99.00 in cents
                 currency: 'ZAR',
-                successUrl: `https://checkitsa.co.za/advertise/success?listingId=${listingId}&checkoutId={checkoutId}`,
+                successUrl: `https://checkitsa.co.za/advertise/success`,
                 cancelUrl: `https://checkitsa.co.za/advertise`,
                 metadata: {
                     listingId: listingId.toString(),
@@ -65,7 +65,9 @@ export async function POST(req) {
         // Return the V3 redirect URL
         return NextResponse.json({ 
             success: true, 
-            checkoutUrl: yocoData.redirectUrl 
+            checkoutUrl: yocoData.redirectUrl,
+            checkoutId: yocoData.id,
+            listingId: listingId
         })
 
     } catch (error) {

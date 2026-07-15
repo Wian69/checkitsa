@@ -6,36 +6,53 @@ import Navbar from '@/components/Navbar'
 function SuccessContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
-    const listingId = searchParams.get('listingId')
-    const checkoutId = searchParams.get('checkoutId')
     const [status, setStatus] = useState('verifying')
+    const [errorMessage, setErrorMessage] = useState('')
 
     useEffect(() => {
-        if (listingId && checkoutId) {
-            verifyPayment()
-        } else {
-            setStatus('error')
-        }
-    }, [listingId, checkoutId])
-
-    const verifyPayment = async () => {
-        try {
-            const res = await fetch('/api/advertise/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ listingId, checkoutId })
-            })
-            const data = await res.json()
-            if (data.success) {
-                setStatus('success')
-                setTimeout(() => router.push('/'), 3000)
-            } else {
-                setStatus('error')
+        const verifyPayment = async () => {
+            const yocoStatus = searchParams.get('status')
+            if (yocoStatus !== 'paid') {
+                router.push('/advertise')
+                return
             }
-        } catch (e) {
-            setStatus('error')
+
+            const checkoutId = localStorage.getItem('pending_advertise_checkout')
+            const listingId = localStorage.getItem('pending_advertise_listing')
+
+            if (!checkoutId || !listingId) {
+                setStatus('error')
+                setErrorMessage('No pending checkout found. If you paid, please contact support.')
+                return
+            }
+
+            try {
+                const res = await fetch('/api/advertise/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ listingId, checkoutId })
+                })
+                
+                const data = await res.json()
+                if (data.success) {
+                    localStorage.removeItem('pending_advertise_checkout')
+                    localStorage.removeItem('pending_advertise_listing')
+                    setStatus('success')
+                    setTimeout(() => router.push('/'), 3000)
+                } else {
+                    setStatus('error')
+                    setErrorMessage(data.message || 'Verification failed')
+                }
+            } catch (e) {
+                setStatus('error')
+                setErrorMessage('Network error during verification')
+            }
         }
-    }
+
+        verifyPayment()
+    }, [searchParams, router])
+
+    // removed verifyPayment function since it is now inside useEffect
 
     return (
         <main style={{ minHeight: '100vh', paddingBottom: '6rem' }}>
@@ -63,7 +80,7 @@ function SuccessContent() {
                             <div style={{ fontSize: '4rem', marginBottom: '1.5rem' }}>❌</div>
                             <h2>Verification Failed</h2>
                             <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>
-                                We could not verify your payment. If you were charged, please contact support.
+                                {errorMessage || 'We could not verify your payment. If you were charged, please contact support.'}
                             </p>
                             <button onClick={() => router.push('/advertise')} className="btn btn-primary">Return</button>
                         </div>

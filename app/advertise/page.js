@@ -83,6 +83,10 @@ function AdvertiseContent() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to initialize checkout')
 
+      // Save tracking IDs before redirecting
+      localStorage.setItem('pending_advertise_checkout', data.checkoutId)
+      localStorage.setItem('pending_advertise_listing', data.listingId)
+
       // Redirect to Yoco V3 Secure Checkout
       window.location.href = data.checkoutUrl
     } catch (err) {
