@@ -6,7 +6,7 @@
  * @param {Object} options - Email options.
  */
 export async function sendSESEmail(env, { to, bcc, subject, html, from, attachments = [] }) {
-    const apiKey = env.SMTP2GO_API_KEY || process.env.SMTP2GO_API_KEY;
+    let apiKey = env?.SMTP2GO_API_KEY || (typeof process !== 'undefined' && process.env?.SMTP2GO_API_KEY);
 
     if (!apiKey) {
         console.error("[SMTP2GO] Missing SMTP2GO_API_KEY in environment variables.");

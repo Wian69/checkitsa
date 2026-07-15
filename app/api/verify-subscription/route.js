@@ -99,8 +99,8 @@ export async function POST(req) {
                     const emailHtml = EMAIL_TEMPLATE('Commission Earned! 💰', emailContent, `<a href="https://checkitsa.co.za/dashboard" style="display: inline-block; padding: 12px 24px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">View Dashboard</a>`)
 
                     const sendAffiliateEmail = async () => {
-                        const globalEnv = process.env;
-                        await sendSESEmail(globalEnv, {
+                        const env = getRequestContext().env;
+                        await sendSESEmail(env, {
                             to: referrer.email,
                             subject: emailSubject,
                             html: emailHtml,

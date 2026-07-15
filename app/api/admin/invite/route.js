@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getRequestContext } from '@cloudflare/next-on-pages';
 import { getInviteHtml, getMarketingHtml } from '@/utils/email-template';
 import { sendSESEmail } from '@/app/lib/mailer';
 
@@ -32,7 +33,7 @@ export async function GET(req) {
         }
 
         // 4. Send via MailChannels (using global mailer)
-        const env = process.env; // Will be properly attached in Cloudflare Worker ctx
+        const env = getRequestContext().env;
         const result = await sendSESEmail(env, {
             to: recipientEmail,
             subject: subject,

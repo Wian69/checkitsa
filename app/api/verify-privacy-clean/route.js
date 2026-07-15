@@ -97,27 +97,32 @@ export async function POST(req) {
             `
             const legalHtml = EMAIL_TEMPLATE(`Data Erasure Notice`, legalContent)
 
-            const globalEnv = process.env; // Explicitly use process.env to ensure SMTP2GO_API_KEY is found
-            const cfEnv = ctx ? ctx.env : getRequestContext().env; // Used for D1 Bindings
+            const cfEnv = ctx ? ctx.env : getRequestContext().env; // Used for env vars and bindings
 
             // 1. Send Receipt
-            const receiptResult = await sendSESEmail(globalEnv, {
+            const receiptResult = await sendSESEmail(cfEnv, {
                 to: targetEmail,
                 subject: receiptSubject,
                 html: receiptHtml,
                 from: 'CheckItSA Privacy <no-reply@checkitsa.co.za>'
             });
-            if (!receiptResult.success) console.error("Receipt Email Failed:", receiptResult.error);
+            if (!receiptResult.success) {
+                console.error("Receipt Email Failed:", receiptResult.error);
+                throw new Error("SMTP2GO Receipt Failed: " + receiptResult.error);
+            }
 
             // 2. Send Legal Blast
-            const legalResult = await sendSESEmail(globalEnv, {
+            const legalResult = await sendSESEmail(cfEnv, {
                 to: targetEmail,
                 bcc: bccListResend,
                 subject: legalSubject,
                 html: legalHtml,
                 from: 'CheckIt SA Compliance <legal@checkitsa.co.za>'
             });
-            if (!legalResult.success) console.error("Legal Blast Email Failed:", legalResult.error);
+            if (!legalResult.success) {
+                console.error("Legal Blast Email Failed:", legalResult.error);
+                throw new Error("SMTP2GO Legal Blast Failed: " + legalResult.error);
+            }
 
             // 3. Log the dispatch for Admin Evidence
             if (cfEnv && cfEnv.DB) {
