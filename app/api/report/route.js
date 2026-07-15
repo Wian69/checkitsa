@@ -10,7 +10,7 @@ export async function POST(req) {
         const body = await req.json()
         const {
             name, email, phone,
-            type, description, scammer_details, evidence, // New fields
+            type, description, scammer_details, evidence, subject, // New fields
             url, reason // Legacy fields fallback
         } = body
 
@@ -56,7 +56,7 @@ export async function POST(req) {
                 email || 'N/A',
                 phone || 'N/A',
                 type || 'General',
-                description || reason || 'No description',
+                subject ? `Subject: ${subject}\n\n${description || reason || 'No description'}` : (description || reason || 'No description'),
                 scammer_details || url || 'N/A',
                 (Array.isArray(evidence) && evidence.length > 0) ? JSON.stringify(evidence) : (typeof evidence === 'string' ? evidence : null),
                 new Date().toISOString()

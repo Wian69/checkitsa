@@ -55,7 +55,8 @@ export async function GET(req) {
                     const report = await db.prepare("SELECT * FROM scam_reports WHERE id = ?").bind(id).first();
                     if (report) {
                         const redactedDetails = redactSensitiveInfo(report.scammer_details);
-                        const message = `🚨 VERIFIED SCAM ALERT: ${report.scam_type} 🚨\n\nSuspect / Details: ${redactedDetails}\n\nA new scam has been verified by our team. Read the full details and protect yourself on the CheckItSA Dashboard: https://checkitsa.co.za/dashboard`;
+                        const descriptionPreview = report.description ? report.description.substring(0, 300) + (report.description.length > 300 ? '...' : '') : '';
+                        const message = `🚨 VERIFIED SCAM ALERT: ${report.scam_type} 🚨\n\nSuspect / Details: ${redactedDetails}\n\n${descriptionPreview}\n\nRead the full details and protect yourself on the CheckItSA website: https://checkitsa.co.za/`;
                         
                         const fbRes = await fetch(`https://graph.facebook.com/v19.0/${fbPageId}/feed`, {
                             method: 'POST',

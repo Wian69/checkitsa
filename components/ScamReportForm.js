@@ -10,7 +10,7 @@ export default function ScamReportForm() {
     const [status, setStatus] = useState(null)
     const [formData, setFormData] = useState({
         name: '', email: '', phone: '',
-        scammer_details: '', description: '', evidence: []
+        subject: '', scammer_details: '', description: '', evidence: []
     })
 
     const handleSubmit = async (e) => {
@@ -33,7 +33,7 @@ export default function ScamReportForm() {
                     type: finalType + ' Scam',
                     details: formData.scammer_details
                 })
-                setFormData({ name: '', email: '', phone: '', scammer_details: '', description: '', evidence: [] })
+                setFormData({ name: '', email: '', phone: '', subject: '', scammer_details: '', description: '', evidence: [] })
             } else {
                 throw new Error('Failed to submit')
             }
@@ -206,6 +206,17 @@ export default function ScamReportForm() {
                             2. Incident Details
                         </h3>
                         <div style={{ display: 'grid', gap: '1.25rem' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>Incident Subject / Title</label>
+                                <input
+                                    required
+                                    type="text"
+                                    placeholder="Brief summary (e.g., Fake Facebook Marketplace Seller)"
+                                    style={inputStyle}
+                                    value={formData.subject}
+                                    onChange={e => setFormData({ ...formData, subject: e.target.value })}
+                                />
+                            </div>
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
                                     {type === 'Social Media' ? 'Scammer Profile Link / Name' : (type === 'Email' ? 'Scammer Email Address' : (type === 'Gambling' ? 'Casino URL / Name' : 'Scammer Number / Sender ID'))}
