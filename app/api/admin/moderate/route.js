@@ -5,6 +5,23 @@ import { dispatchAuthority } from '@/app/lib/dispatchAuthority'
 
 export const runtime = 'edge'
 
+function redactSensitiveInfo(text) {
+    if (!text) return text;
+    // Redact Emails (keep first 2 letters)
+    let redacted = text.replace(/([a-zA-Z0-9._-]+)@([a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi, (match, p1, p2) => {
+        return p1.substring(0, 2) + '***@' + p2;
+    });
+    // Redact SA Phone numbers (keep prefix, mask middle)
+    redacted = redacted.replace(/(\+?27|0)(\d{2})[-\s]?(\d{3})[-\s]?(\d{4})/g, (match, p1, p2, p3, p4) => {
+        return p1 + p2 + ' *** ' + p4.substring(2);
+    });
+    // General 10-digit number fallback
+    redacted = redacted.replace(/\b(\d{3})[-\s]?(\d{3})[-\s]?(\d{4})\b/g, (match, p1, p2, p3) => {
+        return p1 + ' *** ' + p3.substring(2);
+    });
+    return redacted;
+}
+
 export async function GET(req) {
     try {
         const { searchParams } = new URL(req.url)
@@ -28,6 +45,35 @@ export async function GET(req) {
             // START AUTHORITY NOTIFICATION LOGIC
             await dispatchAuthority(getRequestContext().env, db, id);
             // END AUTHORITY NOTIFICATION
+
+            // START FACEBOOK INTEGRATION
+            try {
+                const fbToken = getRequestContext().env.FB_PAGE_ACCESS_TOKEN;
+                const fbPageId = getRequestContext().env.FB_PAGE_ID;
+                if (fbToken && fbPageId) {
+                    const report = await db.prepare("SELECT * FROM scam_reports WHERE id = ?").bind(id).first();
+                    if (report) {
+                        const redactedDetails = redactSensitiveInfo(report.scammer_details);
+                        const message = `🚨 VERIFIED SCAM ALERT: ${report.scam_type} 🚨\n\nSuspect / Details: ${redactedDetails}\n\nA new scam has been verified by our team. Read the full details and protect yourself on the CheckItSA Dashboard: https://checkitsa.co.za/dashboard`;
+                        
+                        const fbRes = await fetch(`https://graph.facebook.com/v19.0/${fbPageId}/feed`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                message: message,
+                                access_token: fbToken
+                            })
+                        });
+
+                        if (!fbRes.ok) {
+                            console.error("Facebook API rejected the post:", await fbRes.text());
+                        }
+                    }
+                }
+            } catch (fbError) {
+                console.error("Facebook Post Error:", fbError.message);
+            }
+            // END FACEBOOK INTEGRATION
 
             return new Response(`
                 <html>

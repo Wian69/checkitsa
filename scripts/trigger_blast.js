@@ -1,14 +1,13 @@
 
 
-async function triggerTest() {
-    console.log("Triggering Test Email...");
+async function triggerBlast() {
+    console.log("Triggering PRODUCTION Email Blast to ALL users...");
     try {
         const res = await fetch('https://checkitsa.co.za/api/admin/blast-newsletter', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                isTest: true,
-                testEmail: 'info@checkitsa.co.za'
+                isTest: false
             })
         });
 
@@ -17,13 +16,13 @@ async function triggerTest() {
         console.log("Response:", text);
         
         if (res.ok) {
-            console.log("✅ Test email successfully triggered! Check your inbox.");
+            console.log("✅ Blast successfully triggered!");
         } else {
-            console.error("❌ Failed to trigger test email.");
+            console.error("❌ Failed to trigger blast.");
         }
     } catch (e) {
         console.error("Error:", e.message);
     }
 }
 
-triggerTest();
+triggerBlast();
