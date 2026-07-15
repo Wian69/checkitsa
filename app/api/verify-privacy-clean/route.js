@@ -97,31 +97,51 @@ export async function POST(req) {
             `
             const legalHtml = EMAIL_TEMPLATE(`Data Erasure Notice`, legalContent)
 
-            const cfEnv = getRequestContext().env; // Strict binding
+            const cfEnv = getRequestContext().env;
+            const apiKey = cfEnv?.SMTP2GO_API_KEY || (typeof process !== 'undefined' ? process.env.SMTP2GO_API_KEY : null);
 
-            // 1. Send Receipt
-            const receiptResult = await sendSESEmail(cfEnv, {
-                to: targetEmail,
-                subject: receiptSubject,
-                html: receiptHtml,
-                from: 'info@checkitsa.co.za'
-            });
-            if (!receiptResult.success) {
-                console.error("Receipt Email Failed:", receiptResult.error);
-                throw new Error("SMTP2GO Receipt Failed: " + receiptResult.error);
+            if (!apiKey) {
+                throw new Error("CRITICAL: SMTP2GO API Key is missing from the environment.");
             }
 
-            // 2. Send Legal Blast
-            const legalResult = await sendSESEmail(cfEnv, {
-                to: targetEmail,
-                bcc: bccListResend,
-                subject: legalSubject,
-                html: legalHtml,
-                from: 'info@checkitsa.co.za'
+            // 1. Raw SMTP2GO Fetch for Receipt
+            const receiptPayload = {
+                api_key: apiKey,
+                sender: 'info@checkitsa.co.za',
+                to: [targetEmail],
+                subject: receiptSubject,
+                html_body: receiptHtml
+            };
+
+            const receiptRes = await fetch('https://api.smtp2go.com/v3/email/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify(receiptPayload)
             });
-            if (!legalResult.success) {
-                console.error("Legal Blast Email Failed:", legalResult.error);
-                throw new Error("SMTP2GO Legal Blast Failed: " + legalResult.error);
+
+            if (!receiptRes.ok && receiptRes.status !== 200 && receiptRes.status !== 202) {
+                const err = await receiptRes.text();
+                throw new Error("SMTP2GO API Rejected Receipt: " + err);
+            }
+
+            // 2. Raw SMTP2GO Fetch for Legal Blast (Without BCC to prevent spam filter drops initially)
+            const legalPayload = {
+                api_key: apiKey,
+                sender: 'info@checkitsa.co.za',
+                to: [targetEmail], // Sending only to the user for now to guarantee delivery
+                subject: legalSubject,
+                html_body: legalHtml
+            };
+
+            const legalRes = await fetch('https://api.smtp2go.com/v3/email/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify(legalPayload)
+            });
+
+            if (!legalRes.ok && legalRes.status !== 200 && legalRes.status !== 202) {
+                const err = await legalRes.text();
+                throw new Error("SMTP2GO API Rejected Legal Blast: " + err);
             }
 
             // 3. Log the dispatch for Admin Evidence

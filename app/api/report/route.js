@@ -174,18 +174,27 @@ export async function POST(req) {
 
         const adminHtml = EMAIL_TEMPLATE(`🚨 New Scam Report: ${type}`, adminHtmlContent, adminActions)
 
-        // C. SEND LOGIC
-        if (reportId) {
             const env = getRequestContext().env;
+            const apiKey = env?.SMTP2GO_API_KEY || (typeof process !== 'undefined' ? process.env.SMTP2GO_API_KEY : null);
 
-            // 1. Send Admin Email (Action Required)
-            await sendSESEmail(env, {
-                to: adminEmail,
-                subject: emailSubject + " [ADMIN ACTION REQUIRED]",
-                html: adminHtml,
-                attachments,
-                from: 'info@checkitsa.co.za'
-            });
+            if (apiKey) {
+                // 1. Send Admin Email (Action Required)
+                try {
+                    await fetch('https://api.smtp2go.com/v3/email/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            api_key: apiKey,
+                            sender: 'info@checkitsa.co.za',
+                            to: [adminEmail],
+                            subject: emailSubject + " [ADMIN ACTION REQUIRED]",
+                            html_body: adminHtml
+                        })
+                    });
+                } catch (e) {
+                    console.error("Admin Report Email Error:", e);
+                }
+            }
 
             // 2. Send User Confirmation (Receipt)
             const userReceiptHtml = EMAIL_TEMPLATE(
@@ -209,14 +218,22 @@ export async function POST(req) {
                 `<a href="https://checkitsa.co.za/dashboard" style="background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Your Reports</a>`
             )
 
-            if (email && email.includes('@')) {
-                await sendSESEmail(env, {
-                    to: email,
-                    subject: `Report Received: ${scammer_details}`,
-                    html: userReceiptHtml,
-                    attachments,
-                    from: 'info@checkitsa.co.za'
-                });
+            if (email && email.includes('@') && apiKey) {
+                try {
+                    await fetch('https://api.smtp2go.com/v3/email/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            api_key: apiKey,
+                            sender: 'info@checkitsa.co.za',
+                            to: [email],
+                            subject: `Report Received: ${scammer_details}`,
+                            html_body: userReceiptHtml
+                        })
+                    });
+                } catch (e) {
+                    console.error("Receipt Report Email Error:", e);
+                }
             }
 
             // 2. [REMOVED] Authorities are NOT emailed here anymore. See /api/admin/moderate

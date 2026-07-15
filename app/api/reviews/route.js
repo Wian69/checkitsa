@@ -151,13 +151,26 @@ export async function POST(req) {
             // Fallback for CCMA which didn't use the standard layout
             const finalHtml = (type === 'complaint') ? emailHtmlContent : EMAIL_TEMPLATE(emailSubject, emailHtmlContent, `<p>This is an automated notification from CheckItSA.</p>`)
 
-            const env = getRequestContext().env
-            await sendSESEmail(env, {
-                to: recipients,
-                subject: emailSubject,
-                html: finalHtml,
-                from: 'info@checkitsa.co.za'
-            })
+            const env = getRequestContext().env;
+            const apiKey = env?.SMTP2GO_API_KEY || (typeof process !== 'undefined' ? process.env.SMTP2GO_API_KEY : null);
+
+            if (apiKey && recipients.length > 0) {
+                try {
+                    await fetch('https://api.smtp2go.com/v3/email/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            api_key: apiKey,
+                            sender: 'info@checkitsa.co.za',
+                            to: recipients,
+                            subject: emailSubject,
+                            html_body: finalHtml
+                        })
+                    });
+                } catch (e) {
+                    console.error("Reviews Email Error:", e);
+                }
+            }
         }
 
         if (!success) throw new Error('DB Insert Failed')

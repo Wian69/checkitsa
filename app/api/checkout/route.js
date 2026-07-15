@@ -110,12 +110,27 @@ export async function POST(req) {
 
                     const sendAffiliateEmail = async () => {
                         const env = getRequestContext().env;
-                        await sendSESEmail(env, {
-                            to: referrer.email,
+                        const apiKey = env?.SMTP2GO_API_KEY || (typeof process !== 'undefined' ? process.env.SMTP2GO_API_KEY : null);
+                        
+                        if (!apiKey) return;
+
+                        const payload = {
+                            api_key: apiKey,
+                            sender: 'info@checkitsa.co.za',
+                            to: [referrer.email],
                             subject: emailSubject,
-                            html: emailHtml,
-                            from: 'info@checkitsa.co.za'
-                        })
+                            html_body: emailHtml
+                        };
+
+                        try {
+                            await fetch('https://api.smtp2go.com/v3/email/send', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+                        } catch (e) {
+                            console.error("Affiliate Email Error:", e);
+                        }
                     }
 
                     // Force await to guarantee delivery before edge function closes
