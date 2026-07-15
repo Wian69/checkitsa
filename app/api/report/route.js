@@ -97,7 +97,7 @@ export async function POST(req) {
         authorities.push('crimestop@saps.gov.za', 'fraud@safps.org.za')
 
         const authoritiesList = [...new Set(authorities)]
-        const adminEmails = ['info@checkitsa.co.za', 'wiandurandt69@gmail.com']
+        const adminEmails = ['info@checkitsa.co.za']
 
         // 4. Prepare Attachments
         let attachments = []
