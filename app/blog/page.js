@@ -6,13 +6,6 @@ export const runtime = 'edge'
 
 const POSTS = [
     {
-        slug: 'checkitsa-security-browser-extension',
-        title: 'Introducing the CheckItSA Security Browser Extension',
-        excerpt: 'Real-time scam protection right in your browser. Learn why upgrading to a Premium plan gives you the ultimate shield against phishing.',
-        date: '2026-07-15',
-        category: 'Product Updates'
-    },
-    {
         slug: 'top-5-whatsapp-scams-south-africa-2025',
         title: 'The 5 Most Common WhatsApp Scams in South Africa (2025)',
         excerpt: 'From "Hey Mum" to hijackings, these are the top scams targeting South Africans on WhatsApp right now.',

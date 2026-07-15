@@ -6,41 +6,6 @@ import { useParams } from 'next/navigation'
 export const runtime = 'edge'
 
 const ARTICLES = {
-    'checkitsa-security-browser-extension': {
-        title: 'Introducing the CheckItSA Security Browser Extension',
-        date: '2026-07-15',
-        category: 'Product Updates',
-        content: `
-            <p class="mb-6 opacity-80">We are thrilled to announce the official release of the <strong>CheckItSA Security Browser Extension</strong>! Our mission has always been to make the internet safer for South Africans, and with this new tool, we are bringing real-time fraud protection directly into your browser.</p>
-
-            <h3 class="text-2xl font-bold text-white mb-4 mt-10 font-outfit">Real-Time Threat Detection</h3>
-            <p class="mb-6 opacity-80">Whether you are shopping online, browsing news sites, or checking your emails on the web, our extension silently works in the background. It instantly analyzes the website you are currently on against our live database of known malicious domains, phishing sites, and fraudulent businesses.</p>
-            
-            <p class="mb-6 opacity-80">A quick glance at the extension icon will tell you everything you need to know. Green means you are safe, while red means you should close the tab immediately. No more guessing, no more getting caught off guard.</p>
-
-            <h3 class="text-2xl font-bold text-white mb-4 mt-10 font-outfit">Why You Need a Premium Plan</h3>
-            <p class="mb-6 opacity-80">The browser extension is incredibly powerful, but it relies on active API calls to our intelligence servers. Every time you load a new webpage, the extension securely verifies it. To ensure you have continuous, uninterrupted protection, you need a substantial scan quota.</p>
-
-            <div class="bg-blue-500/10 border border-blue-500/20 p-6 rounded-2xl mb-10 text-blue-200">
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="text-xl">🚀</span>
-                    <strong class="font-bold text-blue-400 uppercase tracking-wider text-xs">Unlock Full Power</strong>
-                </div>
-                <p class="text-sm">Our Free Basic Plan gives you 5 manual searches, which is great for one-off checks. But with the automated browser extension, those 5 scans will run out almost instantly.</p>
-            </div>
-
-            <p class="mb-6 opacity-80">By upgrading to the <strong>CheckItSA Pro</strong> or <strong>Elite Plan</strong>, you gain access to thousands of premium monthly scans. This guarantees that your extension will actively shield you on every single website you visit, 24/7. When your money and identity are on the line, continuous protection is not a luxury—it is a necessity.</p>
-
-            <h3 class="text-2xl font-bold text-white mb-4 mt-10 font-outfit">Advanced Heuristic Analysis</h3>
-            <p class="mb-6 opacity-80">Our premium users do not just get more scans; they get <em>better</em> scans. The Pro and Elite tiers unlock advanced heuristic analysis, meaning the extension will flag highly suspicious sites even if they are brand new and haven't been reported by the community yet. It checks domain age, SSL certificate validity, and hidden redirects on the fly.</p>
-
-            <div class="mt-16 p-8 bg-blue-600/10 rounded-3xl border border-blue-500/20 text-center">
-                <h4 class="text-xl font-bold text-blue-400 mb-3 font-outfit">Ready to browse safely?</h4>
-                <p class="mb-6 text-white/60 font-light">Install the extension and upgrade to a Pro plan today to activate automated security.</p>
-                <a href="/subscription" class="btn btn-primary inline-block px-8">Upgrade Now</a>
-            </div>
-        `
-    },
     'top-5-whatsapp-scams-south-africa-2025': {
         title: 'The 5 Most Common WhatsApp Scams in South Africa (2025)',
         date: '2025-01-16',
