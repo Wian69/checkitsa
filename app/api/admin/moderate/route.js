@@ -47,6 +47,7 @@ export async function GET(req) {
             // END AUTHORITY NOTIFICATION
 
             // START FACEBOOK INTEGRATION
+            let fbErrorStr = "";
             try {
                 const fbToken = getRequestContext().env.FB_PAGE_ACCESS_TOKEN;
                 const fbPageId = getRequestContext().env.FB_PAGE_ID;
@@ -58,19 +59,25 @@ export async function GET(req) {
                         
                         const fbRes = await fetch(`https://graph.facebook.com/v19.0/${fbPageId}/feed`, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${fbToken}`
+                            },
                             body: JSON.stringify({
-                                message: message,
-                                access_token: fbToken
+                                message: message
                             })
                         });
 
                         if (!fbRes.ok) {
-                            console.error("Facebook API rejected the post:", await fbRes.text());
+                            fbErrorStr = await fbRes.text();
+                            console.error("Facebook API rejected the post:", fbErrorStr);
                         }
                     }
+                } else {
+                    fbErrorStr = "Missing FB_PAGE_ACCESS_TOKEN or FB_PAGE_ID in Cloudflare environment variables.";
                 }
             } catch (fbError) {
+                fbErrorStr = fbError.message;
                 console.error("Facebook Post Error:", fbError.message);
             }
             // END FACEBOOK INTEGRATION
@@ -81,7 +88,8 @@ export async function GET(req) {
                     <body style="font-family: sans-serif; padding: 2rem; text-align: center;">
                         <h1 style="color: green;">✅ Report Verified</h1>
                         <p>The report has been marked as verified and <strong>sent to authorities</strong>.</p>
-                        <button onclick="window.close()" style="padding: 10px 20px; font-size: 1rem; cursor: pointer;">Close Window</button>
+                        ${fbErrorStr ? `<div style="margin-top:20px; padding: 10px; background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; border-radius: 5px;"><strong>Facebook Post Failed:</strong> ${fbErrorStr}</div>` : `<div style="margin-top:20px; padding: 10px; background: #d1fae5; border: 1px solid #10b981; color: #047857; border-radius: 5px;"><strong>Facebook Post Successful!</strong></div>`}
+                        <button onclick="window.close()" style="margin-top: 20px; padding: 10px 20px; font-size: 1rem; cursor: pointer;">Close Window</button>
                     </body>
                 </html>
             `, { status: 200, headers: { 'Content-Type': 'text/html' } })
