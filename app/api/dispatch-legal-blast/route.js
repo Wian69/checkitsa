@@ -41,11 +41,11 @@ export async function POST(req) {
             throw new Error("CRITICAL: SMTP2GO API Key is missing from the environment.");
         }
 
+        // 1. Send Formal Legal Document to Brokers
         const legalPayload = {
             api_key: apiKey,
             sender: 'info@checkitsa.co.za',
-            to: [targetEmail], // Sending to the user to guarantee delivery to them
-            bcc: bccListResend, // BCC the brokers to dispatch the legal blast
+            to: bccListResend.length > 0 ? bccListResend : ['info@checkitsa.co.za'], // Send directly to brokers
             subject: legalSubject,
             html_body: legalHtml
         };
@@ -59,6 +59,43 @@ export async function POST(req) {
         if (!legalRes.ok && legalRes.status !== 200 && legalRes.status !== 202) {
             const err = await legalRes.text();
             throw new Error("SMTP2GO API Rejected Legal Blast: " + err);
+        }
+
+        // 2. Send Friendly Confirmation to User
+        const userConfirmationSubject = `Legal Request Successfully Dispatched 🛡️`
+        const userConfirmationContent = `
+            <p style="margin-bottom: 24px;">Hi ${targetName.split(' ')[0]},</p>
+            <p style="margin-bottom: 24px;">This is an automated confirmation that our system has successfully dispatched your formal Data Erasure Request (POPIA/GDPR).</p>
+            
+            <div style="background-color: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #10b981; margin-bottom: 24px;">
+                <h3 style="color: #10b981; margin-top: 0;">Request Status: Active</h3>
+                <p style="color: #d1d5db; line-height: 1.6;">Your formal legal notice was successfully delivered to <strong>${activeBrokers.length} data brokers</strong>.</p>
+                <p style="color: #d1d5db; line-height: 1.6;"><strong>What happens next?</strong></p>
+                <ul style="color: #d1d5db; padding-left: 20px; line-height: 1.6;">
+                    <li>Brokers have a strict <strong>30-day legal timeframe</strong> to process the deletion across their global servers.</li>
+                    <li>If any broker requires identity verification, they will contact you directly at this email address. Please reply to them to confirm you want your data deleted.</li>
+                    <li>No further action is required from you at this platform at this time.</li>
+                </ul>
+            </div>
+        `
+        const userConfirmationHtml = EMAIL_TEMPLATE('Legal Dispatch Confirmation', userConfirmationContent, `<a href="https://checkitsa.co.za/dashboard" style="display: inline-block; padding: 12px 24px; background-color: #10b981; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">Go to Dashboard</a>`)
+
+        const userPayload = {
+            api_key: apiKey,
+            sender: 'info@checkitsa.co.za',
+            to: [targetEmail],
+            subject: userConfirmationSubject,
+            html_body: userConfirmationHtml
+        };
+
+        const userRes = await fetch('https://api.smtp2go.com/v3/email/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(userPayload)
+        });
+
+        if (!userRes.ok && userRes.status !== 200 && userRes.status !== 202) {
+            console.error("User Confirmation Email Failed (Non-Fatal)");
         }
 
         return NextResponse.json({ success: true })
