@@ -18,7 +18,15 @@ export async function POST(req) {
         // Hydrate the emails from the backend JSON because the frontend localStorage strips them
         const resolvedBrokers = activeBrokers.map(ab => {
             const found = dataBrokers.find(db => db.name === ab.name);
-            return found || ab;
+            if (found) return found;
+            
+            // If they are a dynamically scraped broker not in our static database, guess their privacy email
+            let domain = ab.url || (ab.name.toLowerCase().replace(/\s+/g, '') + '.com');
+            domain = domain.replace(/^www\./i, '').split('/')[0];
+            return {
+                name: ab.name,
+                email: `privacy@${domain}`
+            };
         });
 
         const bccListResend = resolvedBrokers.map(b => b.email).filter(Boolean);
