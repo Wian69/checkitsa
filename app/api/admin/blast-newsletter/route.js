@@ -68,7 +68,7 @@ const htmlEmail = `
                     <tr>
                         <td style="padding: 30px; background-color: #0d1117; text-align: center; border-top: 1px solid #1f2937;">
                             <p style="margin: 0; font-size: 14px; color: #6b7280;">
-                                &copy; ${new Date().getFullYear()} CheckItSA. All rights reserved.<br>
+                                &copy; 2026 CheckItSA. All rights reserved.<br>
                                 Stay Safe. Verify Everything.<br><br>
                                 <a href="https://checkitsa.co.za/dashboard" style="color: #6366f1; text-decoration: none;">Manage Email Preferences</a>
                             </p>
