@@ -82,25 +82,6 @@ export async function POST(req) {
             `
             const receiptHtml = EMAIL_TEMPLATE('Privacy Clean Confirmation', receiptContent, `<a href="https://checkitsa.co.za/privacy-clean" style="display: inline-block; padding: 12px 24px; background-color: #10b981; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">Run Another Scan</a>`)
 
-            // 2. Send the Formal Legal Erasure Request (To User, BCC Brokers)
-            const legalSubject = `URGENT: Formal Data Erasure Request (POPIA/GDPR) - ${targetName}`
-            const legalContent = `
-                <p>To the Data Protection Officer / Privacy Compliance Team,</p>
-                <p>I am acting as the authorized legal agent for <strong>${targetName}</strong>.</p>
-                <p>Under the provisions of the South African Protection of Personal Information Act (POPIA) and the General Data Protection Regulation (GDPR), I am formally requesting the immediate and permanent erasure of all personal data relating to the individual identified below from your databases, marketing lists, and partner syndication networks.</p>
-                <div style="background-color: #1f2937; border: 1px solid #374151; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <ul style="list-style: none; padding: 0; margin: 0; color: #f8fafc;">
-                        <li><strong style="color: #94a3b8;">Full Name:</strong> ${targetName}</li>
-                        <li style="margin-top: 8px;"><strong style="color: #94a3b8;">Email Address:</strong> ${targetEmail}</li>
-                        <li style="margin-top: 8px;"><strong style="color: #94a3b8;">Phone Number:</strong> ${targetPhone}</li>
-                    </ul>
-                </div>
-                <p>Please consider this a formal legal notice. You have 30 days to comply with this erasure request and provide confirmation.</p>
-                <p>If you require identity verification to process this deletion, please reply directly to this email to contact the data subject (${targetEmail}).</p>
-                <p>Sincerely,<br>CheckIt SA Legal Compliance Team</p>
-            `
-            const legalHtml = EMAIL_TEMPLATE(`Data Erasure Notice`, legalContent)
-
             const cfEnv = getRequestContext().env;
             const apiKey = cfEnv?.SMTP2GO_API_KEY || (typeof process !== 'undefined' ? process.env.SMTP2GO_API_KEY : null);
 
@@ -128,25 +109,7 @@ export async function POST(req) {
                 throw new Error("SMTP2GO API Rejected Receipt: " + err);
             }
 
-            // 2. Raw SMTP2GO Fetch for Legal Blast (Without BCC to prevent spam filter drops initially)
-            const legalPayload = {
-                api_key: apiKey,
-                sender: 'info@checkitsa.co.za',
-                to: [targetEmail], // Sending only to the user for now to guarantee delivery
-                subject: legalSubject,
-                html_body: legalHtml
-            };
-
-            const legalRes = await fetch('https://api.smtp2go.com/v3/email/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify(legalPayload)
-            });
-
-            if (!legalRes.ok && legalRes.status !== 200 && legalRes.status !== 202) {
-                const err = await legalRes.text();
-                throw new Error("SMTP2GO API Rejected Legal Blast: " + err);
-            }
+            // 2. Legal Blast has been moved to a separate endpoint /api/dispatch-legal-blast
 
             // 3. Log the dispatch for Admin Evidence
             if (cfEnv && cfEnv.DB) {

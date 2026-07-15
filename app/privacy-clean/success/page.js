@@ -65,10 +65,30 @@ function SuccessContent() {
 
     const handleDelete = async () => {
         setIsDeleting(true);
-        // Simulate a secure deletion process connecting to backend bots
-        await new Promise(r => setTimeout(r, 2500));
-        setIsDeleting(false);
-        setIsDeleted(true);
+        setDispatchError(null);
+        try {
+            const res = await fetch('/api/dispatch-legal-blast', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    targetName: targetData.name,
+                    targetEmail: targetData.email,
+                    targetPhone: targetData.phoneNumber,
+                    brokersList: exposedBrokers
+                })
+            });
+            
+            if (!res.ok) {
+                const errText = await res.text();
+                setDispatchError("LEGAL BLAST ERROR: " + errText);
+            } else {
+                setIsDeleted(true);
+            }
+        } catch (e) {
+            setDispatchError("NETWORK ERROR: " + e.message);
+        } finally {
+            setIsDeleting(false);
+        }
     };
 
     return (
