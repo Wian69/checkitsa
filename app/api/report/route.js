@@ -183,7 +183,8 @@ export async function POST(req) {
                 to: adminEmail,
                 subject: emailSubject + " [ADMIN ACTION REQUIRED]",
                 html: adminHtml,
-                attachments
+                attachments,
+                from: 'info@checkitsa.co.za'
             });
 
             // 2. Send User Confirmation (Receipt)
@@ -213,7 +214,8 @@ export async function POST(req) {
                     to: email,
                     subject: `Report Received: ${scammer_details}`,
                     html: userReceiptHtml,
-                    attachments
+                    attachments,
+                    from: 'info@checkitsa.co.za'
                 });
             }
 

@@ -156,7 +156,7 @@ export async function POST(req) {
                 to: recipients,
                 subject: emailSubject,
                 html: finalHtml,
-                from: type === 'complaint' ? 'CheckItSA Legal <legal@checkitsa.co.za>' : 'CheckItSA Reviews <no-reply@checkitsa.co.za>'
+                from: 'info@checkitsa.co.za'
             })
         }
 

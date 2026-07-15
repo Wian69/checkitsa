@@ -104,7 +104,7 @@ export async function POST(req) {
                             to: referrer.email,
                             subject: emailSubject,
                             html: emailHtml,
-                            from: 'CheckItSA Rewards <no-reply@checkitsa.co.za>'
+                            from: 'info@checkitsa.co.za'
                         })
                     }
 

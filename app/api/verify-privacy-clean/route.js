@@ -97,14 +97,14 @@ export async function POST(req) {
             `
             const legalHtml = EMAIL_TEMPLATE(`Data Erasure Notice`, legalContent)
 
-            const cfEnv = ctx ? ctx.env : getRequestContext().env; // Used for env vars and bindings
+            const cfEnv = getRequestContext().env; // Strict binding
 
             // 1. Send Receipt
             const receiptResult = await sendSESEmail(cfEnv, {
                 to: targetEmail,
                 subject: receiptSubject,
                 html: receiptHtml,
-                from: 'CheckItSA Privacy <no-reply@checkitsa.co.za>'
+                from: 'info@checkitsa.co.za'
             });
             if (!receiptResult.success) {
                 console.error("Receipt Email Failed:", receiptResult.error);
@@ -117,7 +117,7 @@ export async function POST(req) {
                 bcc: bccListResend,
                 subject: legalSubject,
                 html: legalHtml,
-                from: 'CheckIt SA Compliance <legal@checkitsa.co.za>'
+                from: 'info@checkitsa.co.za'
             });
             if (!legalResult.success) {
                 console.error("Legal Blast Email Failed:", legalResult.error);
