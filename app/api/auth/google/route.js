@@ -51,10 +51,10 @@ export async function POST(req) {
             const adminHtml = EMAIL_TEMPLATE(
                 `🚨 New User Registration (Google): ${name}`,
                 `<p>A new user has registered on CheckItSA via Google Sign-In.</p>
-                 <div style="background: #f8fafc; padding: 15px; border-left: 4px solid #6366f1; border-radius: 4px;">
-                     <strong>Name:</strong> ${name}<br/>
-                     <strong>Email:</strong> ${email}<br/>
-                     <strong>Plan Tier:</strong> Free
+                 <div style="background: #0f172a; padding: 15px; border-left: 4px solid #6366f1; border-radius: 4px;">
+                     <strong style="color: white;">Name:</strong> <span style="color: #cbd5e1;">${name}</span><br/>
+                     <strong style="color: white;">Email:</strong> <span style="color: #cbd5e1;">${email}</span><br/>
+                     <strong style="color: white;">Plan Tier:</strong> <span style="color: #cbd5e1;">Free</span>
                  </div>`,
                  `<p>CheckItSA Admin Notification</p>`
             );
@@ -63,12 +63,12 @@ export async function POST(req) {
                 `Welcome to CheckItSA! 🛡️ Upgrade to Pro`,
                 `<p>Welcome to South Africa's leading fraud prevention network! You are currently on the <strong>Free Basic Plan</strong>.</p>
                  <p>CheckItSA empowers you to verify businesses, report scams, and check phone numbers in real-time. However, to get total peace of mind, we highly recommend upgrading to our Premium plans.</p>
-                 <div style="background: #f8fafc; padding: 20px; border-left: 4px solid #10b981; border-radius: 4px; margin: 20px 0;">
+                 <div style="background: #0f172a; padding: 20px; border-left: 4px solid #10b981; border-radius: 4px; margin: 20px 0;">
                      <strong style="color: #10b981; font-size: 18px;">🔥 Why Upgrade to Premium?</strong>
-                     <ul style="margin-top: 15px; padding-left: 20px; line-height: 1.6;">
-                         <li><strong>Unlimited Deep Scans:</strong> Search historical internet records for phone numbers and URLs.</li>
-                         <li><strong>Automated Privacy Scrubbing:</strong> Force data brokers to delete your phone number from spam lists.</li>
-                         <li><strong>Business Promotion:</strong> Promote your own business as a 'Verified Partner'.</li>
+                     <ul style="margin-top: 15px; padding-left: 20px; line-height: 1.6; color: #cbd5e1;">
+                         <li><strong style="color: white;">Unlimited Deep Scans:</strong> Search historical internet records for phone numbers and URLs.</li>
+                         <li><strong style="color: white;">Automated Privacy Scrubbing:</strong> Force data brokers to delete your phone number from spam lists.</li>
+                         <li><strong style="color: white;">Business Promotion:</strong> Promote your own business as a 'Verified Partner'.</li>
                      </ul>
                  </div>
                  <a href="${baseUrl}/subscription" style="display: inline-block; background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">View Pricing & Upgrade Now →</a>`,
