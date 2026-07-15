@@ -29,66 +29,39 @@ export async function GET(req) {
             return new Response('Unauthorized', { status: 403 })
         }
 
-        const db = env.DB
-
-        // 2. Query Scams from the last 24 hours
-        // SQLite datetime('now', '-1 day') gets the last 24 hours
-        const { results } = await db.prepare(`
-            SELECT * FROM scam_reports 
-            WHERE status = 'verified' 
-            AND created_at >= datetime('now', '-1 day')
-            ORDER BY created_at DESC
-        `).all()
-
         let fbMessage = ""
         let fbLink = 'https://checkitsa.co.za/'
 
-        if (results && results.length > 0) {
-            // WE HAVE NEW SCAMS!
-            fbMessage = `🚨 DAILY SCAM ALERT SUMMARY (${results.length} New Reports) 🚨\n\nIn the last 24 hours, CheckItSA has verified new scams targeting South Africans. Please be aware of the following:\n\n`
+        // 2. FETCH GLOBAL INTEL NEWS FROM RSS
+        try {
+            // Fetch from The Hacker News RSS feed (highly reliable global cyber news)
+            const rssRes = await fetch('https://feeds.feedburner.com/TheHackersNews', { cf: { cacheTtl: 3600 } })
+            const rssText = await rssRes.text()
             
-            // Show up to 3 scams so the post isn't too long
-            const topScams = results.slice(0, 3)
-            
-            topScams.forEach((report, index) => {
-                const redactedDetails = redactSensitiveInfo(report.scammer_details)
-                const descPreview = report.description ? report.description.substring(0, 150).replace(/\n/g, ' ') + '...' : 'No details provided.'
-                fbMessage += `🛑 ${index + 1}. [${report.scam_type}]\nSuspect: ${redactedDetails}\nDetails: ${descPreview}\n\n`
-            })
-
-            fbMessage += `To see the full list of verified scams and protect yourself, visit the CheckItSA Dashboard: https://checkitsa.co.za/`
-        } else {
-            // NO NEW SCAMS - FETCH GLOBAL INTEL NEWS
-            try {
-                // Fetch from The Hacker News RSS feed (highly reliable global cyber news)
-                const rssRes = await fetch('https://feeds.feedburner.com/TheHackersNews', { cf: { cacheTtl: 3600 } })
-                const rssText = await rssRes.text()
+            // Extract the first <item>
+            const itemMatch = rssText.match(/<item>([\s\S]*?)<\/item>/)
+            if (itemMatch) {
+                const itemXml = itemMatch[1]
                 
-                // Extract the first <item>
-                const itemMatch = rssText.match(/<item>([\s\S]*?)<\/item>/)
-                if (itemMatch) {
-                    const itemXml = itemMatch[1]
-                    
-                    // Extract title (handling CDATA if present)
-                    let title = "Latest Global Security Threat"
-                    const titleMatch = itemXml.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || itemXml.match(/<title>(.*?)<\/title>/)
-                    if (titleMatch) title = titleMatch[1]
-                    
-                    // Extract link
-                    let link = "https://checkitsa.co.za/"
-                    const linkMatch = itemXml.match(/<link>(.*?)<\/link>/) || itemXml.match(/<feedburner:origLink>(.*?)<\/feedburner:origLink>/)
-                    if (linkMatch) link = linkMatch[1]
+                // Extract title (handling CDATA if present)
+                let title = "Latest Global Security Threat"
+                const titleMatch = itemXml.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || itemXml.match(/<title>(.*?)<\/title>/)
+                if (titleMatch) title = titleMatch[1]
+                
+                // Extract link
+                let link = "https://checkitsa.co.za/"
+                const linkMatch = itemXml.match(/<link>(.*?)<\/link>/) || itemXml.match(/<feedburner:origLink>(.*?)<\/feedburner:origLink>/)
+                if (linkMatch) link = linkMatch[1]
 
-                    fbMessage = `🌍 CheckItSA Global Threat Intel 🌍\n\nStaying informed is the first step to staying safe. Here is the latest cybersecurity news from around the world:\n\n📰 ${title}\n\nStay protected with CheckItSA.`
-                    fbLink = link
-                } else {
-                    throw new Error("Could not parse RSS item")
-                }
-            } catch (err) {
-                console.error("Failed to fetch RSS, falling back to default.", err)
-                fbMessage = `🛡️ CheckItSA Daily Security Intel 🛡️\n\nVerify Before You Trust! Use CheckItSA's Website and Phone scanners to check any link or number before engaging with suspicious sellers.\n\nAlways use Two-Factor Authentication on all accounts to prevent hijacking.`
-                fbLink = 'https://checkitsa.co.za/'
+                fbMessage = `🌍 CheckItSA Global Threat Intel 🌍\n\nStaying informed is the first step to staying safe. Here is the latest cybersecurity news from around the world:\n\n📰 ${title}\n\nStay protected with CheckItSA.`
+                fbLink = link
+            } else {
+                throw new Error("Could not parse RSS item")
             }
+        } catch (err) {
+            console.error("Failed to fetch RSS, falling back to default.", err)
+            fbMessage = `🛡️ CheckItSA Daily Security Intel 🛡️\n\nVerify Before You Trust! Use CheckItSA's Website and Phone scanners to check any link or number before engaging with suspicious sellers.\n\nAlways use Two-Factor Authentication on all accounts to prevent hijacking.`
+            fbLink = 'https://checkitsa.co.za/'
         }
 
         // 3. Post to Facebook
