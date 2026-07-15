@@ -14,7 +14,14 @@ export async function POST(req) {
         }
 
         const activeBrokers = brokersList && brokersList.length > 0 ? brokersList : dataBrokers;
-        const bccListResend = activeBrokers.map(b => b.email)
+        
+        // Hydrate the emails from the backend JSON because the frontend localStorage strips them
+        const resolvedBrokers = activeBrokers.map(ab => {
+            const found = dataBrokers.find(db => db.name === ab.name);
+            return found || ab;
+        });
+
+        const bccListResend = resolvedBrokers.map(b => b.email).filter(Boolean);
 
         const legalSubject = `URGENT: Formal Data Erasure Request (POPIA/GDPR) - ${targetName}`
         const legalContent = `
@@ -45,10 +52,14 @@ export async function POST(req) {
         const legalPayload = {
             api_key: apiKey,
             sender: 'info@checkitsa.co.za',
-            to: bccListResend.length > 0 ? bccListResend : ['info@checkitsa.co.za'], // Send directly to brokers
+            to: ['info@checkitsa.co.za'], // Primary recipient
             subject: legalSubject,
             html_body: legalHtml
         };
+
+        if (bccListResend.length > 0) {
+            legalPayload.bcc = bccListResend; // Blind carbon copy the brokers
+        }
 
         const legalRes = await fetch('https://api.smtp2go.com/v3/email/send', {
             method: 'POST',
