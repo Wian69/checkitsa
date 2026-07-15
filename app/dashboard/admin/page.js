@@ -180,6 +180,17 @@ export default function AdminDashboard() {
                         </div>
                     </div>
 
+                    {/* Facebook Posting Section */}
+                    <div className="glass-panel" style={{ padding: '2rem' }}>
+                        <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span>📢</span> Manual Facebook Post
+                        </h3>
+                        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                            Instantly publish news or scam warnings to the CheckItSA Facebook page.
+                        </p>
+                        <FacebookPoster password={password} />
+                    </div>
+
                 </div>
             </div>
         </main>
@@ -367,5 +378,60 @@ function DispatchLogs({ password }) {
                 </div>
             ))}
         </div>
+    )
+}
+
+function FacebookPoster({ password }) {
+    const [message, setMessage] = useState('')
+    const [status, setStatus] = useState({ type: '', text: '' })
+    const [loading, setLoading] = useState(false)
+
+    const handlePost = async (e) => {
+        e.preventDefault()
+        if (!message) return
+        
+        if (!confirm('Are you sure you want to publish this to the live Facebook page?')) return
+        
+        setLoading(true)
+        setStatus({ type: '', text: '' })
+        try {
+            const res = await fetch('/api/admin/facebook-post', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: password, message })
+            })
+            const data = await res.json()
+            if (data.success) {
+                setStatus({ type: 'success', text: 'Successfully posted to Facebook!' })
+                setMessage('')
+            } else {
+                setStatus({ type: 'error', text: data.error || 'Failed to post' })
+            }
+        } catch (e) {
+            setStatus({ type: 'error', text: 'Network Error' })
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <form onSubmit={handlePost}>
+            {status.text && (
+                <div style={{ padding: '0.75rem', borderRadius: '0.5rem', marginBottom: '1rem', background: status.type === 'error' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)', color: status.type === 'error' ? '#fca5a5' : '#6ee7b7', border: `1px solid ${status.type === 'error' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(34, 197, 94, 0.2)'}` }}>
+                    {status.text}
+                </div>
+            )}
+            <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Write your Facebook post here..."
+                rows={5}
+                required
+                style={{ width: '100%', padding: '1rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', color: 'white', marginBottom: '1rem', resize: 'vertical' }}
+            />
+            <button disabled={loading || !message} type="submit" className="btn btn-primary" style={{ width: '100%' }}>
+                {loading ? 'Publishing...' : 'Post to Facebook'}
+            </button>
+        </form>
     )
 }
