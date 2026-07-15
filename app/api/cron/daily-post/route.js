@@ -3,53 +3,6 @@ import { getRequestContext } from '@cloudflare/next-on-pages'
 
 export const runtime = 'edge'
 
-const SECURITY_INTEL_TIPS = [
-    {
-        title: "Banking & EFT Scams",
-        content: `The most common banking scam in South Africa involves social engineering. Scammers often pose as bank officials claiming there is a "fraudulent transaction" on your account.
-        
-Key Red Flags:
-• Being asked to install remote access software like AnyDesk or TeamViewer.
-• Requesting your One-Time Pin (OTP) or App Approval.
-• Urgency: Telling you that you must act "right now" to save your money.`
-    },
-    {
-        title: "Facebook & Social Media Fraud",
-        content: `Facebook Marketplace is a hotspot for localized fraud. Sellers often request "deposits" for items that don't exist, or buyers send fake "Proof of Payment" documents.
-        
-Key Red Flags:
-• Prices that are "too good to be true."
-• Sellers who refuse to meet in a safe, public place.
-• Profiles that were created very recently (check the "Joined Facebook" date).`
-    },
-    {
-        title: "Email Phishing & BEC",
-        content: `Business Email Compromise (BEC) targets both companies and individuals. Scammers spoof the email addresses of lawyers, contractors, or even SARS.
-        
-Key Red Flags:
-• Sudden changes to banking details for an invoice.
-• Emails from "SARS" regarding a refund that requires you to click a link.
-• Generic greetings like "Dear Valued Customer" instead of your name.`
-    },
-    {
-        title: "Website & Online Store Clones",
-        content: `Scammers often clone popular South African retail websites. They look identical but are designed to steal your credit card information.
-        
-Key Red Flags:
-• Misspelled URLs (e.g., 'takeal0t.co.za' instead of 'takealot.com').
-• Lack of contact information or a physical address.
-• Only accepting manual EFT or Crypto as payment.`
-    },
-    {
-        title: "5 Golden Rules for Safety",
-        content: `1. Never Share Your OTP: No bank official will ever ask for your One-Time Pin or to approve a prompt on your app.
-2. Verify Before You Trust: Use CheckItSA's Website and Phone scanners to check any link or number before engaging.
-3. Enable 2FA: Always use Two-Factor Authentication on all accounts.
-4. Check the URL: Always look at the address bar. If it's not exactly what you expect, close the tab.
-5. Trust Your Gut: If a deal or conversation feels strange, it probably is. Scammers rely on creating pressure.`
-    }
-]
-
 function redactSensitiveInfo(text) {
     if (!text) return text;
     let redacted = text.replace(/([a-zA-Z0-9._-]+)@([a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi, (match, p1, p2) => {
@@ -88,6 +41,7 @@ export async function GET(req) {
         `).all()
 
         let fbMessage = ""
+        let fbLink = 'https://checkitsa.co.za/'
 
         if (results && results.length > 0) {
             // WE HAVE NEW SCAMS!
@@ -104,13 +58,37 @@ export async function GET(req) {
 
             fbMessage += `To see the full list of verified scams and protect yourself, visit the CheckItSA Dashboard: https://checkitsa.co.za/`
         } else {
-            // NO NEW SCAMS - POST EDUCATIONAL CONTENT
-            // Pick a tip based on the day of the year so it rotates predictably
-            const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24)
-            const tipIndex = dayOfYear % SECURITY_INTEL_TIPS.length
-            const tip = SECURITY_INTEL_TIPS[tipIndex]
+            // NO NEW SCAMS - FETCH GLOBAL INTEL NEWS
+            try {
+                // Fetch from The Hacker News RSS feed (highly reliable global cyber news)
+                const rssRes = await fetch('https://feeds.feedburner.com/TheHackersNews', { cf: { cacheTtl: 3600 } })
+                const rssText = await rssRes.text()
+                
+                // Extract the first <item>
+                const itemMatch = rssText.match(/<item>([\s\S]*?)<\/item>/)
+                if (itemMatch) {
+                    const itemXml = itemMatch[1]
+                    
+                    // Extract title (handling CDATA if present)
+                    let title = "Latest Global Security Threat"
+                    const titleMatch = itemXml.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || itemXml.match(/<title>(.*?)<\/title>/)
+                    if (titleMatch) title = titleMatch[1]
+                    
+                    // Extract link
+                    let link = "https://checkitsa.co.za/"
+                    const linkMatch = itemXml.match(/<link>(.*?)<\/link>/) || itemXml.match(/<feedburner:origLink>(.*?)<\/feedburner:origLink>/)
+                    if (linkMatch) link = linkMatch[1]
 
-            fbMessage = `🛡️ CheckItSA Daily Security Intel: ${tip.title} 🛡️\n\n${tip.content}\n\nAlways verify before you trust! Use our free scam verification tools at https://checkitsa.co.za/`
+                    fbMessage = `🌍 CheckItSA Global Threat Intel 🌍\n\nStaying informed is the first step to staying safe. Here is the latest cybersecurity news from around the world:\n\n📰 ${title}\n\nStay protected with CheckItSA.`
+                    fbLink = link
+                } else {
+                    throw new Error("Could not parse RSS item")
+                }
+            } catch (err) {
+                console.error("Failed to fetch RSS, falling back to default.", err)
+                fbMessage = `🛡️ CheckItSA Daily Security Intel 🛡️\n\nVerify Before You Trust! Use CheckItSA's Website and Phone scanners to check any link or number before engaging with suspicious sellers.\n\nAlways use Two-Factor Authentication on all accounts to prevent hijacking.`
+                fbLink = 'https://checkitsa.co.za/'
+            }
         }
 
         // 3. Post to Facebook
@@ -129,7 +107,7 @@ export async function GET(req) {
             },
             body: JSON.stringify({
                 message: fbMessage,
-                link: 'https://checkitsa.co.za/'
+                link: fbLink
             })
         });
 
