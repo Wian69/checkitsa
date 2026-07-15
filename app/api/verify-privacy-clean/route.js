@@ -14,18 +14,22 @@ export async function POST(req) {
             return NextResponse.json({ message: 'Missing parameters' }, { status: 400 })
         }
 
+        const env = getRequestContext().env;
+        const yocoSecret = env.YOCO_SECRET_KEY || (typeof process !== 'undefined' ? process.env.YOCO_SECRET_KEY : 'sk_test_bbc990c36mPx2La97b440098747b');
+
         // Verify the checkout status directly with Yoco
         const yocoRes = await fetch(`https://payments.yoco.com/api/checkouts/${checkoutId}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer sk_test_bbc990c36mPx2La97b440098747b` // TEST KEY ACTIVE
+                'Authorization': `Bearer ${yocoSecret}`
             }
         })
 
         const yocoData = await yocoRes.json()
 
         if (!yocoRes.ok || yocoData.status !== 'paid') {
-            return NextResponse.json({ message: 'Payment not verified' }, { status: 400 })
+            const errStr = JSON.stringify(yocoData);
+            return NextResponse.json({ message: `Yoco Verification Failed: ${errStr}` }, { status: 400 })
         }
 
         // At this point payment is verified. Send the receipt email.
