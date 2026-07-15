@@ -30,7 +30,6 @@ export async function POST(req) {
         });
 
         const bccListResend = resolvedBrokers.map(b => b.email).filter(Boolean);
-        bccListResend.push(targetEmail); // TEMPORARY TEST: BCC the user so they receive a copy of the legal blast
 
         const legalSubject = `URGENT: Formal Data Erasure Request (POPIA/GDPR) - ${targetName}`
         const legalContent = `
