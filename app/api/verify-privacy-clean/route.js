@@ -27,7 +27,7 @@ export async function POST(req) {
 
         const yocoData = await yocoRes.json()
 
-        if (!yocoRes.ok || yocoData.status !== 'paid') {
+        if (!yocoRes.ok || (yocoData.status !== 'completed' && yocoData.status !== 'paid')) {
             const errStr = JSON.stringify(yocoData);
             return NextResponse.json({ message: `Yoco Verification Failed: ${errStr}` }, { status: 400 })
         }
