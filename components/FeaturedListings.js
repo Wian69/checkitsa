@@ -83,8 +83,8 @@ export default function FeaturedListings() {
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
         >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
-                <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div style={{ flex: '1 1 100%' }}>
                     <h2 style={{ fontSize: '2rem' }}>Verified Business Partners {isPaused && <span style={{ fontSize: '0.8rem', verticalAlign: 'middle', opacity: 0.5 }}>⏸ Paused</span>}</h2>
                     <p style={{ color: 'var(--color-text-muted)' }}>Trustworthy services vetted by the CheckItSA community. {listings.length > 1 && `(${currentIndex + 1}/${listings.length})`}</p>
                 </div>
@@ -121,8 +121,8 @@ export default function FeaturedListings() {
                             }}>
 
 
-                                <div style={{ flex: '2', minWidth: '280px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                                <div style={{ flex: '2', minWidth: '100%' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
                                         <div style={{
                                             width: '4.5rem',
                                             height: '4.5rem',
