@@ -15,7 +15,7 @@ export async function POST(req) {
         }
 
         const env = getRequestContext().env;
-        const yocoSecret = env.YOCO_SECRET_KEY || (typeof process !== 'undefined' ? process.env.YOCO_SECRET_KEY : 'sk_test_bbc990c36mPx2La97b440098747b');
+        const yocoSecret = env.YOCO_SECRET_KEY || (typeof process !== 'undefined' ? process.env.YOCO_SECRET_KEY : undefined);
 
         // Verify the checkout status directly with Yoco
         const yocoRes = await fetch(`https://payments.yoco.com/api/checkouts/${checkoutId}`, {
