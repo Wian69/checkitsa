@@ -46,8 +46,9 @@ export async function GET(req) {
             await dispatchAuthority(getRequestContext().env, db, id);
             // END AUTHORITY NOTIFICATION
 
-            // START FACEBOOK INTEGRATION
-            let fbErrorStr = "";
+            // START FACEBOOK INTEGRATION (Temporarily Disabled by User Request)
+            let fbErrorStr = "Disabled by user";
+            /*
             try {
                 const fbToken = getRequestContext().env.FB_PAGE_ACCESS_TOKEN;
                 const fbPageId = getRequestContext().env.FB_PAGE_ID;
@@ -82,6 +83,7 @@ export async function GET(req) {
                 fbErrorStr = fbError.message;
                 console.error("Facebook Post Error:", fbError.message);
             }
+            */
             // END FACEBOOK INTEGRATION
 
             return new Response(`

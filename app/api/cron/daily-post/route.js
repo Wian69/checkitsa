@@ -64,7 +64,8 @@ export async function GET(req) {
             fbLink = 'https://checkitsa.co.za/'
         }
 
-        // 3. Post to Facebook
+        // 3. Post to Facebook (Temporarily Disabled by User Request)
+        /*
         const fbToken = env.FB_PAGE_ACCESS_TOKEN;
         const fbPageId = env.FB_PAGE_ID;
 
@@ -89,6 +90,7 @@ export async function GET(req) {
             console.error("Cron Facebook Post Failed:", errText)
             return new Response('Facebook Post Failed: ' + errText, { status: 500 })
         }
+        */
 
         return NextResponse.json({ success: true, message: "Daily post published to Facebook!", posted_content: fbMessage })
 
