@@ -47,9 +47,21 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${outfit.variable} ${inter.variable}`}>
-        {children}
-        <Footer />
-        <CookieConsent />
+        <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '2rem' }}>
+          <div className="glass-panel" style={{ padding: '4rem 2rem', maxWidth: '600px', margin: '0 auto', borderTop: '4px solid #f59e0b', background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)' }}>
+            <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🚧</div>
+            <h1 className="font-outfit" style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '1rem', color: '#fff' }}>Site Under Maintenance</h1>
+            <p style={{ color: '#9ca3af', fontSize: '1.1rem', lineHeight: '1.6', marginBottom: '2rem' }}>
+              We are currently upgrading our payment systems and performing scheduled maintenance. CheckItSA will be back online shortly. Thank you for your patience!
+            </p>
+            <div style={{ color: '#6366f1', fontWeight: 'bold', fontSize: '0.9rem', letterSpacing: '2px', textTransform: 'uppercase' }}>
+              CheckItSA Security Team
+            </div>
+          </div>
+        </main>
+        <div style={{ display: 'none' }}>
+          {children}
+        </div>
       </body>
     </html>
   )
